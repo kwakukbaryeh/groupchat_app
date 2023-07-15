@@ -1,6 +1,6 @@
 // import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import '../services/user.dart';
+import '../models/user.dart';
 import '../services/user_tile_page.dart'; // this was list from reBeal
 
 class UserTileWidget extends StatelessWidget {

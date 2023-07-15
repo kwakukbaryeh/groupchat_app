@@ -5,7 +5,7 @@ import 'package:groupchat_firebase/animation/animation.dart';
 import 'package:groupchat_firebase/widgets/custom/rippleButton.dart';
 import 'package:groupchat_firebase/helper/utility.dart';
 import 'package:groupchat_firebase/permission/contact.dart';
-import 'package:groupchat_firebase/services/user.dart';
+import 'package:groupchat_firebase/models/user.dart';
 import 'package:groupchat_firebase/state/auth_state.dart';
 import 'package:provider/provider.dart';
 

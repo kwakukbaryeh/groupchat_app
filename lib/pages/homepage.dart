@@ -1,70 +1,87 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import '../helper/helper_function.dart';
+import 'package:flutter/rendering.dart';
+import 'package:groupchat_firebase/state/auth_state.dart';
+import 'package:groupchat_firebase/state/post_state.dart';
+import 'package:groupchat_firebase/state/search_state.dart';
+import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:intl/intl.dart';
 import 'package:quiver/async.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import '../services/user.dart';
+import '../models/user.dart';
 import 'group_screen.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
-
   @override
-  State<HomePage> createState() => _HomePageState();
+  _HomePageState createState() => _HomePageState();
 }
 
-class GroupChat extends StatefulWidget {
-  final String groupName;
-  final Duration timeRemaining;
-  final int participantCount;
-
-  const GroupChat({
-    required this.groupName,
-    required this.timeRemaining,
-    required this.participantCount,
-  });
-
-  @override
-  _GroupChatState createState() => _GroupChatState();
-}
-
-class _GroupChatState extends State<GroupChat> {
-  late CountdownTimer _countdownTimer;
-  late String _timeRemaining;
+class _HomePageState extends State<HomePage> {
+  late ScrollController _scrollController;
+  late TabController _tabController;
+  bool _isScrolledDown = false;
 
   @override
   void initState() {
     super.initState();
-    _startCountdown();
-  }
-
-  void _startCountdown() {
-    final twelveHours = Duration(hours: 12);
-    final oneSecond = Duration(seconds: 1);
-    _countdownTimer = CountdownTimer(twelveHours, oneSecond);
-    _countdownTimer.listen((timer) {
-      setState(() {
-        _timeRemaining = HelperFunctions.formatTimeRemaining(timer.remaining);
-      });
+    WidgetsBinding.instance?.addPostFrameCallback((_) {
+      initPosts();
+      initSearch();
+      initProfile();
+      getGroupChatDataFromDatabase();
     });
-    setState(() {
-      _timeRemaining = HelperFunctions.formatTimeRemaining(twelveHours);
-    });
+    _scrollController = ScrollController();
+    _scrollController.addListener(_scrollListener);
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
   void dispose() {
-    _countdownTimer.cancel();
+    _scrollController.removeListener(_scrollListener);
+    _scrollController.dispose();
+    _tabController.dispose();
     super.dispose();
+  }
+
+  void initSearch() {
+    var searchState = Provider.of<SearchState>(context, listen: false);
+    searchState.getDataFromDatabase();
+  }
+
+  void initProfile() {
+    var authState = Provider.of<AuthState>(context, listen: false);
+    authState.databaseInit();
+  }
+
+  void initPosts() {
+    var postState = Provider.of<PostState>(context, listen: false);
+    postState.databaseInit();
+    postState.getDataFromDatabase();
+  }
+
+  void getGroupChatDataFromDatabase() {
+    var groupChatState = Provider.of<GroupChatState>(context, listen: false);
+    groupChatState.getDataFromDatabase();
+  }
+
+  void _scrollListener() {
+    if (_scrollController.position.userScrollDirection ==
+        ScrollDirection.reverse) {
+      setState(() {
+        _isScrolledDown = true;
+      });
+    } else if (_scrollController.position.userScrollDirection ==
+        ScrollDirection.forward) {
+      setState(() {
+        _isScrolledDown = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    String formattedTimeRemaining =
-        HelperFunctions.formatTimeRemaining(widget.timeRemaining);
+    String formattedTimeRemaining = formatTimeRemaining(widget.timeRemaining);
 
     return GestureDetector(
       onTap: () {
@@ -109,11 +126,7 @@ class _GroupChatState extends State<GroupChat> {
 
 class _HomePageState extends State<HomePage> {
   List<GroupChat> _groupChats = []; // maintain a list of group chats
-  final _birthdateController = TextEditingController();
-  final _nameController = TextEditingController();
-  final _usernameController = TextEditingController();
   MobileScannerController _scannerController = MobileScannerController();
-
   UserModel _user = UserModel();
 
   @override
@@ -121,82 +134,23 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     WidgetsBinding.instance?.addPostFrameCallback((_) async {
       await _loadUserData();
-      var groupChat = await HelperFunctions.getGroupChat();
-      if (groupChat != null) {
-        bool groupChatExists = _groupChats.any(
-            (chat) => chat.groupName.toLowerCase() == 'placeholder groupchat');
-        if (!groupChatExists) {
-          _groupChats.add(GroupChat(
-            groupName: groupChat['groupName'],
-            timeRemaining: Duration(milliseconds: groupChat['timeRemaining']),
-            participantCount: groupChat['participantCount'],
-          ));
-        }
-      }
-      _showDetailsDialog();
+      // Fetch group chats from Firebase Realtime Database
+      // and add them to the _groupChats list
+      // Example code: _fetchGroupChatsFromDatabase();
     });
   }
 
   Future<void> _loadUserData() async {
     _user = await HelperFunctions.getUser() ?? UserModel();
     setState(() {
-      _birthdateController.text = _user.birthdate ?? '';
-      _nameController.text = _user.name ?? '';
-      _usernameController.text = _user.username ?? '';
+      // Update UI if needed with user data
     });
   }
 
   @override
   void dispose() {
-    _birthdateController.dispose();
-    _nameController.dispose();
-    _usernameController.dispose();
     _scannerController.dispose();
     super.dispose();
-  }
-
-  void _showDetailsDialog() async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Please provide your details'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                TextFormField(
-                  controller: _birthdateController,
-                  decoration: const InputDecoration(hintText: 'Birthdate'),
-                ),
-                TextFormField(
-                  controller: _nameController,
-                  decoration: const InputDecoration(hintText: 'Name'),
-                ),
-                TextFormField(
-                  controller: _usernameController,
-                  decoration: const InputDecoration(hintText: 'Username'),
-                ),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Submit'),
-              onPressed: () async {
-                _user = _user.copyWith(
-                  birthdate: _birthdateController.text,
-                  name: _nameController.text,
-                  username: _usernameController.text,
-                );
-                await HelperFunctions.saveUser(_user);
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
   }
 
   void _addNewGroupChat() {
@@ -207,8 +161,8 @@ class _HomePageState extends State<HomePage> {
         participantCount: 1,
       );
       _groupChats.add(newGroupChat);
-      HelperFunctions.saveGroupChat(
-          newGroupChat.groupName, newGroupChat.timeRemaining.inMilliseconds);
+      // Save new group chat to Firebase Realtime Database
+      // Example code: _saveGroupChatToDatabase(newGroupChat);
     });
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -294,60 +248,9 @@ class _HomePageState extends State<HomePage> {
                       ),
                       ElevatedButton(
                         onPressed: () async {
-                          final Map<String, dynamic>? result =
-                              await showModalBottomSheet<Map<String, dynamic>>(
-                            context: context,
-                            isScrollControlled: true,
-                            builder: (BuildContext context) {
-                              return FractionallySizedBox(
-                                heightFactor: 0.9,
-                                child: MobileScanner(
-                                  // fit: BoxFit.contain,
-                                  onDetect: (capture) {
-                                    Navigator.of(context).pop(capture);
-                                  },
-                                ),
-                              );
-                            },
-                          );
-
-                          if (result != null) {
-                            final List<Barcode> barcodes = result['barcodes'];
-                            final Uint8List? image = result['image'];
-                            for (final barcode in barcodes) {
-                              debugPrint('Barcode found! ${barcode.rawValue}');
-                            }
-                            if (image != null) {
-                              showDialog(
-                                context: context,
-                                builder: (context) => Image.memory(image),
-                              );
-                              Future.delayed(const Duration(seconds: 5), () {
-                                Navigator.pop(context);
-                              });
-                            }
-
-                            final String groupName = result['groupChatName'];
-                            const Duration timeRemaining = Duration(hours: 12);
-                            const int participantCount = 1;
-
-                            _navigateToGroupChat(
-                                groupName, timeRemaining, participantCount);
-                          }
-                        },
-                        child: const Text('Scan'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          const String groupName = 'New GroupChat';
-                          final Duration timeRemaining = Duration(hours: 12);
-                          const int participantCount = 1;
-
-                          _navigateToGroupChat(
-                            groupName,
-                            timeRemaining,
-                            participantCount,
-                          );
+                          // Create new group chat with entered name and 12-hour duration
+                          // Save the new group chat to Firebase Realtime Database
+                          // Example code: _createAndSaveGroupChat();
                         },
                         child: const Text('Create GroupChat Now'),
                       ),
@@ -367,26 +270,6 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       ),
-    );
-  }
-
-  void _navigateToGroupChat(
-      String groupName, Duration timeRemaining, int participantCount) {
-    setState(() {
-      var newGroupChat = GroupChat(
-        groupName: groupName,
-        timeRemaining: timeRemaining,
-        participantCount: participantCount,
-      );
-      _groupChats.add(newGroupChat);
-      HelperFunctions.saveGroupChat(
-          newGroupChat.groupName, newGroupChat.timeRemaining.inMilliseconds);
-    });
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-          builder: (context) => GroupScreen(groupName: groupName)),
     );
   }
 }

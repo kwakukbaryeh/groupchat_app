@@ -1,6 +1,6 @@
 import '../helper/enum.dart';
 import '../helper/utility.dart';
-import '../services/user.dart';
+import '../models/user.dart';
 import 'package:firebase_database/firebase_database.dart';
 
 // import 'package:rebeal/helper/enum.dart';

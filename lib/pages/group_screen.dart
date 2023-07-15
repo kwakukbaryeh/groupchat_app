@@ -1,19 +1,25 @@
-import 'package:contacts_service/contacts_service.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:animate_do/animate_do.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:groupchat_firebase/camera/camera.dart';
+import 'package:groupchat_firebase/models/post.dart';
+import 'package:groupchat_firebase/models/user.dart';
+import 'package:groupchat_firebase/pages/myprofile.dart';
+import 'package:groupchat_firebase/services/user_tile_page.dart';
+import 'package:groupchat_firebase/state/auth_state.dart';
+import 'package:groupchat_firebase/state/post_state.dart';
+import 'package:groupchat_firebase/state/search_state.dart';
+import 'package:groupchat_firebase/widgets/custom/rippleButton.dart';
+import 'package:groupchat_firebase/widgets/feedpost.dart';
+import 'package:groupchat_firebase/widgets/gridpost.dart';
 import 'package:provider/provider.dart';
-import '../services/user.dart';
-// import 'package:rebeal/widget/list.dart';
-import '../services/user_tile_page.dart'; // replacement for list.dart
-import '../state/auth_state.dart';
-import '../state/search_state.dart';
-import '../widgets/share.dart';
+
+import 'feed.dart';
 
 class GroupScreen extends StatefulWidget {
-  final String groupName;
-
-  const GroupScreen({required this.groupName});
+  const GroupScreen({Key? key}) : super(key: key);
 
   @override
   _GroupScreenState createState() => _GroupScreenState();
@@ -22,375 +28,436 @@ class GroupScreen extends StatefulWidget {
 class _GroupScreenState extends State<GroupScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
-  List<String> contactEmails = [];
+  ScrollController _scrollController = ScrollController();
+  bool _isScrolledDown = false;
+  bool _isGrid = false;
 
   @override
   void initState() {
-    _tabController = TabController(length: 3, vsync: this);
-    ContactsService.getContacts().then((contacts) {
-      for (var contact in contacts) {
-        for (var email in contact.emails!) {
-          contactEmails.add(email.value!);
-        }
-      }
-      setState(() {});
+    WidgetsBinding.instance?.addPostFrameCallback((_) {
+      initPosts();
+      initProfile();
     });
+    _scrollController.addListener(_scrollListener);
+    _tabController = TabController(length: 3, vsync: this);
     super.initState();
   }
 
   @override
   void dispose() {
+    _scrollController.removeListener(_scrollListener);
+    _scrollController.dispose();
     _tabController.dispose();
     super.dispose();
   }
 
-  final _textController = TextEditingController();
-  int currentIndex = 0;
+  void initProfile() {
+    var state = Provider.of<AuthState>(context, listen: false);
+    state.databaseInit();
+  }
+
+  void initPosts() {
+    var state = Provider.of<PostState>(context, listen: false);
+    state.databaseInit();
+    state.getDataFromDatabase();
+  }
+
+  void _scrollListener() {
+    if (_scrollController.position.userScrollDirection ==
+        ScrollDirection.reverse) {
+      setState(() {
+        _isScrolledDown = true;
+      });
+    } else if (_scrollController.position.userScrollDirection ==
+        ScrollDirection.forward) {
+      setState(() {
+        _isScrolledDown = false;
+      });
+    }
+  }
+
+  Future<void> _bodyView() async {
+    if (_isGrid) {
+      setState(() {
+        _isGrid = false;
+      });
+    } else {
+      setState(() {
+        _isGrid = true;
+      });
+    }
+  }
+
+  int tab = 0;
 
   @override
   Widget build(BuildContext context) {
     var authState = Provider.of<AuthState>(context, listen: false);
     final state = Provider.of<SearchState>(context);
-    final list = state.userlist;
-    final Map<int, Widget> children = {
-      0: Text('Suggestions'),
-      1: Text('Friends'),
-      2: Text('Requests'),
-    };
-    List<UserModel>? following;
-    List<UserModel>? follower;
 
-    Widget buildFollowingWidget() {
-      List<String>? followingkey =
-          authState.profileUserModel!.followingList?.toList();
-
-      if (followingkey == null || followingkey.isEmpty) {
-        return Text('No following users');
-      } else {
-        List<UserModel>? following = state.getuserDetail(followingkey);
-
-        return ListView.builder(
-          itemBuilder: (context, index) {
-            final user = following![index];
-            return UserTilePage(
-              user: user,
-              isadded: true,
-            );
-          },
-          itemCount: following?.length ?? 0,
-        );
-      }
-    }
-
-    Widget buildFollowerWidget() {
-      List<String>? followerkey =
-          authState.profileUserModel!.followersList?.toList();
-
-      if (followerkey == null || followerkey.isEmpty) {
-        return Text('No followers');
-      } else {
-        List<UserModel>? followers = state.getuserDetail(followerkey);
-
-        return ListView.builder(
-          itemBuilder: (context, index) {
-            final user = followers![index];
-            return UserTilePage(
-              user: user,
-              isadded: true,
-            );
-          },
-          itemCount: followers?.length ?? 0,
-        );
-      }
-    }
-
-/*
-    if (followingkey != null) {
-      following = state.getuserDetail(followingkey);
-    }
-    if (followerkey != null) {
-      follower = state.getuserDetail(followerkey);
-    }
-*/
+    authState.getCurrentUser().then((value) {
+      setState(() {});
+    });
     return Scaffold(
       extendBody: true,
-      bottomNavigationBar: Padding(
-        padding: EdgeInsets.only(bottom: 50, left: 20, right: 20),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(100),
-          child: CupertinoSlidingSegmentedControl(
-            backgroundColor: Colors.black,
-            thumbColor: Color.fromARGB(255, 60, 60, 60),
-            padding: EdgeInsets.only(bottom: 10, top: 10, right: 10, left: 10),
-            children: children,
-            groupValue: currentIndex,
-            onValueChanged: (newValue) {
-              HapticFeedback.mediumImpact();
-              setState(() {
-                currentIndex = newValue!;
-                _tabController.animateTo(currentIndex);
-              });
-            },
+      bottomNavigationBar: AnimatedOpacity(
+        opacity: tab == 1 ? 0 : 1,
+        duration: const Duration(milliseconds: 301),
+        child: Container(
+          height: 150,
+          color: Colors.transparent,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CameraPage(),
+                    ),
+                  );
+                },
+                child: Container(
+                  height: 80,
+                  width: 80,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.white, width: 6),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+              Container(
+                height: 40,
+              ),
+            ],
           ),
         ),
       ),
+      extendBodyBehindAppBar: true,
       backgroundColor: Colors.black,
       appBar: AppBar(
-        toolbarHeight: 100,
-        leading: Container(),
-        actions: [
-          Padding(
-            padding: EdgeInsets.only(right: 10, bottom: 60),
-            child: GestureDetector(
-              onTap: () {
-                Navigator.pop(context);
-              },
-              child: Icon(Icons.arrow_forward, color: Colors.white),
+        leading: GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const FeedPage(),
+              ),
+            );
+          },
+          child: Transform(
+            transform: Matrix4.identity()..scale(-1.0, 1.0, -1.0),
+            alignment: Alignment.center,
+            child: const Icon(
+              Icons.people,
+              size: 30,
             ),
           ),
-        ],
-        titleSpacing: 0,
-        flexibleSpace: Padding(
-          padding: EdgeInsets.only(top: 105, left: 10, right: 10),
-          child: Container(
-            color: Colors.black,
-            height: 100,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Container(
-                  width: _textController.text.isNotEmpty
-                      ? MediaQuery.of(context).size.width / 1 - 100
-                      : MediaQuery.of(context).size.width / 1 - 20,
-                  height: 70,
-                  child: TextField(
-                    cursorColor: Colors.white,
-                    keyboardAppearance:
-                        MediaQuery.of(context).platformBrightness ==
-                                Brightness.dark
-                            ? Brightness.dark
-                            : Brightness.light,
-                    onChanged: (value) {
-                      state.filterByUsername(value);
-                    },
-                    style: const TextStyle(color: Colors.white),
-                    controller: _textController,
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(
-                        Icons.search,
-                        size: 28,
-                        color: Colors.grey,
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(
-                            color: Colors.transparent, width: 0.7),
-                        borderRadius: BorderRadius.circular(10.0),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(
-                            color: Colors.transparent, width: 0.7),
-                        borderRadius: BorderRadius.circular(10.0),
-                      ),
-                      fillColor: Colors.grey.withOpacity(0.3),
-                      filled: true,
-                      suffixIcon: !_textController.text.isNotEmpty
-                          ? SizedBox.shrink()
-                          : GestureDetector(
-                              onTap: () {
-                                _textController.clear();
-                              },
-                              child: Icon(
-                                CupertinoIcons.clear_circled_solid,
-                                color: Colors.grey,
-                                size: 18,
-                              ),
-                            ),
-                      contentPadding: const EdgeInsets.only(left: 15, top: 5),
-                      alignLabelWithHint: true,
-                      hintText: 'Add or search for friends',
-                      hintStyle: const TextStyle(
-                          fontSize: 17,
-                          color: Colors.grey,
-                          fontFamily: "arial"),
+        ),
+        toolbarHeight: 37,
+        flexibleSpace: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(right: 10, top: 59),
+              child: GestureDetector(
+                onTap: () {
+                  HapticFeedback.mediumImpact();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const MyProfilePage(),
+                    ),
+                  );
+                },
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(100),
+                  child: Container(
+                    height: 30,
+                    width: 30,
+                    child: CachedNetworkImage(
+                      imageUrl: authState.profileUserModel?.profilePic
+                              ?.toString() ??
+                          "https://i.pinimg.com/originals/f1/0f/f7/f10ff70a7155e5ab666bcdd1b45b726d.jpg",
                     ),
                   ),
                 ),
-                _textController.text.isNotEmpty
-                    ? GestureDetector(
-                        onTap: () {
-                          _textController.clear();
-                          setState(() {
-                            _textController.clearComposing();
-                          });
-                        },
-                        child: Container(
-                          width: 80,
-                          alignment: Alignment.center,
-                          padding: EdgeInsets.only(top: 10),
-                          child: Text(
-                            "Annuler\n",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontFamily: "arial",
-                              fontWeight: FontWeight.w500,
-                            ),
-                            textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+        ),
+        bottom: _isScrolledDown && tab != 1 || _isGrid
+            ? null
+            : TabBar(
+                onTap: (index) {
+                  setState(() {
+                    tab = index;
+                  });
+                  HapticFeedback.mediumImpact();
+                },
+                controller: _tabController,
+                isScrollable: false,
+                labelColor: Colors.white,
+                unselectedLabelColor: Colors.grey[800],
+                indicatorColor: Colors.transparent,
+                indicatorWeight: 1,
+                tabs: [
+                  FadeInUp(
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 20),
+                      child: Tab(
+                        child: Text(
+                          'Mes Amis',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                      )
-                    : SizedBox.shrink(),
-              ],
-            ),
-          ),
-        ),
-        title: Padding(
-          padding: EdgeInsets.only(bottom: 60),
-          child: Image.asset(
-            "assets/logo/logo.png",
-            height: 100,
-          ),
-        ),
-        backgroundColor: Colors.black,
-      ),
-      body: _textController.text.isNotEmpty
-          ? Column(
-              children: [
-                Expanded(
-                  child: ListView.builder(
-                    physics: NeverScrollableScrollPhysics(),
-                    addAutomaticKeepAlives: false,
-                    itemBuilder: (context, index) {
-                      return UserTilePage(
-                        user: list![index],
-                        isadded: false,
-                      );
-                    },
-                    itemCount: list?.length ?? 0,
+                      ),
+                    ),
                   ),
-                ),
-              ],
-            )
-          : TabBarView(
-              controller: _tabController,
-              children: [
-                Stack(
+                  FadeInUp(
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 0),
+                      child: Tab(
+                        child: Text(
+                          'Amis d\'Amis',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  FadeInUp(
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 20),
+                      child: Tab(
+                        child: Text(
+                          'Discovery',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+        elevation: 0,
+        title: Image.asset(
+          "assets/logo/logo.png",
+          height: 100,
+        ),
+        backgroundColor: Colors.transparent,
+      ),
+      body: FadeIn(
+        child: AnimatedOpacity(
+          opacity: 1,
+          duration: const Duration(milliseconds: 500),
+          child: _isGrid
+              ? TabBarView(
+                  physics: const NeverScrollableScrollPhysics(),
+                  controller: _tabController,
                   children: [
-                    ListView(
+                    Consumer<PostState>(
+                      builder: (context, state, child) {
+                        final now = DateTime.now();
+                        final List<PostModel>? list = state
+                            .getPostLists(authState.userModel)!
+                            .where(
+                              (x) =>
+                                  now
+                                      .difference(
+                                        DateTime.parse(x.createdAt),
+                                      )
+                                      .inHours <
+                                  24,
+                            )
+                            .toList();
+                        while (list!.length < 10) {
+                          list.add(
+                            PostModel(
+                              imageFrontPath:
+                                  "https://htmlcolorcodes.com/assets/images/colors/black-color-solid-background-1920x1080.png",
+                              imageBackPath:
+                                  "https://htmlcolorcodes.com/assets/images/colors/black-color-solid-background-1920x1080.png",
+                              createdAt: "",
+                              user: UserModel(
+                                displayName: "",
+                              ),
+                            ),
+                          );
+                        }
+                        return RefreshIndicator(
+                          color: Colors.transparent,
+                          backgroundColor: Colors.transparent,
+                          onRefresh: () {
+                            HapticFeedback.mediumImpact();
+                            return _bodyView();
+                          },
+                          child: AnimatedOpacity(
+                            opacity: _isGrid ? 1 : 0,
+                            duration: const Duration(milliseconds: 1000),
+                            child: Padding(
+                              padding: const EdgeInsets.all(15),
+                              child: GridView.builder(
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 3,
+                                  childAspectRatio: 0.8,
+                                  mainAxisSpacing: 10,
+                                  crossAxisSpacing: 10,
+                                ),
+                                controller: _scrollController,
+                                itemCount: list.length,
+                                itemBuilder: (context, index) {
+                                  return GridPostWidget(
+                                    postModel: list[index],
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                )
+              : TabBarView(
+                  physics: const NeverScrollableScrollPhysics(),
+                  controller: _tabController,
+                  children: [
+                    Consumer<PostState>(
+                      builder: (context, state, child) {
+                        final List<PostModel>? list =
+                            state.getPostList(authState.userModel);
+
+                        return RefreshIndicator(
+                          color: Colors.transparent,
+                          backgroundColor: Colors.transparent,
+                          onRefresh: () {
+                            HapticFeedback.mediumImpact();
+                            return _bodyView();
+                          },
+                          child: AnimatedOpacity(
+                            opacity: !_isGrid ? 1 : 0,
+                            duration: const Duration(milliseconds: 300),
+                            child: ListView.builder(
+                              controller: _scrollController,
+                              itemCount: list?.length ?? 0,
+                              itemBuilder: (context, index) {
+                                return FeedPostWidget(
+                                  postModel: list![index],
+                                );
+                              },
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         Container(
-                          width: 100,
-                          height: MediaQuery.of(context).size.height / 1.2,
+                          height: 140,
+                        ),
+                        Container(
+                          width: MediaQuery.of(context).size.width / 1.1,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[800],
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          alignment: Alignment.topCenter,
                           child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              ShareButton(),
-                              Row(
-                                children: [
-                                  Container(
-                                    width: 10,
-                                  ),
-                                  Text(
-                                    "ADD YOUR CONTACTS",
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 13,
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                  top: 20,
+                                  left: 10,
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(5),
+                                  child: Container(
+                                    height: 25,
+                                    width: 40,
+                                    color: Colors.white,
+                                    alignment: Alignment.center,
+                                    child: const Text(
+                                      "NEW",
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.w800,
+                                      ),
                                     ),
                                   ),
-                                ],
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                  top: 10,
+                                  left: 10,
+                                ),
+                                child: const Text(
+                                  "DÉCOUVRE TES\nAMIS D'AMIS",
+                                  style: TextStyle(
+                                    fontSize: 28,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
                               ),
                               Container(
-                                height: 10,
-                              ),
-                              Expanded(
+                                height: 300,
                                 child: ListView.builder(
-                                  physics: NeverScrollableScrollPhysics(),
-                                  itemCount: 4,
+                                  physics: const NeverScrollableScrollPhysics(),
                                   itemBuilder: (context, index) {
-                                    return ListTile(
-                                      title: Text(contactEmails[index]),
-                                      leading: Icon(
-                                        CupertinoIcons.profile_circled,
-                                        size: 50,
+                                    return Container(
+                                      height: 60,
+                                      child: UserTilePage(
+                                        user: state.userlist![index],
+                                        isadded: true,
                                       ),
-                                      trailing: Container(
-                                        width: 120,
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.end,
-                                          children: [
-                                            Container(
-                                              height: 30,
-                                              width: 90,
-                                              alignment: Alignment.center,
-                                              decoration: BoxDecoration(
-                                                color: Color.fromARGB(
-                                                  221,
-                                                  69,
-                                                  69,
-                                                  69,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(90),
-                                              ),
-                                              child: Text(
-                                                "ADD",
-                                                style: TextStyle(
-                                                  fontSize: 13,
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.w800,
-                                                ),
-                                              ),
-                                            ),
-                                            Container(
-                                              width: 10,
-                                            ),
-                                            Icon(
-                                              Icons.close,
-                                              size: 18,
-                                              color: Colors.grey,
-                                            ),
-                                          ],
+                                    );
+                                  },
+                                  itemCount: 2,
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                  left: 15,
+                                  bottom: 20,
+                                  right: 15,
+                                ),
+                                child: RippleButton(
+                                  splashColor: Colors.transparent,
+                                  child: Container(
+                                    height: 55,
+                                    width:
+                                        MediaQuery.of(context).size.width - 40,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(15),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        "Partager ton ReBeal pour découvrir",
+                                        style: TextStyle(
+                                          fontFamily: "icons.ttf",
+                                          color: Colors.black,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
                                         ),
                                       ),
-                                    );
-                                  },
-                                ),
-                              ),
-                              Row(
-                                children: [
-                                  Container(
-                                    width: 10,
-                                  ),
-                                  Text(
-                                    "PERSONNES QUE TU DOIS CONNAITRE",
-                                    style: TextStyle(
-                                      color: Color.fromARGB(
-                                        255,
-                                        203,
-                                        203,
-                                        203,
-                                      ),
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 13,
                                     ),
                                   ),
-                                ],
-                              ),
-                              Container(
-                                height: 5,
-                              ),
-                              Expanded(
-                                child: ListView.builder(
-                                  physics: NeverScrollableScrollPhysics(),
-                                  addAutomaticKeepAlives: false,
-                                  itemBuilder: (context, index) {
-                                    return UserTilePage(
-                                      user: list![index],
-                                      isadded: false,
-                                    );
-                                  },
-                                  itemCount: list?.length ?? 0,
+                                  onPressed: () {},
                                 ),
                               ),
                             ],
@@ -398,122 +465,36 @@ class _GroupScreenState extends State<GroupScreen>
                         ),
                       ],
                     ),
-                    IgnorePointer(
-                      child: Container(
-                        height: 200,
-                        width: MediaQuery.of(context).size.width,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.bottomRight,
-                            end: Alignment.topRight,
-                            colors: [
-                              for (double i = 1; i > 0; i -= 0.01)
-                                Colors.black.withOpacity(i),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                  alignment: Alignment.bottomCenter,
-                ),
-                Column(
-                  children: [
-                    ShareButton(),
-                    Row(
-                      children: [
-                        Container(
-                          width: 10,
-                        ),
-                        Text(
-                          "MY FRIENDS (${following?.length ?? 0})",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Expanded(
-                      child: ListView.builder(
-                        itemBuilder: (context, index) {
-                          return UserTilePage(
-                            user: following![index],
-                            isadded: true,
-                          );
-                        },
-                        itemCount: following?.length ?? 0,
-                      ),
+                    Consumer<PostState>(
+                      builder: (context, state, child) {
+                        final now = DateTime.now();
+                        final List<PostModel>? list = state
+                            .getPostLists(authState.userModel)!
+                            .where(
+                              (x) =>
+                                  now
+                                      .difference(
+                                        DateTime.parse(x.createdAt),
+                                      )
+                                      .inHours <
+                                  24,
+                            )
+                            .toList();
+                        return ListView.builder(
+                          controller: _scrollController,
+                          itemCount: list?.length ?? 0,
+                          itemBuilder: (context, index) {
+                            return FeedPostWidget(
+                              postModel: list![index],
+                            );
+                          },
+                        );
+                      },
                     ),
                   ],
                 ),
-                ListView(
-                  children: [
-                    ShareButton(),
-                    Padding(
-                      padding: EdgeInsets.only(left: 15, right: 16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "DEMANDES D'AMI (${follower?.length ?? 0})",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13,
-                            ),
-                          ),
-                          Container(
-                            width: MediaQuery.of(context).size.width / 3,
-                          ),
-                          Text(
-                            "Envoyées ",
-                            style: TextStyle(
-                              color: Colors.grey,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13,
-                            ),
-                          ),
-                          Icon(
-                            Icons.arrow_forward_ios,
-                            size: 13,
-                            color: Colors.grey,
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      height: 10,
-                    ),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 10),
-                      child: Text(
-                        "Assure toi d'accepter seulement tes vrais amis sur ReBeal.",
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 15,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      height: 2000,
-                      child: ListView.builder(
-                        physics: NeverScrollableScrollPhysics(),
-                        itemBuilder: (context, index) {
-                          return UserTilePage(
-                            user: follower![index],
-                            isadded: true,
-                          );
-                        },
-                        itemCount: follower?.length ?? 0,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+        ),
+      ),
     );
   }
 }

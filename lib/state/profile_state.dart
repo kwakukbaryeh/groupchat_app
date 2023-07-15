@@ -5,7 +5,7 @@ import 'package:firebase_database/firebase_database.dart' as dabase;
 import 'package:flutter/foundation.dart';
 import '../helper/enum.dart';
 import '../helper/utility.dart';
-import '../services/user.dart';
+import '../models/user.dart';
 
 class ProfileState extends ChangeNotifier {
   ProfileState(this.profileId) {

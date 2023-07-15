@@ -2,8 +2,8 @@ import 'dart:async';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/firebase_database.dart' as dabase;
 import '../helper/utility.dart';
-import '../services/post.dart';
-import '../services/user.dart';
+import '../models/post.dart';
+import '../models/user.dart';
 import 'appState.dart';
 
 class PostState extends AppStates {

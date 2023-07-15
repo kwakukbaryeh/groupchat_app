@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:groupchat_firebase/services/user.dart';
+import 'package:groupchat_firebase/models/user.dart';
 import '../pages/profile_page.dart';
 
 class UserTilePage extends StatelessWidget {

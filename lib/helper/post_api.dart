@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../services/post.dart';
+import '../models/post.dart';
 
 class PostApi {
   // Example method to fetch posts from Firestore

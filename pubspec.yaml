@@ -58,6 +58,9 @@ dependencies:
   flutter_local_notifications: ^15.1.0+1
   camera: ^0.10.5+2
   iconsax: ^0.0.8
+  image_cropper: ^5.0.0
+  animate_do: ^3.0.2
+  image_picker: ^1.0.1
 
 dev_dependencies:
   flutter_lints: ^2.0.0

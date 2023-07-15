@@ -10,7 +10,7 @@ import 'package:path/path.dart' as path;
 import '../helper/enum.dart';
 import '../helper/shared_preference_helper.dart';
 import '../helper/utility.dart';
-import '../services/user.dart';
+import '../models/user.dart';
 import 'appState.dart';
 
 class AuthState extends AppStates {
