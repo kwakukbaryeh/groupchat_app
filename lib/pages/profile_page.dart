@@ -91,7 +91,7 @@ class _ProfilePageState extends State<ProfilePage> {
   void _shareText(String name) {
     Share.share(
       "https://rebe.al/$name",
-      subject: "Découvre $name sur ReBeal.",
+      subject: "Discover $name on App Title.",
       sharePositionOrigin: Rect.fromLTWH(0, 0, 10, 10),
     );
   }
@@ -166,7 +166,7 @@ class _ProfilePageState extends State<ProfilePage> {
       Duration difference = now.difference(createdAt);
 
       if (difference.inSeconds < 60) {
-        timeAgo = 'Il y a quelques secondes';
+        timeAgo = 'A few seconds ago';
       } else if (difference.inMinutes < 60) {
         int minutes = difference.inMinutes;
         timeAgo = 'Il y a $minutes minute${minutes > 1 ? 's' : ''}';
@@ -377,7 +377,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                                             width: 9,
                                                           ),
                                                           Text(
-                                                            'Ajouter',
+                                                            'Add',
                                                             style: TextStyle(
                                                               color:
                                                                   Colors.black,
@@ -403,7 +403,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   : isFollower()
                                       ? Container()
                                       : Text(
-                                          'Ajoute tes vrais amis sur ReBeal.',
+                                          'Add your friends on App Title.',
                                           style: TextStyle(
                                             color: Colors.grey[800],
                                             fontSize: 13,
@@ -423,7 +423,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                               padding: EdgeInsets.only(
                                                   top: 20, left: 20),
                                               child: Text(
-                                                'AMIS EN COMMUN ()',
+                                                'FRIENDS IN COMMON ()',
                                                 style: TextStyle(
                                                   color: Color.fromARGB(
                                                       255, 231, 231, 231),
@@ -522,7 +522,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                     Text(
                                       timeAgo == null
                                           ? ""
-                                          : "   REBEAL DU JOUR",
+                                          : "   BeReal of The Day",
                                       style: TextStyle(
                                           color: Colors.white,
                                           fontSize: 13,

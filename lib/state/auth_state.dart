@@ -5,16 +5,16 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/firebase_database.dart' as db;
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:groupchat_firebase/helper/enum.dart';
+import 'package:groupchat_firebase/helper/shared_preference_helper.dart';
+import 'package:groupchat_firebase/helper/utility.dart';
+import 'package:groupchat_firebase/models/user.dart';
+import 'package:groupchat_firebase/state/appState.dart';
 import '../common/locator.dart';
 import 'package:path/path.dart' as path;
-import '../helper/enum.dart';
-import '../helper/shared_preference_helper.dart';
-import '../helper/utility.dart';
-import '../models/user.dart';
-import 'appState.dart';
 
 class AuthState extends AppStates {
-  AuthStatus authStatus = AuthStatus.NOT_LOGGED_IN;
+  AuthStatus authStatus = AuthStatus.NOT_DETERMINED;
   bool isSignInWithGoogle = false;
   User? user;
   late String userId;

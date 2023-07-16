@@ -892,6 +892,11 @@ PODS:
     - AppAuth/Core (~> 1.6)
     - GTMSessionFetcher/Core (< 3.0, >= 1.5)
   - GTMSessionFetcher/Core (2.3.0)
+  - image_cropper (0.0.4):
+    - Flutter
+    - TOCropViewController (~> 2.6.1)
+  - image_picker_ios (0.0.1):
+    - Flutter
   - leveldb-library (1.22.2)
   - MLImage (1.0.0-beta4)
   - MLKitBarcodeScanning (3.0.0):
@@ -935,6 +940,7 @@ PODS:
     - Flutter
     - FMDB (>= 2.7.5)
   - SwiftProtobuf (1.22.0)
+  - TOCropViewController (2.6.1)
 
 DEPENDENCIES:
   - barcode_scan2 (from `.symlinks/plugins/barcode_scan2/ios`)
@@ -949,6 +955,8 @@ DEPENDENCIES:
   - Flutter (from `Flutter`)
   - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
   - google_sign_in_ios (from `.symlinks/plugins/google_sign_in_ios/ios`)
+  - image_cropper (from `.symlinks/plugins/image_cropper/ios`)
+  - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - mobile_scanner (from `.symlinks/plugins/mobile_scanner/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - share_plus (from `.symlinks/plugins/share_plus/ios`)
@@ -994,6 +1002,7 @@ SPEC REPOS:
     - nanopb
     - PromisesObjC
     - SwiftProtobuf
+    - TOCropViewController
 
 EXTERNAL SOURCES:
   barcode_scan2:
@@ -1020,6 +1029,10 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_local_notifications/ios"
   google_sign_in_ios:
     :path: ".symlinks/plugins/google_sign_in_ios/ios"
+  image_cropper:
+    :path: ".symlinks/plugins/image_cropper/ios"
+  image_picker_ios:
+    :path: ".symlinks/plugins/image_picker_ios/ios"
   mobile_scanner:
     :path: ".symlinks/plugins/mobile_scanner/ios"
   path_provider_foundation:
@@ -1073,6 +1086,8 @@ SPEC CHECKSUMS:
   gRPC-Core: 17108291d84332196d3c8466b48f016fc17d816d
   GTMAppAuth: 0ff230db599948a9ad7470ca667337803b3fc4dd
   GTMSessionFetcher: 3a63d75eecd6aa32c2fc79f578064e1214dfdec2
+  image_cropper: a3291c624a953049bc6a02e1f8c8ceb162a24b25
+  image_picker_ios: 4a8aadfbb6dc30ad5141a2ce3832af9214a705b5
   leveldb-library: f03246171cce0484482ec291f88b6d563699ee06
   MLImage: 7bb7c4264164ade9bf64f679b40fb29c8f33ee9b
   MLKitBarcodeScanning: 04e264482c5f3810cb89ebc134ef6b61e67db505
@@ -1088,6 +1103,7 @@ SPEC CHECKSUMS:
   sign_in_with_apple: f3bf75217ea4c2c8b91823f225d70230119b8440
   sqflite: 31f7eba61e3074736dff8807a9b41581e4f7f15a
   SwiftProtobuf: 40bd808372cb8706108f22d28f8ab4a6b9bc6989
+  TOCropViewController: edfd4f25713d56905ad1e0b9f5be3fbe0f59c863
 
 PODFILE CHECKSUM: 7be2f5f74864d463a8ad433546ed1de7e0f29aef
 

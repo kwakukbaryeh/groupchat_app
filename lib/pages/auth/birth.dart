@@ -57,7 +57,7 @@ class _BirthPageState extends State<BirthPage> {
                   height: 130,
                 ),
                 Text(
-                  "Bonjour ${widget.name}, quelle est ta date\nd'anniversaire ?",
+                  "Hello ${widget.name}, when is your birthday? ?",
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: 16,
@@ -95,7 +95,7 @@ class _BirthPageState extends State<BirthPage> {
                     keyboardAppearance: Brightness.dark,
                     controller: _birthController,
                     decoration: InputDecoration(
-                        hintText: 'JJ MM AAAA',
+                        hintText: 'MM DD YYYY',
                         border: InputBorder.none,
                         hintStyle: TextStyle(
                             color: Color.fromARGB(255, 60, 60, 60),
@@ -129,7 +129,7 @@ class _BirthPageState extends State<BirthPage> {
                             ),
                             child: Center(
                                 child: Text(
-                              "Continuer",
+                              "Continue",
                               style: TextStyle(
                                   fontFamily: "icons.ttf",
                                   color: Colors.black,

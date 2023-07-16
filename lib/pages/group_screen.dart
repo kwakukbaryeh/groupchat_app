@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:groupchat_firebase/camera/camera.dart';
+import 'package:groupchat_firebase/models/groupchat.dart';
 import 'package:groupchat_firebase/models/post.dart';
 import 'package:groupchat_firebase/models/user.dart';
+import 'package:groupchat_firebase/pages/homepage.dart';
 import 'package:groupchat_firebase/pages/myprofile.dart';
 import 'package:groupchat_firebase/services/user_tile_page.dart';
 import 'package:groupchat_firebase/state/auth_state.dart';
@@ -19,7 +21,9 @@ import 'package:provider/provider.dart';
 import 'feed.dart';
 
 class GroupScreen extends StatefulWidget {
-  const GroupScreen({Key? key}) : super(key: key);
+  final GroupChat groupChat;
+
+  const GroupScreen({Key? key, required this.groupChat}) : super(key: key);
 
   @override
   _GroupScreenState createState() => _GroupScreenState();
@@ -137,22 +141,18 @@ class _GroupScreenState extends State<GroupScreen>
       extendBodyBehindAppBar: true,
       backgroundColor: Colors.black,
       appBar: AppBar(
-        leading: GestureDetector(
-          onTap: () {
+        leading: IconButton(
+          onPressed: () {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => const FeedPage(),
+                builder: (context) => HomePage(),
               ),
             );
           },
-          child: Transform(
-            transform: Matrix4.identity()..scale(-1.0, 1.0, -1.0),
-            alignment: Alignment.center,
-            child: const Icon(
-              Icons.people,
-              size: 30,
-            ),
+          icon: Icon(
+            Icons.arrow_back,
+            size: 30,
           ),
         ),
         toolbarHeight: 37,
@@ -208,7 +208,7 @@ class _GroupScreenState extends State<GroupScreen>
                       padding: const EdgeInsets.only(left: 20),
                       child: Tab(
                         child: Text(
-                          'Mes Amis',
+                          'My Friends',
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
@@ -222,7 +222,7 @@ class _GroupScreenState extends State<GroupScreen>
                       padding: const EdgeInsets.only(right: 0),
                       child: Tab(
                         child: Text(
-                          'Amis d\'Amis',
+                          'Friends of Friends',
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
@@ -405,7 +405,7 @@ class _GroupScreenState extends State<GroupScreen>
                                   left: 10,
                                 ),
                                 child: const Text(
-                                  "DÉCOUVRE TES\nAMIS D'AMIS",
+                                  "DISCOVER YOUR\nFRIENDS OF FRIENDS",
                                   style: TextStyle(
                                     fontSize: 28,
                                     color: Colors.white,
@@ -447,7 +447,7 @@ class _GroupScreenState extends State<GroupScreen>
                                     ),
                                     child: Center(
                                       child: Text(
-                                        "Partager ton ReBeal pour découvrir",
+                                        "Share your BeReal",
                                         style: TextStyle(
                                           fontFamily: "icons.ttf",
                                           color: Colors.black,

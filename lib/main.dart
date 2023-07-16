@@ -1,3 +1,4 @@
+import 'dart:io' as d;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
@@ -10,6 +11,7 @@ import 'package:groupchat_firebase/pages/loading_screen.dart';
 import 'package:groupchat_firebase/shared/constants.dart';
 import 'package:groupchat_firebase/state/appState.dart';
 import 'package:groupchat_firebase/state/auth_state.dart';
+import 'package:groupchat_firebase/state/groupchatState.dart';
 import 'package:groupchat_firebase/state/post_state.dart';
 import 'package:groupchat_firebase/state/search_state.dart';
 import 'package:provider/provider.dart';
@@ -20,7 +22,19 @@ List<CameraDescription> cameras = [];
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   cameras = await availableCameras();
-  await Firebase.initializeApp();
+  if (d.Platform.isIOS)
+    Firebase.initializeApp();
+  else
+    await Firebase.initializeApp(
+        options: FirebaseOptions(
+            apiKey: "apiKey",
+            authDomain: "authDomain",
+            databaseURL: "databaseURL",
+            projectId: "projectId",
+            storageBucket: "storageBucket",
+            messagingSenderId: "messagingSenderId",
+            appId: "appId",
+            measurementId: "measurementId"));
   setupDependencies();
   final sharedPreferences = await SharedPreferences.getInstance();
   runApp(MyApp(
@@ -39,6 +53,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<AuthState>(create: (_) => AuthState()),
         ChangeNotifierProvider<PostState>(create: (_) => PostState()),
         ChangeNotifierProvider<SearchState>(create: (_) => SearchState()),
+        ChangeNotifierProvider<GroupChatState>(create: (_) => GroupChatState()),
       ],
       child: MaterialApp(
           theme: ThemeData(brightness: Brightness.dark),

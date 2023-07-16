@@ -1,15 +1,13 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:groupchat_firebase/pages/feed.dart';
+import 'package:groupchat_firebase/pages/myprofile.dart';
+import 'package:provider/provider.dart';
+import 'package:groupchat_firebase/models/groupchat.dart';
 import 'package:groupchat_firebase/state/auth_state.dart';
+import 'package:groupchat_firebase/state/groupchatState.dart';
 import 'package:groupchat_firebase/state/post_state.dart';
 import 'package:groupchat_firebase/state/search_state.dart';
-import 'package:provider/provider.dart';
-import 'package:qr_flutter/qr_flutter.dart';
-import 'package:quiver/async.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
-import '../models/user.dart';
 import 'group_screen.dart';
 
 class HomePage extends StatefulWidget {
@@ -17,10 +15,12 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late ScrollController _scrollController;
   late TabController _tabController;
   bool _isScrolledDown = false;
+  TextEditingController _groupNameController =
+      TextEditingController(); // Add this line
 
   @override
   void initState() {
@@ -41,6 +41,7 @@ class _HomePageState extends State<HomePage> {
     _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
     _tabController.dispose();
+    _groupNameController.dispose(); // Add this line
     super.dispose();
   }
 
@@ -52,6 +53,12 @@ class _HomePageState extends State<HomePage> {
   void initProfile() {
     var authState = Provider.of<AuthState>(context, listen: false);
     authState.databaseInit();
+    var groupChatState = Provider.of<GroupChatState>(context, listen: false);
+
+    // Check if authState.userModel is not null
+    if (authState.userModel != null) {
+      groupChatState.setUserModel(authState.userModel!, context);
+    }
   }
 
   void initPosts() {
@@ -81,136 +88,100 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    String formattedTimeRemaining = formatTimeRemaining(widget.timeRemaining);
-
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => GroupScreen(groupName: widget.groupName),
-          ),
-        );
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10.0),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(
-                widget.groupName,
-                style: TextStyle(color: Colors.black, fontSize: 16),
-                textAlign: TextAlign.right,
-              ),
-              SizedBox(height: 8),
-              Text(
-                'Time remaining: $formattedTimeRemaining',
-                style: TextStyle(color: Colors.black),
-              ),
-              Text(
-                '${widget.participantCount} active',
-                style: TextStyle(color: Colors.black),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _HomePageState extends State<HomePage> {
-  List<GroupChat> _groupChats = []; // maintain a list of group chats
-  MobileScannerController _scannerController = MobileScannerController();
-  UserModel _user = UserModel();
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance?.addPostFrameCallback((_) async {
-      await _loadUserData();
-      // Fetch group chats from Firebase Realtime Database
-      // and add them to the _groupChats list
-      // Example code: _fetchGroupChatsFromDatabase();
-    });
-  }
-
-  Future<void> _loadUserData() async {
-    _user = await HelperFunctions.getUser() ?? UserModel();
-    setState(() {
-      // Update UI if needed with user data
-    });
-  }
-
-  @override
-  void dispose() {
-    _scannerController.dispose();
-    super.dispose();
-  }
-
-  void _addNewGroupChat() {
-    setState(() {
-      var newGroupChat = GroupChat(
-        groupName: 'placeholder groupchat',
-        timeRemaining: Duration(hours: 12),
-        participantCount: 1,
-      );
-      _groupChats.add(newGroupChat);
-      // Save new group chat to Firebase Realtime Database
-      // Example code: _saveGroupChatToDatabase(newGroupChat);
-    });
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => GroupScreen(groupName: 'placeholder groupchat'),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('App title'),
-        leading: IconButton(
-          icon: Icon(Icons.message),
-          onPressed: () {},
+        title: Text('App title'),
+        leading: GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const FeedPage(),
+              ),
+            );
+          },
+          child: Transform(
+            transform: Matrix4.identity()..scale(-1.0, 1.0, -1.0),
+            alignment: Alignment.center,
+            child: const Icon(
+              Icons.people,
+              size: 30,
+            ),
+          ),
         ),
         actions: <Widget>[
           IconButton(
-            icon: Icon(Icons.menu),
-            onPressed: () {},
+            icon: Icon(Icons.person), // Replace with your custom icon
+            onPressed: () {
+              // Handle the action when the custom icon is pressed
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const MyProfilePage(),
+                ),
+              );
+            },
           ),
         ],
       ),
-      body: _groupChats.isEmpty
-          ? const Center(
-              child: Text(
-                'Wow it\'s really empty in here.... Start a group chat!',
-                style: TextStyle(color: Colors.white),
-              ),
-            )
-          : ListView.builder(
-              itemCount: _groupChats.length,
+      body: Consumer<GroupChatState>(
+        builder: (context, groupChatState, _) {
+          if (groupChatState.isBusy) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          } else if (groupChatState.groupChats == null) {
+            return Center(
+              child: Text('Wow it\'s empty here... Add some groups!'),
+            );
+          } else {
+            return ListView.builder(
+              itemCount: groupChatState.groupChats!.length,
               itemBuilder: (BuildContext context, int index) {
-                final groupChat = _groupChats[index];
-                final totalHeight = MediaQuery.of(context).size.height;
-                final groupChatHeight = totalHeight / _groupChats.length;
-
-                return Align(
-                  alignment: Alignment.center,
-                  child: SizedBox(
-                    height: groupChatHeight,
-                    width: MediaQuery.of(context).size.width,
-                    child: groupChat,
+                final groupChat = groupChatState.groupChats![index];
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => GroupScreen(groupChat: groupChat),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
+                            groupChat.groupName,
+                            style: TextStyle(color: Colors.black, fontSize: 16),
+                            textAlign: TextAlign.right,
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            'Time remaining: ${formatTimeRemaining(groupChat.timeRemaining)}',
+                            style: TextStyle(color: Colors.black),
+                          ),
+                          Text(
+                            '${groupChat.participantCount} active',
+                            style: TextStyle(color: Colors.black),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 );
               },
-            ),
+            );
+          }
+        },
+      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
@@ -226,31 +197,34 @@ class _HomePageState extends State<HomePage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
                       TextFormField(
+                        controller: _groupNameController,
                         decoration: const InputDecoration(
                           hintText: 'Enter groupchat name',
                         ),
                       ),
-                      Expanded(
-                        child: Center(
-                          child: Container(
-                            height: 200,
-                            width: 200,
-                            color: Colors.grey,
-                            child: Center(
-                              child: QrImageView(
-                                data: '123456789',
-                                version: QrVersions.auto,
-                                size: 200.0,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
                       ElevatedButton(
                         onPressed: () async {
-                          // Create new group chat with entered name and 12-hour duration
-                          // Save the new group chat to Firebase Realtime Database
-                          // Example code: _createAndSaveGroupChat();
+                          var groupName = _groupNameController.text;
+                          if (groupName.isNotEmpty) {
+                            var groupChatState = Provider.of<GroupChatState>(
+                                context,
+                                listen: false);
+                            var groupChat = GroupChat(
+                              groupName: groupName,
+                              timeRemaining: Duration(hours: 12),
+                              participantCount: 1,
+                              createdAt: DateTime.now(),
+                            );
+                            await groupChatState
+                                .saveGroupChatToDatabase(groupChat);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    GroupScreen(groupChat: groupChat),
+                              ),
+                            );
+                          }
                         },
                         child: const Text('Create GroupChat Now'),
                       ),
@@ -271,5 +245,10 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
+  }
+
+  String formatTimeRemaining(Duration timeRemaining) {
+    // Format the duration as needed
+    return '';
   }
 }

@@ -300,7 +300,7 @@ class _FeedPageState extends State<FeedPage> with TickerProviderStateMixin {
                                         width: 10,
                                       ),
                                       Text(
-                                        "PERSON THAT YOU MIGHT KNOW",
+                                        "PERSON THAT YOU MAY KNOW",
                                         style: TextStyle(
                                             color: Color.fromARGB(
                                                 255, 203, 203, 203),
@@ -411,7 +411,7 @@ class _FeedPageState extends State<FeedPage> with TickerProviderStateMixin {
                       Padding(
                           padding: EdgeInsets.symmetric(horizontal: 10),
                           child: Text(
-                            "Ensure to accept only you're true friends on ReBeal.",
+                            "Make sure to only accept friend request from those you know.",
                             style: TextStyle(
                                 color: Colors.grey[800],
                                 fontWeight: FontWeight.w600,

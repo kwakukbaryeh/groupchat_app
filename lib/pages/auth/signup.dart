@@ -46,7 +46,7 @@ class _SignupState extends State<Signup> {
         height: 130,
       ),
       Text(
-        "Crée ton compte avec ton\nadresse e-mail",
+        "Create your account with your\ne-mail address",
         style: TextStyle(
             color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),
         textAlign: TextAlign.center,
@@ -133,7 +133,7 @@ class _SignupState extends State<Signup> {
             padding: EdgeInsets.only(left: 20, right: 20, bottom: 40),
             child: Column(children: [
               Text(
-                  "En continuant, tu acceptes notre Politique de\nConfidentialité et nos Conditions Générales\nd'Utilisation.\n",
+                  "By continuing, you agree to our\nPrivacy Policy and Terms of Service.\n",
                   style: TextStyle(
                       color: Color.fromARGB(255, 61, 61, 61),
                       fontSize: 13,
@@ -156,7 +156,7 @@ class _SignupState extends State<Signup> {
                           ),
                           child: Center(
                               child: Text(
-                            "Continuer",
+                            "Continue",
                             style: TextStyle(
                                 fontFamily: "icons.ttf",
                                 color: Colors.black,
@@ -177,7 +177,7 @@ class _SignupState extends State<Signup> {
     }
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       Utility.customSnackBar(
-          _scaffoldKey, 'Please fill form carefully', context);
+          _scaffoldKey, 'Please fill the form carefully', context);
       return;
     }
 

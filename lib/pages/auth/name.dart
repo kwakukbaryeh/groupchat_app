@@ -53,7 +53,7 @@ class _NamePageState extends State<NamePage> {
                   height: 130,
                 ),
                 Text(
-                  "C'est parti, comment tu t'appelles ?",
+                  "Let's begin, what's your name ?",
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: 16,
@@ -71,7 +71,7 @@ class _NamePageState extends State<NamePage> {
                     keyboardAppearance: Brightness.dark,
                     controller: _nameController,
                     decoration: InputDecoration(
-                        hintText: 'Ton nom',
+                        hintText: 'Your Name',
                         border: InputBorder.none,
                         hintStyle: TextStyle(
                             color: Color.fromARGB(255, 60, 60, 60),
@@ -105,7 +105,7 @@ class _NamePageState extends State<NamePage> {
                             ),
                             child: Center(
                                 child: Text(
-                              "Continuer",
+                              "Continue",
                               style: TextStyle(
                                   fontFamily: "icons.ttf",
                                   color: Colors.black,

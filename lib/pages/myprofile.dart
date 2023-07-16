@@ -51,7 +51,7 @@ class _ProfilePageState extends State<MyProfilePage> {
             title: FadeInRight(
                 duration: Duration(milliseconds: 300),
                 child: Text(
-                  "Profil",
+                  "Profile",
                   style: TextStyle(color: Colors.white),
                 ))),
         body: Center(
@@ -133,7 +133,7 @@ class _ProfilePageState extends State<MyProfilePage> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          "Tes Memories",
+                          "Your Memories",
                           style: TextStyle(
                               color: Colors.white,
                               fontSize: 21,
@@ -175,7 +175,7 @@ class _ProfilePageState extends State<MyProfilePage> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    "14 last days",
+                                    "last 14 days",
                                     style: TextStyle(
                                         color: Colors.white,
                                         fontSize: 15,
@@ -235,7 +235,7 @@ class _ProfilePageState extends State<MyProfilePage> {
                                         ),
                                         alignment: Alignment.center,
                                         child: Text(
-                                          "Voir tous mes Memories",
+                                          "See all Memories",
                                           style: TextStyle(
                                               color: Colors.white,
                                               fontSize: 12,

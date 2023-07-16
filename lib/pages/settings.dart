@@ -128,7 +128,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     onTap: () {
                       Share.share(
                         "rebe.al/${state.profileUserModel!.userName!.replaceAll("@", "").toLowerCase()}",
-                        subject: "Add me on ReBeal.",
+                        subject: "Add me on AppTitle.",
                         sharePositionOrigin: Rect.fromLTWH(0, 0, 10, 10),
                       );
                     },
@@ -147,7 +147,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                 ),
                                 Icon(CupertinoIcons.share),
                                 Text(
-                                  "Share ReBeal",
+                                  "Share App Title",
                                   style: TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.w500,
@@ -205,7 +205,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   height: 40,
                 ),
                 Text(
-                  "You join BeReal on a few days ago" +
+                  "You joined App Title on a few days ago" +
                       Utility.getdob(
                           state.profileUserModel!.createAt.toString()),
                   textAlign: TextAlign.center,

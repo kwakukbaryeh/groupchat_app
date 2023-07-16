@@ -80,7 +80,7 @@ class _ContactPageState extends State<ContactPage> {
                   height: 130,
                 ),
                 Text(
-                  "Trouver tes amis\n",
+                  "Find your friends\n",
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: 35,
@@ -88,7 +88,7 @@ class _ContactPageState extends State<ContactPage> {
                   textAlign: TextAlign.center,
                 ),
                 Text(
-                  "Trouvons qui parmi tes amis utilise\n déjà sur Rebeal.",
+                  "Let's find out which of your friends are already using\n App Title.",
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: 16,
@@ -116,7 +116,7 @@ class _ContactPageState extends State<ContactPage> {
                                         borderRadius:
                                             BorderRadius.circular(90)),
                                     child: Text(
-                                      "AJOUTER",
+                                      "ADD",
                                       style: TextStyle(
                                           fontSize: 13,
                                           color: Colors.white,
