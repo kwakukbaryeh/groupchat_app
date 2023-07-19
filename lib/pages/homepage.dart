@@ -25,15 +25,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController();
+    _scrollController.addListener(_scrollListener);
+    _tabController = TabController(length: 3, vsync: this);
+
     WidgetsBinding.instance?.addPostFrameCallback((_) {
       initPosts();
       initSearch();
       initProfile();
       getGroupChatDataFromDatabase();
     });
-    _scrollController = ScrollController();
-    _scrollController.addListener(_scrollListener);
-    _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -46,8 +47,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   void initSearch() {
-    var searchState = Provider.of<SearchState>(context, listen: false);
-    searchState.getDataFromDatabase();
+    WidgetsBinding.instance?.addPostFrameCallback((_) {
+      var searchState = Provider.of<SearchState>(context, listen: false);
+      searchState.getDataFromDatabase();
+    });
   }
 
   void initProfile() {
@@ -62,14 +65,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   void initPosts() {
-    var postState = Provider.of<PostState>(context, listen: false);
-    postState.databaseInit();
-    postState.getDataFromDatabase();
+    WidgetsBinding.instance?.addPostFrameCallback((_) {
+      var postState = Provider.of<PostState>(context, listen: false);
+      postState.databaseInit();
+      postState.getDataFromDatabase();
+    });
   }
 
   void getGroupChatDataFromDatabase() {
-    var groupChatState = Provider.of<GroupChatState>(context, listen: false);
-    groupChatState.getDataFromDatabase();
+    WidgetsBinding.instance?.addPostFrameCallback((_) {
+      var groupChatState = Provider.of<GroupChatState>(context, listen: false);
+      groupChatState.getDataFromDatabase();
+    });
   }
 
   void _scrollListener() {
@@ -111,9 +118,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         ),
         actions: <Widget>[
           IconButton(
-            icon: Icon(Icons.person), // Replace with your custom icon
+            icon: Icon(Icons.person),
             onPressed: () {
-              // Handle the action when the custom icon is pressed
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -135,49 +141,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               child: Text('Wow it\'s empty here... Add some groups!'),
             );
           } else {
-            return ListView.builder(
-              itemCount: groupChatState.groupChats!.length,
-              itemBuilder: (BuildContext context, int index) {
-                final groupChat = groupChatState.groupChats![index];
-                return GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => GroupScreen(groupChat: groupChat),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Text(
-                            groupChat.groupName,
-                            style: TextStyle(color: Colors.black, fontSize: 16),
-                            textAlign: TextAlign.right,
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            'Time remaining: ${formatTimeRemaining(groupChat.timeRemaining)}',
-                            style: TextStyle(color: Colors.black),
-                          ),
-                          Text(
-                            '${groupChat.participantCount} active',
-                            style: TextStyle(color: Colors.black),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
+            final groupChats = groupChatState.groupChats!;
+            return ListView(
+              children: [
+                SizedBox(height: 16.0),
+                _buildGroupChatButtons(groupChats),
+                SizedBox(height: 16.0),
+                _buildCreateJoinButton(),
+              ],
             );
           }
         },
@@ -199,7 +170,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       TextFormField(
                         controller: _groupNameController,
                         decoration: const InputDecoration(
-                          hintText: 'Enter groupchat name',
+                          hintText: 'Enter group chat name',
                         ),
                       ),
                       ElevatedButton(
@@ -207,8 +178,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           var groupName = _groupNameController.text;
                           if (groupName.isNotEmpty) {
                             var groupChatState = Provider.of<GroupChatState>(
-                                context,
-                                listen: false);
+                              context,
+                              listen: false,
+                            );
                             var groupChat = GroupChat(
                               groupName: groupName,
                               timeRemaining: Duration(hours: 12),
@@ -243,6 +215,130 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             Text('Join'),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildGroupChatButtons(List<GroupChat>? groupChats) {
+    if (groupChats == null || groupChats.isEmpty) {
+      return Center(
+        child: Text('Wow it\'s empty here... Add some groups!'),
+      );
+    }
+
+    final double buttonHeight =
+        MediaQuery.of(context).size.height / groupChats.length;
+
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      itemCount: groupChats.length,
+      itemBuilder: (BuildContext context, int index) {
+        final groupChat = groupChats[index];
+
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => GroupScreen(groupChat: groupChat),
+              ),
+            );
+          },
+          child: AnimatedContainer(
+            duration: Duration(milliseconds: 500),
+            curve: Curves.easeInOut,
+            height: buttonHeight,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    groupChat.groupName,
+                    style: TextStyle(color: Colors.black, fontSize: 16),
+                    textAlign: TextAlign.right,
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Time remaining: ${formatTimeRemaining(groupChat.timeRemaining)}',
+                    style: TextStyle(color: Colors.black),
+                  ),
+                  Text(
+                    '${groupChat.participantCount} active',
+                    style: TextStyle(color: Colors.black),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildCreateJoinButton() {
+    return Container(
+      width: double.infinity,
+      margin: EdgeInsets.symmetric(horizontal: 16.0),
+      child: ElevatedButton(
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            builder: (BuildContext context) {
+              return FractionallySizedBox(
+                heightFactor: 0.9,
+                child: Container(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      TextFormField(
+                        controller: _groupNameController,
+                        decoration: const InputDecoration(
+                          hintText: 'Enter group chat name',
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () async {
+                          var groupName = _groupNameController.text;
+                          if (groupName.isNotEmpty) {
+                            var groupChatState = Provider.of<GroupChatState>(
+                              context,
+                              listen: false,
+                            );
+                            var groupChat = GroupChat(
+                              groupName: groupName,
+                              timeRemaining: Duration(hours: 12),
+                              participantCount: 1,
+                              createdAt: DateTime.now(),
+                            );
+                            await groupChatState
+                                .saveGroupChatToDatabase(groupChat);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    GroupScreen(groupChat: groupChat),
+                              ),
+                            );
+                          }
+                        },
+                        child: const Text('Create GroupChat Now'),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
+        child: const Text('Create or Join'),
       ),
     );
   }

@@ -16,7 +16,10 @@ class GroupChatState extends ChangeNotifier {
   void setUserModel(UserModel user, BuildContext context) {
     _userModel = user;
     _context = context;
+    print('User model set: ${_userModel?.toJson()}');
     // Fetch user's group chat data
+    _userModel?.groupChats = _groupChats;
+    print('Group chat state: ${_userModel?.groupChats?.length}');
     getDataFromDatabase();
     notifyListeners();
   }
@@ -47,18 +50,18 @@ class GroupChatState extends ChangeNotifier {
             });
 
             _groupChatList!.sort((x, y) => x.createdAt.compareTo(y.createdAt));
+
+            // Update the groupChats property of the user with the fetched group chats
+            var authState = Provider.of<AuthState>(_context!, listen: false);
+            UserModel userModel = authState.userModel!;
+            userModel.groupChats = _groupChatList;
+
+            // Assign the fetched group chats to the _groupChats property
+            _groupChats = _groupChatList;
           }
-        } else {
-          _groupChatList = null;
         }
 
         isBusy = false;
-
-        // Update the groupChats property of the user with the fetched group chats
-        var authState = Provider.of<AuthState>(_context!, listen: false);
-        UserModel userModel = authState.userModel!;
-        userModel.groupChats = _groupChatList;
-
         notifyListeners();
       });
     } catch (error) {

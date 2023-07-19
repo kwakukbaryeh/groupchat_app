@@ -1,14 +1,8 @@
 import 'dart:io' as d;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:groupchat_firebase/common/locator.dart';
 import 'package:groupchat_firebase/common/splash.dart';
-import 'package:groupchat_firebase/helper/helper_function.dart';
-import 'package:groupchat_firebase/pages/auth/login_page.dart';
-import 'package:groupchat_firebase/pages/homepage.dart';
-import 'package:groupchat_firebase/pages/loading_screen.dart';
-import 'package:groupchat_firebase/shared/constants.dart';
 import 'package:groupchat_firebase/state/appState.dart';
 import 'package:groupchat_firebase/state/auth_state.dart';
 import 'package:groupchat_firebase/state/groupchatState.dart';

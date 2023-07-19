@@ -18,8 +18,6 @@ import 'package:groupchat_firebase/widgets/feedpost.dart';
 import 'package:groupchat_firebase/widgets/gridpost.dart';
 import 'package:provider/provider.dart';
 
-import 'feed.dart';
-
 class GroupScreen extends StatefulWidget {
   final GroupChat groupChat;
 
