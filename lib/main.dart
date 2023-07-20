@@ -12,6 +12,8 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:camera/camera.dart';
 
+import 'pages/homepage.dart';
+
 List<CameraDescription> cameras = [];
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -53,7 +55,7 @@ class MyApp extends StatelessWidget {
           theme: ThemeData(brightness: Brightness.dark),
           title: 'ReBeal.',
           debugShowCheckedModeBanner: false,
-          home: SplashPage()),
+          home: HomePage()),
     );
   }
 }

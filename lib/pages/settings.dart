@@ -205,7 +205,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   height: 40,
                 ),
                 Text(
-                  "You joined App Title on a few days ago" +
+                  "You joined App Title on" +
                       Utility.getdob(
                           state.profileUserModel!.createAt.toString()),
                   textAlign: TextAlign.center,

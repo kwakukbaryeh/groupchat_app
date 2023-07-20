@@ -6,9 +6,9 @@ import 'package:provider/provider.dart';
 import 'package:groupchat_firebase/models/groupchat.dart';
 import 'package:groupchat_firebase/state/auth_state.dart';
 import 'package:groupchat_firebase/state/groupchatState.dart';
-import 'package:groupchat_firebase/state/post_state.dart';
 import 'package:groupchat_firebase/state/search_state.dart';
 import 'group_screen.dart';
+import 'dart:core';
 
 class HomePage extends StatefulWidget {
   @override
@@ -19,8 +19,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late ScrollController _scrollController;
   late TabController _tabController;
   bool _isScrolledDown = false;
-  TextEditingController _groupNameController =
-      TextEditingController(); // Add this line
+  TextEditingController _groupNameController = TextEditingController();
 
   @override
   void initState() {
@@ -30,7 +29,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     _tabController = TabController(length: 3, vsync: this);
 
     WidgetsBinding.instance?.addPostFrameCallback((_) {
-      initPosts();
       initSearch();
       initProfile();
       getGroupChatDataFromDatabase();
@@ -42,7 +40,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
     _tabController.dispose();
-    _groupNameController.dispose(); // Add this line
+    _groupNameController.dispose();
     super.dispose();
   }
 
@@ -57,19 +55,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     var authState = Provider.of<AuthState>(context, listen: false);
     authState.databaseInit();
     var groupChatState = Provider.of<GroupChatState>(context, listen: false);
-
-    // Check if authState.userModel is not null
+    print('User model: ${authState.userModel}');
     if (authState.userModel != null) {
       groupChatState.setUserModel(authState.userModel!, context);
     }
-  }
-
-  void initPosts() {
-    WidgetsBinding.instance?.addPostFrameCallback((_) {
-      var postState = Provider.of<PostState>(context, listen: false);
-      postState.databaseInit();
-      postState.getDataFromDatabase();
-    });
   }
 
   void getGroupChatDataFromDatabase() {
@@ -183,9 +172,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             );
                             var groupChat = GroupChat(
                               groupName: groupName,
-                              timeRemaining: Duration(hours: 12),
                               participantCount: 1,
                               createdAt: DateTime.now(),
+                              expiryDate:
+                                  DateTime.now().add(const Duration(hours: 12)),
                             );
                             await groupChatState
                                 .saveGroupChatToDatabase(groupChat);
@@ -235,6 +225,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       itemCount: groupChats.length,
       itemBuilder: (BuildContext context, int index) {
         final groupChat = groupChats[index];
+        final remainingTime = groupChat.getRemainingTime();
 
         return GestureDetector(
           onTap: () {
@@ -264,10 +255,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     textAlign: TextAlign.right,
                   ),
                   SizedBox(height: 8),
-                  Text(
-                    'Time remaining: ${formatTimeRemaining(groupChat.timeRemaining)}',
-                    style: TextStyle(color: Colors.black),
-                  ),
+                  if (remainingTime != null)
+                    Text(
+                      'Time remaining: ${formatTimeRemaining(remainingTime)}',
+                      style: TextStyle(color: Colors.black),
+                    )
+                  else
+                    Text(
+                      'Expired',
+                      style: TextStyle(color: Colors.black),
+                    ),
                   Text(
                     '${groupChat.participantCount} active',
                     style: TextStyle(color: Colors.black),
@@ -314,9 +311,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             );
                             var groupChat = GroupChat(
                               groupName: groupName,
-                              timeRemaining: Duration(hours: 12),
                               participantCount: 1,
                               createdAt: DateTime.now(),
+                              expiryDate:
+                                  DateTime.now().add(const Duration(hours: 12)),
                             );
                             await groupChatState
                                 .saveGroupChatToDatabase(groupChat);
@@ -343,8 +341,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  String formatTimeRemaining(Duration timeRemaining) {
-    // Format the duration as needed
-    return '';
+  String formatTimeRemaining(Duration remainingTime) {
+    String formattedTime = remainingTime.toString().split('.').first;
+    return formattedTime;
   }
 }

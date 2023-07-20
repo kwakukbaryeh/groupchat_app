@@ -3,26 +3,27 @@ import 'package:equatable/equatable.dart';
 class GroupChat extends Equatable {
   String? key;
   final String groupName;
-  final Duration timeRemaining;
   final int participantCount;
-  final DateTime createdAt; // Updated type to DateTime
+  final DateTime createdAt;
+  final DateTime? expiryDate;
 
   GroupChat({
     this.key,
     required this.groupName,
-    required this.timeRemaining,
     required this.participantCount,
     required this.createdAt,
+    this.expiryDate,
   });
 
   factory GroupChat.fromJson(Map<String, dynamic> json) {
     return GroupChat(
       key: json['key'],
       groupName: json['groupName'],
-      timeRemaining: Duration(milliseconds: json['timeRemaining']),
       participantCount: json['participantCount'],
-      createdAt:
-          DateTime.parse(json['createdAt']), // Parse the string as DateTime
+      createdAt: DateTime.parse(json['createdAt']),
+      expiryDate: json['expiryDate'] != null
+          ? DateTime.parse(json['expiryDate'])
+          : null,
     );
   }
 
@@ -30,13 +31,23 @@ class GroupChat extends Equatable {
     return {
       'key': key,
       'groupName': groupName,
-      'timeRemaining': timeRemaining.inMilliseconds,
       'participantCount': participantCount,
-      'createdAt': createdAt.toUtc().toString(), // Convert DateTime to string
+      'createdAt': createdAt.toUtc().toString(),
+      'expiryDate': expiryDate?.toUtc().toString(),
     };
+  }
+
+  Duration? getRemainingTime() {
+    if (expiryDate != null) {
+      final now = DateTime.now();
+      if (now.isBefore(expiryDate!)) {
+        return expiryDate!.difference(now);
+      }
+    }
+    return null;
   }
 
   @override
   List<Object?> get props =>
-      [key, groupName, timeRemaining, participantCount, createdAt];
+      [key, groupName, participantCount, createdAt, expiryDate];
 }

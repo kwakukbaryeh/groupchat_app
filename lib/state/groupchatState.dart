@@ -45,7 +45,14 @@ class GroupChatState extends ChangeNotifier {
                 var stringMap = Map<String, dynamic>.from(dynamicMap);
                 var model = GroupChat.fromJson(stringMap);
                 model.key = key;
-                _groupChatList!.add(model);
+
+                // Check if the group chat has expired
+                if (model.expiryDate?.isAfter(DateTime.now()) ?? false) {
+                  _groupChatList!.add(model);
+                } else {
+                  // Group chat has expired, delete it from the database
+                  kDatabase.child('groupchats').child(key).remove();
+                }
               }
             });
 
@@ -85,13 +92,16 @@ class GroupChatState extends ChangeNotifier {
       DatabaseReference groupChatRef = kDatabase.child('groupchats').push();
       String groupChatId = groupChatRef.key!;
 
+      // Calculate the expiry date
+      DateTime expiryDate = DateTime.now().add(Duration(hours: 12));
+
       // Create a new group chat object with updated properties
       GroupChat newGroupChat = GroupChat(
         key: groupChatId,
         groupName: groupChat.groupName,
-        timeRemaining: groupChat.timeRemaining,
         participantCount: groupChat.participantCount,
         createdAt: DateTime.now(),
+        expiryDate: expiryDate,
       );
 
       // Save the group chat to the database
@@ -100,8 +110,7 @@ class GroupChatState extends ChangeNotifier {
       // Update the user's group chats in the database
       UserModel userModel = authState.userModel!;
       userModel.groupChats ??= [];
-      userModel.groupChats!
-          .add(newGroupChat); // Add the newGroupChat object, not groupChatId
+      userModel.groupChats!.add(newGroupChat);
       kDatabase
           .child('profile')
           .child(userId)

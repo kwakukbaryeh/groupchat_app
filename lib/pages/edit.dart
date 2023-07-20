@@ -113,7 +113,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           title: FadeInRight(
               duration: Duration(milliseconds: 300),
               child: Text(
-                "Modifier le profil",
+                "Modify your profile",
                 style: TextStyle(color: Colors.white, fontSize: 18),
               ))),
       body: SingleChildScrollView(
@@ -133,7 +133,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                 Brightness.dark, // Définir le mode sombre
                           ),
                           child: CupertinoActionSheet(
-                            title: Text('Change of profile picture'),
+                            title: Text('Change your profile picture'),
                             message: Text(
                                 'Your profile picture is visible to everyone and will make it easier for your friends to add you'),
                             actions: <Widget>[
@@ -151,7 +151,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                 },
                               ),
                               CupertinoActionSheetAction(
-                                child: Text('Appareil photo'),
+                                child: Text('Camera'),
                                 onPressed: () {
                                   getImage(context, ImageSource.camera, (file) {
                                     setState(() {
@@ -298,7 +298,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   Row(
                     children: [
                       Text(
-                        'Localization  ',
+                        'Location  ',
                         style: TextStyle(color: Colors.white),
                       ),
                       Expanded(
@@ -308,7 +308,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         style: TextStyle(color: Colors.white),
                         decoration: InputDecoration(
                             border: InputBorder.none,
-                            hintText: 'Localization',
+                            hintText: 'Location',
                             hintStyle: TextStyle(
                                 color: Color.fromARGB(255, 79, 79, 79))),
                       )),

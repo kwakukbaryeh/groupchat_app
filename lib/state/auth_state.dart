@@ -122,9 +122,10 @@ class AuthState extends AppStates {
       isBusy = true;
       user = _firebaseAuth.currentUser;
       if (user != null) {
-        await getProfileUser();
-        authStatus = AuthStatus.LOGGED_IN;
         userId = user!.uid;
+        print('User ID: $userId'); // Add this line for debugging
+        await getProfileUser(); // Fetch profile user data
+        authStatus = AuthStatus.LOGGED_IN;
       } else {
         authStatus = AuthStatus.NOT_LOGGED_IN;
       }
@@ -184,6 +185,8 @@ class AuthState extends AppStates {
   FutureOr<void> getProfileUser({String? userProfileId}) {
     try {
       userProfileId = userProfileId ?? user!.uid;
+      print(
+          'Fetching profile user data for ID: $userProfileId'); // Add this line for debugging
       kDatabase
           .child("profile")
           .child(userProfileId)
@@ -192,10 +195,10 @@ class AuthState extends AppStates {
         final snapshot = event.snapshot;
         if (snapshot.value != null) {
           var map = snapshot.value as Map<dynamic, dynamic>?;
+          print('Profile user data: $map'); // Add this line for debugging
           if (map != null) {
             if (userProfileId == user!.uid) {
               _userModel = UserModel.fromJson(map);
-
               getIt<SharedPreferenceHelper>().saveUserProfile(_userModel!);
             }
           }
