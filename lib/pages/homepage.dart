@@ -136,7 +136,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 SizedBox(height: 16.0),
                 _buildGroupChatButtons(groupChats),
                 SizedBox(height: 16.0),
-                _buildCreateJoinButton(),
               ],
             );
           }
@@ -276,69 +275,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildCreateJoinButton() {
-    return Container(
-      width: double.infinity,
-      margin: EdgeInsets.symmetric(horizontal: 16.0),
-      child: ElevatedButton(
-        onPressed: () {
-          showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            builder: (BuildContext context) {
-              return FractionallySizedBox(
-                heightFactor: 0.9,
-                child: Container(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: <Widget>[
-                      TextFormField(
-                        controller: _groupNameController,
-                        decoration: const InputDecoration(
-                          hintText: 'Enter group chat name',
-                        ),
-                      ),
-                      ElevatedButton(
-                        onPressed: () async {
-                          var groupName = _groupNameController.text;
-                          if (groupName.isNotEmpty) {
-                            var groupChatState = Provider.of<GroupChatState>(
-                              context,
-                              listen: false,
-                            );
-                            var groupChat = GroupChat(
-                              groupName: groupName,
-                              participantCount: 1,
-                              createdAt: DateTime.now(),
-                              expiryDate:
-                                  DateTime.now().add(const Duration(hours: 12)),
-                            );
-                            await groupChatState
-                                .saveGroupChatToDatabase(groupChat);
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    GroupScreen(groupChat: groupChat),
-                              ),
-                            );
-                          }
-                        },
-                        child: const Text('Create GroupChat Now'),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-        },
-        child: const Text('Create or Join'),
-      ),
     );
   }
 
