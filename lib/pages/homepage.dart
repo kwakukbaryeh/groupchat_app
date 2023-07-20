@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:groupchat_firebase/pages/feed.dart';
@@ -9,6 +11,8 @@ import 'package:groupchat_firebase/state/groupchatState.dart';
 import 'package:groupchat_firebase/state/search_state.dart';
 import 'group_screen.dart';
 import 'dart:core';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -141,8 +145,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           }
         },
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.grey[700],
         onPressed: () {
           showModalBottomSheet(
@@ -193,6 +197,44 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         },
                         child: const Text('Create GroupChat Now'),
                       ),
+                      SizedBox(height: 16),
+                      Container(
+                        child: QrImageView(
+                          data:
+                              'placeholder', // Use the group chat key as the QR code data
+                          version: QrVersions.auto,
+                          size: 200.0,
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => MobileScanner(
+                                onDetect: (capture) {
+                                  final List<Barcode> barcodes =
+                                      capture.barcodes;
+                                  final Uint8List? image = capture.image;
+
+                                  for (final barcode in barcodes) {
+                                    String scannedData = barcode.rawValue
+                                        as String; // Extract the raw value as a string
+
+                                    // Use the scannedData variable as needed
+                                    // For example, you can pass it to a function or navigate to a new page:
+                                    navigateToGroupChatPage(
+                                        context, scannedData);
+
+                                    debugPrint('Barcode found! $scannedData');
+                                  }
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                        child: Text('Scan'),
+                      ),
                     ],
                   ),
                 ),
@@ -200,14 +242,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             },
           );
         },
-        label: const Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Text('Create'),
-            Text('or'),
-            Text('Join'),
-          ],
-        ),
+        child: Icon(Icons.add),
       ),
     );
   }
@@ -279,6 +314,23 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ),
         );
       },
+    );
+  }
+
+  void navigateToGroupChatPage(BuildContext context, String groupChatKey) {
+    String groupName = "Placeholder's Groupchat";
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => GroupScreen(
+          groupChat: GroupChat(
+            key: groupChatKey,
+            createdAt: DateTime.now(),
+            groupName: groupName,
+            participantCount: 2,
+          ),
+        ),
+      ),
     );
   }
 
