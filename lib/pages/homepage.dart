@@ -143,6 +143,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: Colors.grey[700],
         onPressed: () {
           showModalBottomSheet(
             context: context,
@@ -162,6 +163,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         ),
                       ),
                       ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          primary: Colors.grey[700], // Set background color
+                        ),
                         onPressed: () async {
                           var groupName = _groupNameController.text;
                           if (groupName.isNotEmpty) {
