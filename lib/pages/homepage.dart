@@ -225,7 +225,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       itemCount: groupChats.length,
       itemBuilder: (BuildContext context, int index) {
         final groupChat = groupChats[index];
-        final remainingTime = groupChat.getRemainingTime();
+        groupChat.updateRemainingTime(); // Update remaining time
 
         return GestureDetector(
           onTap: () {
@@ -255,9 +255,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     textAlign: TextAlign.right,
                   ),
                   SizedBox(height: 8),
-                  if (remainingTime != null)
+                  if (groupChat.remainingTime !=
+                      null) // Access remainingTime from groupChat object
                     Text(
-                      'Time remaining: ${formatTimeRemaining(remainingTime)}',
+                      'Time remaining: ${formatTimeRemaining(groupChat.remainingTime!)}', // Access remainingTime from groupChat object
                       style: TextStyle(color: Colors.black),
                     )
                   else

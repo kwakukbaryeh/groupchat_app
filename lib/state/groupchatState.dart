@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/widgets.dart';
 import 'package:groupchat_firebase/helper/enum.dart';
@@ -12,6 +14,7 @@ class GroupChatState extends ChangeNotifier {
   UserModel? _userModel;
   List<GroupChat>? _groupChats;
   BuildContext? _context;
+  Timer? _timer;
 
   void setUserModel(UserModel user, BuildContext context) {
     _userModel = user;
@@ -21,11 +24,31 @@ class GroupChatState extends ChangeNotifier {
     _userModel?.groupChats = _groupChats;
     print('Group chat state: ${_userModel?.groupChats?.length}');
     getDataFromDatabase();
+    startTimer(); // Start the timer when the user model is set
     notifyListeners();
   }
 
   List<GroupChat>? getGroupChats() {
     return _userModel?.groupChats;
+  }
+
+  void startTimer() {
+    stopTimer(); // Stop the timer if it's already running
+    // Schedule a timer to update the remaining time every second
+    _timer = Timer.periodic(Duration(seconds: 1), (_) {
+      updateRemainingTime();
+    });
+  }
+
+  void stopTimer() {
+    _timer?.cancel();
+  }
+
+  void updateRemainingTime() {
+    _groupChats?.forEach((groupChat) {
+      groupChat.updateRemainingTime();
+    });
+    notifyListeners();
   }
 
   void getDataFromDatabase() {

@@ -6,6 +6,7 @@ class GroupChat extends Equatable {
   final int participantCount;
   final DateTime createdAt;
   final DateTime? expiryDate;
+  Duration? remainingTime; // Added property
 
   GroupChat({
     this.key,
@@ -37,14 +38,17 @@ class GroupChat extends Equatable {
     };
   }
 
-  Duration? getRemainingTime() {
+  void updateRemainingTime() {
     if (expiryDate != null) {
       final now = DateTime.now();
       if (now.isBefore(expiryDate!)) {
-        return expiryDate!.difference(now);
+        remainingTime = expiryDate!.difference(now);
+      } else {
+        remainingTime = Duration.zero;
       }
+    } else {
+      remainingTime = null;
     }
-    return null;
   }
 
   @override
