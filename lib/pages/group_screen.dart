@@ -36,8 +36,11 @@ class _GroupScreenState extends State<GroupScreen>
 
   @override
   void initState() {
-    WidgetsBinding.instance?.addPostFrameCallback((_) {
+    var authState = Provider.of<AuthState>(context, listen: false);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      authState.getCurrentUser();
       initPosts();
+      initSearch();
       initProfile();
     });
     _scrollController.addListener(_scrollListener);
@@ -51,6 +54,11 @@ class _GroupScreenState extends State<GroupScreen>
     _scrollController.dispose();
     _tabController.dispose();
     super.dispose();
+  }
+
+  void initSearch() {
+    var searchState = Provider.of<SearchState>(context, listen: false);
+    searchState.getDataFromDatabase();
   }
 
   void initProfile() {
@@ -78,7 +86,7 @@ class _GroupScreenState extends State<GroupScreen>
     }
   }
 
-  Future<void> _bodyView() async {
+  Future _bodyView() async {
     if (_isGrid) {
       setState(() {
         _isGrid = false;
@@ -97,9 +105,6 @@ class _GroupScreenState extends State<GroupScreen>
     var authState = Provider.of<AuthState>(context, listen: false);
     final state = Provider.of<SearchState>(context);
 
-    authState.getCurrentUser().then((value) {
-      setState(() {});
-    });
     return Scaffold(
       extendBody: true,
       bottomNavigationBar: AnimatedOpacity(

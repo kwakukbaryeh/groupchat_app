@@ -1,14 +1,11 @@
 import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:groupchat_firebase/pages/feed.dart';
 import 'package:groupchat_firebase/pages/myprofile.dart';
 import 'package:provider/provider.dart';
 import 'package:groupchat_firebase/models/groupchat.dart';
-import 'package:groupchat_firebase/state/auth_state.dart';
 import 'package:groupchat_firebase/state/groupchatState.dart';
-import 'package:groupchat_firebase/state/search_state.dart';
 import 'group_screen.dart';
 import 'dart:core';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -33,9 +30,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     _tabController = TabController(length: 3, vsync: this);
 
     WidgetsBinding.instance?.addPostFrameCallback((_) {
-      initSearch();
-      initProfile();
-      getGroupChatDataFromDatabase();
+      // Fetch initial data from the database when the widget is built
+      Provider.of<GroupChatState>(context, listen: false).getDataFromDatabase();
+
+      Provider.of<GroupChatState>(context, listen: false).startTimer();
     });
   }
 
@@ -46,30 +44,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     _tabController.dispose();
     _groupNameController.dispose();
     super.dispose();
-  }
-
-  void initSearch() {
-    WidgetsBinding.instance?.addPostFrameCallback((_) {
-      var searchState = Provider.of<SearchState>(context, listen: false);
-      searchState.getDataFromDatabase();
-    });
-  }
-
-  void initProfile() {
-    var authState = Provider.of<AuthState>(context, listen: false);
-    authState.databaseInit();
-    var groupChatState = Provider.of<GroupChatState>(context, listen: false);
-    print('User model: ${authState.userModel}');
-    if (authState.userModel != null) {
-      groupChatState.setUserModel(authState.userModel!, context);
-    }
-  }
-
-  void getGroupChatDataFromDatabase() {
-    WidgetsBinding.instance?.addPostFrameCallback((_) {
-      var groupChatState = Provider.of<GroupChatState>(context, listen: false);
-      groupChatState.getDataFromDatabase();
-    });
   }
 
   void _scrollListener() {
@@ -274,41 +248,46 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ),
             );
           },
-          child: AnimatedContainer(
-            duration: Duration(milliseconds: 500),
-            curve: Curves.easeInOut,
-            height: buttonHeight,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10.0),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    groupChat.groupName,
-                    style: TextStyle(color: Colors.black, fontSize: 16),
-                    textAlign: TextAlign.right,
-                  ),
-                  SizedBox(height: 8),
-                  if (groupChat.remainingTime !=
-                      null) // Access remainingTime from groupChat object
+          child: Align(
+            alignment: Alignment.center,
+            child: AnimatedContainer(
+              duration: Duration(milliseconds: 500),
+              curve: Curves.easeInOut,
+              width: MediaQuery.of(context).size.width -
+                  36.0, // Width with padding
+              height: buttonHeight,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
                     Text(
-                      'Time remaining: ${formatTimeRemaining(groupChat.remainingTime!)}', // Access remainingTime from groupChat object
-                      style: TextStyle(color: Colors.black),
-                    )
-                  else
+                      groupChat.groupName,
+                      style: TextStyle(color: Colors.black, fontSize: 16),
+                      textAlign: TextAlign.right,
+                    ),
+                    SizedBox(height: 8),
+                    if (groupChat.remainingTime != null)
+                      Text(
+                        'Time remaining: ${formatTimeRemaining(groupChat.remainingTime!)}',
+                        style: TextStyle(color: Colors.black),
+                      )
+                    else
+                      Text(
+                        'Expired',
+                        style: TextStyle(color: Colors.black),
+                      ),
                     Text(
-                      'Expired',
+                      '${groupChat.participantCount} active',
                       style: TextStyle(color: Colors.black),
                     ),
-                  Text(
-                    '${groupChat.participantCount} active',
-                    style: TextStyle(color: Colors.black),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

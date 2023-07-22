@@ -6,7 +6,9 @@ class GroupChat extends Equatable {
   final int participantCount;
   final DateTime createdAt;
   final DateTime? expiryDate;
-  Duration? remainingTime; // Added property
+  Duration? remainingTime;
+  List<String>
+      participantIds; // List of user IDs participating in the group chat
 
   GroupChat({
     this.key,
@@ -14,6 +16,7 @@ class GroupChat extends Equatable {
     required this.participantCount,
     required this.createdAt,
     this.expiryDate,
+    this.participantIds = const [], // Initialize with an empty list
   });
 
   factory GroupChat.fromJson(Map<String, dynamic> json) {
@@ -25,6 +28,9 @@ class GroupChat extends Equatable {
       expiryDate: json['expiryDate'] != null
           ? DateTime.parse(json['expiryDate'])
           : null,
+      participantIds: json['participantIds'] != null
+          ? List<String>.from(json['participantIds'])
+          : [],
     );
   }
 
@@ -35,6 +41,7 @@ class GroupChat extends Equatable {
       'participantCount': participantCount,
       'createdAt': createdAt.toUtc().toString(),
       'expiryDate': expiryDate?.toUtc().toString(),
+      'participantIds': participantIds,
     };
   }
 
@@ -53,5 +60,5 @@ class GroupChat extends Equatable {
 
   @override
   List<Object?> get props =>
-      [key, groupName, participantCount, createdAt, expiryDate];
+      [key, groupName, participantCount, createdAt, expiryDate, participantIds];
 }

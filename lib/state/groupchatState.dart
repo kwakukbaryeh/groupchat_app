@@ -1,35 +1,16 @@
 import 'dart:async';
-
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/widgets.dart';
-import 'package:groupchat_firebase/helper/enum.dart';
 import 'package:groupchat_firebase/helper/utility.dart';
-import 'package:groupchat_firebase/state/auth_state.dart';
-import 'package:provider/provider.dart';
-import '../models/user.dart';
 import '../models/groupchat.dart';
 
 class GroupChatState extends ChangeNotifier {
   bool isBusy = false;
-  UserModel? _userModel;
   List<GroupChat>? _groupChats;
-  BuildContext? _context;
   Timer? _timer;
 
-  void setUserModel(UserModel user, BuildContext context) {
-    _userModel = user;
-    _context = context;
-    print('User model set: ${_userModel?.toJson()}');
-    // Fetch user's group chat data
-    _userModel?.groupChats = _groupChats;
-    print('Group chat state: ${_userModel?.groupChats?.length}');
-    getDataFromDatabase();
-    startTimer(); // Start the timer when the user model is set
-    notifyListeners();
-  }
-
   List<GroupChat>? getGroupChats() {
-    return _userModel?.groupChats;
+    return _groupChats;
   }
 
   void startTimer() {
@@ -81,11 +62,6 @@ class GroupChatState extends ChangeNotifier {
 
             _groupChatList!.sort((x, y) => x.createdAt.compareTo(y.createdAt));
 
-            // Update the groupChats property of the user with the fetched group chats
-            var authState = Provider.of<AuthState>(_context!, listen: false);
-            UserModel userModel = authState.userModel!;
-            userModel.groupChats = _groupChatList;
-
             // Assign the fetched group chats to the _groupChats property
             _groupChats = _groupChatList;
           }
@@ -102,15 +78,6 @@ class GroupChatState extends ChangeNotifier {
 
   Future<void> saveGroupChatToDatabase(GroupChat groupChat) async {
     try {
-      // Check if the user is authenticated
-      var authState = Provider.of<AuthState>(_context!, listen: false);
-      if (authState.authStatus != AuthStatus.LOGGED_IN) {
-        throw Exception('User not logged in');
-      }
-
-      // Get the current user's ID
-      String userId = authState.userId;
-
       // Create a new group chat node in the database
       DatabaseReference groupChatRef = kDatabase.child('groupchats').push();
       String groupChatId = groupChatRef.key!;
@@ -129,16 +96,6 @@ class GroupChatState extends ChangeNotifier {
 
       // Save the group chat to the database
       await groupChatRef.set(newGroupChat.toJson());
-
-      // Update the user's group chats in the database
-      UserModel userModel = authState.userModel!;
-      userModel.groupChats ??= [];
-      userModel.groupChats!.add(newGroupChat);
-      kDatabase
-          .child('profile')
-          .child(userId)
-          .child('groupChats')
-          .set(userModel.groupChats);
 
       // Update the local group chats list
       _groupChats ??= [];
