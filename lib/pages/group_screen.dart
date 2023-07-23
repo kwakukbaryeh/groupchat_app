@@ -44,7 +44,7 @@ class _GroupScreenState extends State<GroupScreen>
       initProfile();
     });
     _scrollController.addListener(_scrollListener);
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
     super.initState();
   }
 
@@ -225,21 +225,7 @@ class _GroupScreenState extends State<GroupScreen>
                       padding: const EdgeInsets.only(right: 0),
                       child: Tab(
                         child: Text(
-                          'Friends of Friends',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  FadeInUp(
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 20),
-                      child: Tab(
-                        child: Text(
-                          'Discovery',
+                          'Who\'s Who',
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,

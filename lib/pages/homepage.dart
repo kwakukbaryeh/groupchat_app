@@ -1,7 +1,9 @@
+import 'dart:math';
 import 'dart:typed_data';
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:groupchat_firebase/models/user.dart';
 import 'package:groupchat_firebase/pages/feed.dart';
 import 'package:groupchat_firebase/pages/myprofile.dart';
 import 'package:provider/provider.dart';
@@ -11,6 +13,7 @@ import 'group_screen.dart';
 import 'dart:core';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:uuid/uuid.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -61,13 +64,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     }
   }
 
+  String? generateGroupChatKey() {
+    var uuid = Uuid();
+    return uuid.v4(); // Generate a version 4 (random) UUID
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[900],
       appBar: AppBar(
         elevation: 0.0,
-        title: Text('App title'),
+        title: Text('keepUp'),
         backgroundColor: Colors.grey[900], // Set AppBar background color
         leading: GestureDetector(
           onTap: () {
@@ -78,12 +86,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ),
             );
           },
-          child: Transform(
-            transform: Matrix4.identity()..scale(-1.0, 1.0, -1.0),
-            alignment: Alignment.center,
-            child: const Icon(
-              Icons.people,
-              size: 30,
+          child: Transform.rotate(
+            angle: pi /
+                4, // Rotates the icon 45 degrees counter-clockwise (diagonally up to the right)
+            child: Transform(
+              alignment: Alignment.center,
+              transform: Matrix4.identity()..scale(-1.0, 1.0, -1.0),
+              child: Icon(
+                Icons.send,
+                size: 30,
+              ),
             ),
           ),
         ),
@@ -204,7 +216,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       ),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          primary: Colors.grey[900], // Set background color
+                          primary: Colors.grey[700], // Set background color
                         ),
                         onPressed: () async {
                           var groupName = _groupNameController.text;
@@ -234,12 +246,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         child: const Text('Create GroupChat Now'),
                       ),
                       SizedBox(height: 16),
-                      Container(
-                        child: QrImageView(
-                          data:
-                              'placeholder', // Use the group chat key as the QR code data
-                          version: QrVersions.auto,
-                          size: 200.0,
+                      // Center the QR code and set its size to 250x250
+                      Center(
+                        child: SizedBox(
+                          width: 250,
+                          height: 250,
+                          child: QrImageView(
+                            data: 'placeholder',
+                            version: QrVersions.auto,
+                          ),
                         ),
                       ),
                       ElevatedButton(
@@ -257,8 +272,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                     String scannedData = barcode.rawValue
                                         as String; // Extract the raw value as a string
 
-                                    // Use the scannedData variable as needed
-                                    // For example, you can pass it to a function or navigate to a new page:
+                                    // Use the scannedData variable to navigate to the GroupScreen
                                     navigateToGroupChatPage(
                                         context, scannedData);
 
@@ -269,6 +283,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             ),
                           );
                         },
+                        style: ElevatedButton.styleFrom(
+                          primary: Colors.grey[
+                              700], // Set the same background color as "Create GroupChat Now" button
+                        ),
                         child: Text('Scan'),
                       ),
                     ],
@@ -293,7 +311,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     // Calculate the available height by subtracting app bar height and tab bar height
     final double appBarHeight = kToolbarHeight;
     final double availableHeight =
-        MediaQuery.of(context).size.height - (appBarHeight + 144.0);
+        MediaQuery.of(context).size.height - (appBarHeight + 154.0);
 
     // Calculate the button height
     final double buttonHeight = availableHeight / groupChats.length;
@@ -375,7 +393,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       MaterialPageRoute(
         builder: (context) => GroupScreen(
           groupChat: GroupChat(
-            key: groupChatKey,
             createdAt: DateTime.now(),
             groupName: groupName,
             participantCount: 2,
