@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:groupchat_firebase/pages/feed.dart';
@@ -27,7 +28,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     super.initState();
     _scrollController = ScrollController();
     _scrollController.addListener(_scrollListener);
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
 
     WidgetsBinding.instance?.addPostFrameCallback((_) {
       // Fetch initial data from the database when the widget is built
@@ -63,8 +64,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[900],
       appBar: AppBar(
+        elevation: 0.0,
         title: Text('App title'),
+        backgroundColor: Colors.grey[900], // Set AppBar background color
         leading: GestureDetector(
           onTap: () {
             Navigator.push(
@@ -96,28 +100,86 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             },
           ),
         ],
+        bottom: TabBar(
+          controller: _tabController,
+          isScrollable: false,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.black,
+          indicatorColor: Colors.transparent,
+          indicatorWeight: 1,
+          tabs: [
+            FadeInUp(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 20),
+                child: Tab(
+                  child: Text(
+                    'Groups',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            FadeInUp(
+              child: Padding(
+                padding: const EdgeInsets.only(right: 0),
+                child: Tab(
+                  child: Text(
+                    'Discovery',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
-      body: Consumer<GroupChatState>(
-        builder: (context, groupChatState, _) {
-          if (groupChatState.isBusy) {
-            return Center(
-              child: CircularProgressIndicator(),
-            );
-          } else if (groupChatState.groupChats == null) {
-            return Center(
-              child: Text('Wow it\'s empty here... Add some groups!'),
-            );
-          } else {
-            final groupChats = groupChatState.groupChats!;
-            return ListView(
+      body: Column(
+        children: [
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
               children: [
-                SizedBox(height: 16.0),
-                _buildGroupChatButtons(groupChats),
-                SizedBox(height: 16.0),
+                // "Groups" Tab
+                Consumer<GroupChatState>(
+                  builder: (context, groupChatState, _) {
+                    if (groupChatState.isBusy) {
+                      return Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    } else if (groupChatState.groupChats == null) {
+                      return Center(
+                        child: Text('Wow it\'s empty here... Add some groups!'),
+                      );
+                    } else {
+                      final groupChats = groupChatState.groupChats!;
+                      return ListView(
+                        children: [
+                          SizedBox(height: 16.0),
+                          _buildGroupChatButtons(groupChats),
+                          SizedBox(height: 16.0),
+                        ],
+                      );
+                    }
+                  },
+                ),
+
+                // "Discovery" Tab
+                Center(
+                  child: Text(
+                    'Coming soon...',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                ),
               ],
-            );
-          }
-        },
+            ),
+          ),
+        ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton(
@@ -142,7 +204,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       ),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          primary: Colors.grey[700], // Set background color
+                          primary: Colors.grey[900], // Set background color
                         ),
                         onPressed: () async {
                           var groupName = _groupNameController.text;
@@ -228,15 +290,25 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       );
     }
 
-    final double buttonHeight =
-        MediaQuery.of(context).size.height / groupChats.length;
+    // Calculate the available height by subtracting app bar height and tab bar height
+    final double appBarHeight = kToolbarHeight;
+    final double availableHeight =
+        MediaQuery.of(context).size.height - (appBarHeight + 144.0);
 
-    return ListView.builder(
+    // Calculate the button height
+    final double buttonHeight = availableHeight / groupChats.length;
+
+    return ListView.separated(
       shrinkWrap: true,
       physics: NeverScrollableScrollPhysics(),
       itemCount: groupChats.length,
+      separatorBuilder: (BuildContext context, int index) {
+        return SizedBox(height: 10.0); // Add 10 pixels of space between items
+      },
       itemBuilder: (BuildContext context, int index) {
-        final groupChat = groupChats[index];
+        final groupChat =
+            groupChats.reversed.toList()[index]; // Reverse the order
+
         groupChat.updateRemainingTime(); // Update remaining time
 
         return GestureDetector(

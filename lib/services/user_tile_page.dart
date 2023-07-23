@@ -1,7 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:groupchat_firebase/models/user.dart';
-import '../pages/profile_page.dart';
+import 'package:groupchat_firebase/pages/profile_page.dart';
+import 'package:groupchat_firebase/widgets/custom/title_text.dart';
 
 class UserTilePage extends StatelessWidget {
   UserTilePage({Key? key, required this.user, required this.isadded})
@@ -25,7 +26,8 @@ class UserTilePage extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(100),
               child: CachedNetworkImage(
-                imageUrl: user.profilePic!,
+                imageUrl: user.profilePic ??
+                    "https://i.pinimg.com/originals/f1/0f/f7/f10ff70a7155e5ab666bcdd1b45b726d.jpg",
                 height: 60,
               ),
             ),
@@ -34,24 +36,22 @@ class UserTilePage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text(
+                  TitleText(
                     user.displayName!,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.white,
-                      fontWeight: FontWeight.normal,
-                    ),
+                    fontSize: 16,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 3),
                   Text(
                     user.userName!,
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: Colors.white),
                   ),
                 ],
               ),
             ),
-            SizedBox(
+            Container(
               width: 120,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -63,10 +63,10 @@ class UserTilePage extends StatelessWidget {
                           width: 90,
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
-                            color: const Color.fromARGB(221, 69, 69, 69),
+                            color: Color.fromARGB(221, 69, 69, 69),
                             borderRadius: BorderRadius.circular(90),
                           ),
-                          child: const Text(
+                          child: Text(
                             "ADD",
                             style: TextStyle(
                               fontSize: 13,
