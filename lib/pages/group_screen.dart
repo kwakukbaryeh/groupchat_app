@@ -285,7 +285,7 @@ class _GroupScreenState extends State<GroupScreen>
         elevation: 0,
         title: Image.asset(
           "assets/logo/logo.png",
-          height: 100,
+          height: 40,
         ),
         backgroundColor: Colors.transparent,
       ),
