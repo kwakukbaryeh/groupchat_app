@@ -137,8 +137,9 @@ class _ProfilePageState extends State<ProfilePage> {
     String id = widget.profileId;
     DateTime now = DateTime.now();
 
-    if (state.feedlist != null && state.feedlist!.isNotEmpty) {
-      list = state.feedlist!
+    if (state.groupChatPostMap != null && state.groupChatPostMap.isNotEmpty) {
+      list = state.groupChatPostMap.values
+          .expand((postList) => postList!) // Flatten the list of lists
           .where(
               (x) => now.difference(DateTime.parse(x.createdAt)).inHours < 104)
           .toList();

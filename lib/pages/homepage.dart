@@ -4,7 +4,7 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:groupchat_firebase/models/user.dart';
-import 'package:groupchat_firebase/pages/feed.dart';
+import 'package:groupchat_firebase/pages/directmessage.dart';
 import 'package:groupchat_firebase/pages/myprofile.dart';
 import 'package:provider/provider.dart';
 import 'package:groupchat_firebase/models/groupchat.dart';
@@ -76,19 +76,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       appBar: AppBar(
         elevation: 0.0,
         title: Text('keepUp'),
-        backgroundColor: Colors.grey[900], // Set AppBar background color
+        backgroundColor: Colors.grey[900],
         leading: GestureDetector(
           onTap: () {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => const FeedPage(),
+                builder: (context) => DirectMessagePage(),
               ),
             );
           },
           child: Transform.rotate(
-            angle: pi /
-                4, // Rotates the icon 45 degrees counter-clockwise (diagonally up to the right)
+            angle: pi / 4,
             child: Transform(
               alignment: Alignment.center,
               transform: Matrix4.identity()..scale(-1.0, 1.0, -1.0),
@@ -216,15 +215,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       ),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          primary: Colors.grey[700], // Set background color
+                          primary: Colors.grey[700],
                         ),
                         onPressed: () async {
                           var groupName = _groupNameController.text;
                           if (groupName.isNotEmpty) {
                             var groupChatState = Provider.of<GroupChatState>(
-                              context,
-                              listen: false,
-                            );
+                                context,
+                                listen: false);
                             var groupChat = GroupChat(
                               groupName: groupName,
                               participantCount: 1,
@@ -234,11 +232,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             );
                             await groupChatState
                                 .saveGroupChatToDatabase(groupChat);
+
+                            // Pass the groupChats variable to the GroupScreen widget
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) =>
-                                    GroupScreen(groupChat: groupChat),
+                                builder: (context) => GroupScreen(
+                                  userId:
+                                      "your_user_id_here", // Replace with the actual user ID
+                                  groupChats: groupChatState
+                                      .groupChats, // Use groupChats from groupChatState
+                                ),
                               ),
                             );
                           }
@@ -269,9 +273,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                   final Uint8List? image = capture.image;
 
                                   for (final barcode in barcodes) {
-                                    String scannedData = barcode.rawValue
-                                        as String; // Extract the raw value as a string
-
+                                    String scannedData =
+                                        barcode.rawValue as String;
                                     // Use the scannedData variable to navigate to the GroupScreen
                                     navigateToGroupChatPage(
                                         context, scannedData);
@@ -284,8 +287,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           );
                         },
                         style: ElevatedButton.styleFrom(
-                          primary: Colors.grey[
-                              700], // Set the same background color as "Create GroupChat Now" button
+                          primary: Colors.grey[700],
                         ),
                         child: Text('Scan'),
                       ),
@@ -303,17 +305,19 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Widget _buildGroupChatButtons(List<GroupChat>? groupChats) {
     if (groupChats == null || groupChats.isEmpty) {
-      return Center(
-        child: Text('Wow it\'s empty here... Add some groups!'),
+      return Container(
+        alignment: Alignment.center,
+        child: Expanded(
+          child: Center(
+            child: Text('Wow it\'s empty here... Add some groups!'),
+          ),
+        ),
       );
     }
 
-    // Calculate the available height by subtracting app bar height and tab bar height
     final double appBarHeight = kToolbarHeight;
     final double availableHeight =
         MediaQuery.of(context).size.height - (appBarHeight + 154.0);
-
-    // Calculate the button height
     final double buttonHeight = availableHeight / groupChats.length;
 
     return ListView.separated(
@@ -321,20 +325,22 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       physics: NeverScrollableScrollPhysics(),
       itemCount: groupChats.length,
       separatorBuilder: (BuildContext context, int index) {
-        return SizedBox(height: 10.0); // Add 10 pixels of space between items
+        return SizedBox(height: 10.0);
       },
       itemBuilder: (BuildContext context, int index) {
-        final groupChat =
-            groupChats.reversed.toList()[index]; // Reverse the order
-
-        groupChat.updateRemainingTime(); // Update remaining time
+        final groupChat = groupChats.reversed.toList()[index];
+        groupChat.updateRemainingTime();
 
         return GestureDetector(
           onTap: () {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => GroupScreen(groupChat: groupChat),
+                builder: (context) => GroupScreen(
+                  userId:
+                      "your_user_id_here", // Replace with the actual user ID
+                  groupChats: groupChats,
+                ),
               ),
             );
           },
@@ -343,8 +349,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             child: AnimatedContainer(
               duration: Duration(milliseconds: 500),
               curve: Curves.easeInOut,
-              width: MediaQuery.of(context).size.width -
-                  36.0, // Width with padding
+              width: MediaQuery.of(context).size.width - 36.0,
               height: buttonHeight,
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -387,19 +392,51 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   void navigateToGroupChatPage(BuildContext context, String groupChatKey) {
-    String groupName = "Placeholder's Groupchat";
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => GroupScreen(
-          groupChat: GroupChat(
-            createdAt: DateTime.now(),
-            groupName: groupName,
-            participantCount: 2,
+    final groupChatState = Provider.of<GroupChatState>(context, listen: false);
+
+    // Case 1: Group chat exists for the scanned groupChatKey
+    final existingGroupChat = groupChatState.getGroupChatByKey(groupChatKey);
+    if (existingGroupChat != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => GroupScreen(
+            userId: "your_user_id_here", // Replace with the actual user ID
+            groupChats: groupChatState.groupChats,
           ),
         ),
-      ),
-    );
+      );
+    } else {
+      // Case 2: Group chat does not exist for the scanned groupChatKey
+      // Create a new group chat
+      final currentUser = groupChatState.getCurrentUser();
+      if (currentUser != null) {
+        String groupName = "$currentUser's GroupChat";
+
+        // You can set the participant count and other properties based on your requirements
+        var newGroupChat = GroupChat(
+          groupName: groupName,
+          participantCount: 2,
+          createdAt: DateTime.now(),
+          // Set an expiry date if needed
+          expiryDate: DateTime.now().add(const Duration(hours: 12)),
+        );
+
+        // Save the new group chat to the database
+        groupChatState.saveGroupChatToDatabase(newGroupChat);
+
+        // Navigate to the new group chat passing the required parameters
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => GroupScreen(
+              userId: "your_user_id_here", // Replace with the actual user ID
+              groupChats: groupChatState.groupChats,
+            ),
+          ),
+        );
+      }
+    }
   }
 
   String formatTimeRemaining(Duration remainingTime) {

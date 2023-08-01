@@ -19,9 +19,12 @@ import 'package:groupchat_firebase/widgets/gridpost.dart';
 import 'package:provider/provider.dart';
 
 class GroupScreen extends StatefulWidget {
-  final GroupChat groupChat;
+  final String userId; // Add this property to store the user ID
+  final List<GroupChat>?
+      groupChats; // Add this property to store the list of group chats
 
-  const GroupScreen({Key? key, required this.groupChat}) : super(key: key);
+  const GroupScreen({Key? key, required this.userId, required this.groupChats})
+      : super(key: key);
 
   @override
   _GroupScreenState createState() => _GroupScreenState();
@@ -33,6 +36,7 @@ class _GroupScreenState extends State<GroupScreen>
   ScrollController _scrollController = ScrollController();
   bool _isScrolledDown = false;
   bool _isGrid = false;
+  List<PostModel>? list;
 
   @override
   void initState() {
@@ -68,8 +72,14 @@ class _GroupScreenState extends State<GroupScreen>
 
   void initPosts() {
     var state = Provider.of<PostState>(context, listen: false);
-    state.databaseInit();
-    state.getDataFromDatabase();
+
+    if (widget.groupChats != null) {
+      state.databaseInit(widget.groupChats!);
+
+      for (var groupChat in widget.groupChats!) {
+        state.getDataFromDatabaseForGroupChat(groupChat.key!);
+      }
+    }
   }
 
   void _scrollListener() {
@@ -100,10 +110,46 @@ class _GroupScreenState extends State<GroupScreen>
 
   int tab = 0;
 
+  Widget empty(List<PostModel>? groupList) {
+    print("Checking condition: groupList == null || groupList.isEmpty");
+    print("groupList: $groupList");
+    print("List: $list");
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text(
+            "No one in your group has posted, post something to break the ice!",
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CameraPage(),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              primary:
+                  Colors.grey[700], // Set the background color to grey[700]
+            ),
+            child: const Text("Take your BeReal"),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     var authState = Provider.of<AuthState>(context, listen: false);
     final state = Provider.of<SearchState>(context);
+
+    print("Building GroupScreen...");
 
     return Scaffold(
       extendBody: true,
@@ -252,78 +298,74 @@ class _GroupScreenState extends State<GroupScreen>
                   physics: const NeverScrollableScrollPhysics(),
                   controller: _tabController,
                   children: [
-                    Consumer<PostState>(
-                      builder: (context, state, child) {
-                        final now = DateTime.now();
-                        final List<PostModel>? list = state
-                            .getPostLists(authState.userModel)!
-                            .where(
-                              (x) =>
-                                  now
-                                      .difference(
-                                        DateTime.parse(x.createdAt),
-                                      )
-                                      .inHours <
-                                  24,
-                            )
-                            .toList();
-                        while (list!.length < 10) {
-                          list.add(
-                            PostModel(
-                              imageFrontPath:
-                                  "https://htmlcolorcodes.com/assets/images/colors/black-color-solid-background-1920x1080.png",
-                              imageBackPath:
-                                  "https://htmlcolorcodes.com/assets/images/colors/black-color-solid-background-1920x1080.png",
-                              createdAt: "",
-                              user: UserModel(
-                                displayName: "",
-                              ),
-                            ),
-                          );
-                        }
-                        return RefreshIndicator(
-                          color: Colors.transparent,
-                          backgroundColor: Colors.transparent,
-                          onRefresh: () {
-                            HapticFeedback.mediumImpact();
-                            return _bodyView();
-                          },
-                          child: AnimatedOpacity(
-                            opacity: _isGrid ? 1 : 0,
-                            duration: const Duration(milliseconds: 1000),
-                            child: Padding(
-                              padding: const EdgeInsets.all(15),
-                              child: GridView.builder(
-                                gridDelegate:
-                                    const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 3,
-                                  childAspectRatio: 0.8,
-                                  mainAxisSpacing: 10,
-                                  crossAxisSpacing: 10,
-                                ),
-                                controller: _scrollController,
-                                itemCount: list.length,
-                                itemBuilder: (context, index) {
-                                  return GridPostWidget(
-                                    postModel: list[index],
+                    // Tab 1: Group Chat Posts
+                    if (widget.groupChats != null)
+                      for (var groupChat in widget.groupChats!)
+                        Consumer<PostState>(
+                          builder: (context, state, child) {
+                            final String groupChatId = groupChat.key!;
+                            final List<PostModel>? groupList =
+                                state.groupChatPostMap[groupChatId];
+
+                            // Add any additional logic here, if needed
+                            print("Debug: groupList is ${groupList}");
+                            print(
+                                "Debug: groupList is null: ${groupList == null}");
+                            print(
+                                "Debug: groupList is empty: ${groupList?.isEmpty ?? false}");
+
+                            return groupList == null || groupList.isEmpty
+                                ? empty(groupList)
+                                : RefreshIndicator(
+                                    color: Colors.transparent,
+                                    backgroundColor: Colors.transparent,
+                                    onRefresh: () {
+                                      HapticFeedback.mediumImpact();
+                                      return _bodyView();
+                                    },
+                                    child: AnimatedOpacity(
+                                      opacity: _isGrid ? 1 : 0,
+                                      duration:
+                                          const Duration(milliseconds: 1000),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(15),
+                                        child: GridView.builder(
+                                          gridDelegate:
+                                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                            crossAxisCount: 3,
+                                            childAspectRatio: 0.8,
+                                            mainAxisSpacing: 10,
+                                            crossAxisSpacing: 10,
+                                          ),
+                                          controller: _scrollController,
+                                          itemCount: groupList.length,
+                                          itemBuilder: (context, index) {
+                                            return GridPostWidget(
+                                              postModel: groupList[index],
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ),
                                   );
-                                },
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                          },
+                        ),
+                    if (widget.groupChats == null)
+                      Center(
+                        child: Text(
+                            'Loading...'), // Placeholder or any other widget
+                      ),
                   ],
                 )
               : TabBarView(
                   physics: const NeverScrollableScrollPhysics(),
                   controller: _tabController,
                   children: [
+                    // Tab 2: All User's Posts (Assuming you need to show all user posts here)
                     Consumer<PostState>(
                       builder: (context, state, child) {
                         final List<PostModel>? list =
-                            state.getPostList(authState.userModel);
+                            state.getPostLists(authState.userModel);
 
                         return RefreshIndicator(
                           color: Colors.transparent,
@@ -453,33 +495,7 @@ class _GroupScreenState extends State<GroupScreen>
                           ),
                         ),
                       ],
-                    ),
-                    Consumer<PostState>(
-                      builder: (context, state, child) {
-                        final now = DateTime.now();
-                        final List<PostModel>? list = state
-                            .getPostLists(authState.userModel)!
-                            .where(
-                              (x) =>
-                                  now
-                                      .difference(
-                                        DateTime.parse(x.createdAt),
-                                      )
-                                      .inHours <
-                                  24,
-                            )
-                            .toList();
-                        return ListView.builder(
-                          controller: _scrollController,
-                          itemCount: list?.length ?? 0,
-                          itemBuilder: (context, index) {
-                            return FeedPostWidget(
-                              postModel: list![index],
-                            );
-                          },
-                        );
-                      },
-                    ),
+                    )
                   ],
                 ),
         ),

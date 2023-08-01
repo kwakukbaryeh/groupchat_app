@@ -1,9 +1,10 @@
 // ignore_for_file: must_be_immutable
 
-import 'package:contacts_service/contacts_service.dart';
+// import 'package:contacts_service/contacts_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
 import '../animation/animation.dart';
 import 'notification.dart';
 
@@ -20,14 +21,14 @@ class _ContactPageState extends State<ContactPage> {
   @override
   void initState() {
     super.initState();
-    ContactsService.getContacts().then((contacts) {
-      for (var contact in contacts) {
-        for (var email in contact.emails!) {
-          contactEmails.add(email.value!);
-        }
-      }
-      setState(() {});
-    });
+    // ContactsService.getContacts().then((contacts) {
+    //   for (var contact in contacts) {
+    //     for (var email in contact.emails!) {
+    //       contactEmails.add(email.value!);
+    //     }
+    //   }
+    //   setState(() {});
+    // });
   }
 
   @override
@@ -80,7 +81,7 @@ class _ContactPageState extends State<ContactPage> {
                   height: 130,
                 ),
                 Text(
-                  "Find your friends\n",
+                  "Find you're friends\n",
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: 35,
@@ -88,7 +89,7 @@ class _ContactPageState extends State<ContactPage> {
                   textAlign: TextAlign.center,
                 ),
                 Text(
-                  "Let's find out which of your friends are already using\n App Title.",
+                  "Find you're friends that already\nuse Rebeal.",
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: 16,
@@ -116,7 +117,7 @@ class _ContactPageState extends State<ContactPage> {
                                         borderRadius:
                                             BorderRadius.circular(90)),
                                     child: Text(
-                                      "ADD",
+                                      "AJOUTER",
                                       style: TextStyle(
                                           fontSize: 13,
                                           color: Colors.white,

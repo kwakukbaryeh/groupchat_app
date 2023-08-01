@@ -1,6 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 
-// ignore: must_be_immutable
 class UserModel extends Equatable {
   String? key;
   String? email;
@@ -15,19 +15,20 @@ class UserModel extends Equatable {
   List<String>? followersList;
   List<String>? followingList;
 
-  UserModel(
-      {this.email,
-      this.key,
-      this.userName,
-      this.localisation,
-      this.bio,
-      this.userId,
-      this.displayName,
-      this.profilePic,
-      this.createAt,
-      this.followingList,
-      this.followersList,
-      this.fcmToken});
+  UserModel({
+    this.email,
+    this.key,
+    this.userName,
+    this.localisation,
+    this.bio,
+    this.userId,
+    this.displayName,
+    this.profilePic,
+    this.createAt,
+    this.followingList,
+    this.followersList,
+    this.fcmToken,
+  });
 
   UserModel.fromJson(Map<dynamic, dynamic>? map) {
     if (map == null) {
@@ -51,6 +52,7 @@ class UserModel extends Equatable {
       });
     }
   }
+
   toJson() {
     return {
       'key': key,
@@ -64,7 +66,7 @@ class UserModel extends Equatable {
       'profilePic': profilePic,
       'fcmToken': fcmToken,
       'followerList': followersList,
-      'followingList': followingList
+      'followingList': followingList,
     };
   }
 
@@ -111,6 +113,61 @@ class UserModel extends Equatable {
         fcmToken,
         profilePic,
         followersList,
-        followingList
+        followingList,
       ];
+
+  // Static method to get the list of user IDs that the given user is following
+  static Future<List<String>?> getFollowingList(String userId) async {
+    try {
+      DocumentSnapshot doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+      if (doc.exists) {
+        Map<String, dynamic>? userData = doc.data() as Map<String, dynamic>?;
+        List<String>? followingList =
+            userData?['followingList']?.cast<String>();
+        return followingList;
+      }
+    } catch (e) {
+      print("Error fetching following list: $e");
+    }
+    return null;
+  }
+
+  // Static method to get the list of user IDs that are following the given user
+  static Future<List<String>?> getFollowersList(String userId) async {
+    try {
+      QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('followingList', arrayContains: userId)
+          .get();
+      List<String> followersList = [];
+      snapshot.docs.forEach((doc) {
+        followersList.add(doc.id);
+      });
+      return followersList;
+    } catch (e) {
+      print("Error fetching followers list: $e");
+    }
+    return null;
+  }
+
+  // Static method to get the list of all users from the database
+  static Future<List<UserModel>> getAllUsers() async {
+    try {
+      QuerySnapshot snapshot =
+          await FirebaseFirestore.instance.collection('users').get();
+      List<UserModel> users = [];
+      snapshot.docs.forEach((doc) {
+        Map<String, dynamic> userData = doc.data() as Map<String, dynamic>;
+        UserModel user = UserModel.fromJson(userData);
+        users.add(user);
+      });
+      return users;
+    } catch (e) {
+      print("Error fetching all users: $e");
+    }
+    return [];
+  }
 }

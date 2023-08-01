@@ -1,12 +1,8 @@
 // ignore_for_file: must_be_immutable
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-
-import 'package:groupchat_firebase/notification/notification.dart';
-
 import '../animation/animation.dart';
+import '../notification/notification.dart';
 
 class NotificationPage extends StatefulWidget {
   final VoidCallback? loginCallback;
@@ -17,26 +13,6 @@ class NotificationPage extends StatefulWidget {
 }
 
 class _NotificationPageState extends State<NotificationPage> {
-  Future<void> requestNotificationPermission() async {
-    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-        FlutterLocalNotificationsPlugin();
-
-    await flutterLocalNotificationsPlugin.show(
-      0,
-      'Sample Notification',
-      'This is a sample notification',
-      NotificationDetails(
-        android: AndroidNotificationDetails(
-          'channel_id',
-          'channel_name',
-          importance: Importance.max,
-          priority: Priority.high,
-        ),
-        iOS: DarwinNotificationDetails(),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -54,7 +30,7 @@ class _NotificationPageState extends State<NotificationPage> {
               height: 130,
             ),
             Text(
-              "When to post your\nReBeal?\n",
+              "Quand poster ton\nReBeal ?\n",
               style: TextStyle(
                   color: Colors.white,
                   fontSize: 35,
@@ -62,7 +38,7 @@ class _NotificationPageState extends State<NotificationPage> {
               textAlign: TextAlign.center,
             ),
             Text(
-              "The only way to know when to post your\nReBeal is to turn on notifcations !",
+              "La seule façon de savoir quand poster ton\nReBeal est d'activer les notiifcations !",
               style: TextStyle(
                   color: Colors.white,
                   fontSize: 16,
@@ -82,7 +58,7 @@ class _NotificationPageState extends State<NotificationPage> {
               child: Column(
                 children: [
                   Text(
-                    "\nPlease turn on notifications\n",
+                    "\nMerci d'activer les\n notifications",
                     style: TextStyle(
                         color: Colors.white,
                         fontSize: 16,
@@ -90,7 +66,7 @@ class _NotificationPageState extends State<NotificationPage> {
                     textAlign: TextAlign.center,
                   ),
                   Text(
-                    "\nAll notifications on App title\nare silent except for the one that\ntindicates when to post on App title\n once a day.",
+                    "\nToutes les notifications sur ReBeal\nsont silencieuse sauf celle qui\nt'indique quand poster ron BeReal\n une fois par jour.",
                     style: TextStyle(
                         color: Colors.white,
                         fontSize: 12,
@@ -103,23 +79,24 @@ class _NotificationPageState extends State<NotificationPage> {
                   GestureDetector(
                       onTap: () async {
                         HapticFeedback.heavyImpact();
-                        FlutterLocalNotificationsPlugin
-                            flutterLocalNotificationsPlugin =
-                            FlutterLocalNotificationsPlugin();
-                        await flutterLocalNotificationsPlugin.show(
-                          0,
-                          'Sample Notification',
-                          'This is a sample notification',
-                          NotificationDetails(
-                            android: AndroidNotificationDetails(
-                              'channel_id',
-                              'channel_name',
-                              importance: Importance.max,
-                              priority: Priority.high,
-                            ),
-                            iOS: DarwinNotificationDetails(),
-                          ),
-                        );
+                        // FlutterLocalNotificationsPlugin
+                        //     flutterLocalNotificationsPlugin =
+                        //     FlutterLocalNotificationsPlugin();
+                        // await flutterLocalNotificationsPlugin.show(
+                        //   0,
+                        //   'Sample Notification',
+                        //   'This is a sample notification',
+                        //   NotificationDetails(
+                        //     android: AndroidNotificationDetails(
+                        //       'channel_id',
+                        //       'channel_name',
+                        //       'channel_description',
+                        //       importance: Importance.max,
+                        //       priority: Priority.high,
+                        //     ),
+                        //     iOS: IOSNotificationDetails(),
+                        //   ),
+                        // );
                         Navigator.push(
                           context,
                           AwesomePageRoute(
@@ -136,7 +113,7 @@ class _NotificationPageState extends State<NotificationPage> {
                         color: Color.fromARGB(255, 0, 120, 232),
                         alignment: Alignment.center,
                         child: Text(
-                          "Allow",
+                          "Autoriser",
                           style: TextStyle(
                               color: Colors.white,
                               fontSize: 16,
@@ -148,7 +125,7 @@ class _NotificationPageState extends State<NotificationPage> {
                     height: 10,
                   ),
                   Text(
-                    "Allow in scheduled\nSummary",
+                    "Autoriser dans le\nRésumé programmé",
                     style: TextStyle(
                         color: Color.fromARGB(255, 89, 89, 89),
                         fontSize: 16,
@@ -167,7 +144,7 @@ class _NotificationPageState extends State<NotificationPage> {
                     height: 10,
                   ),
                   Text(
-                    "Refuse",
+                    "Refuser",
                     style: TextStyle(
                         color: Color.fromARGB(255, 89, 89, 89),
                         fontSize: 16,

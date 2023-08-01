@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/widgets.dart';
 import 'package:groupchat_firebase/helper/utility.dart';
@@ -8,6 +9,8 @@ class GroupChatState extends ChangeNotifier {
   bool isBusy = false;
   List<GroupChat>? _groupChats;
   Timer? _timer;
+  User? _currentUser;
+  List<GroupChat>? get groupChats => _groupChats;
 
   List<GroupChat>? getGroupChats() {
     return _groupChats;
@@ -111,5 +114,19 @@ class GroupChatState extends ChangeNotifier {
   // For example: _fetchUserGroupChats(), _createGroupChat(), etc.
 
   // Other methods and logic related to group chats
-  List<GroupChat>? get groupChats => _groupChats;
+
+  GroupChat? getGroupChatByKey(String groupChatKey) {
+    if (_groupChats != null) {
+      for (var groupChat in _groupChats!) {
+        if (groupChat.key == groupChatKey) {
+          return groupChat;
+        }
+      }
+    }
+    return null;
+  }
+
+  User? getCurrentUser() {
+    return _currentUser;
+  }
 }

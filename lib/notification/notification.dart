@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:groupchat_firebase/common/splash.dart';
-import 'package:groupchat_firebase/widgets/custom/rippleButton.dart';
 import 'package:groupchat_firebase/state/auth_state.dart';
+import 'package:groupchat_firebase/widgets/custom/rippleButton.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 
 class NotifcationTest extends StatefulWidget {
@@ -38,7 +39,7 @@ class _NotificationState extends State<NotifcationTest> {
               height: 30,
             ),
             Text(
-              "${state.profileUserModel!.displayName}, we know you can do it!\nTap the\nnotification to get your first BeReal.",
+              "\n${state.profileUserModel!.displayName}, we know you can do it!\nTap the\nnotification to get your first ReBeal.",
               style: TextStyle(
                   color: Colors.white,
                   fontSize: 40,
@@ -59,12 +60,12 @@ class _NotificationState extends State<NotifcationTest> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(IconData(0xf02a1, fontFamily: 'MaterialIcons'),
+                        Icon(Iconsax.notification,
                             color: Color.fromARGB(255, 101, 101, 101)),
                         Padding(
                             padding: EdgeInsets.only(top: 5, left: 5),
                             child: Text(
-                              "Disable \"do not disturb\"\n",
+                              "Disable to not disturb",
                               style: TextStyle(
                                   color: Color.fromARGB(255, 101, 101, 101)),
                             )),
@@ -84,7 +85,7 @@ class _NotificationState extends State<NotifcationTest> {
                               ),
                               child: Center(
                                   child: Text(
-                                "resend notification",
+                                "Resend notification",
                                 style: TextStyle(
                                     fontFamily: "icons.ttf",
                                     color: Colors.black,
