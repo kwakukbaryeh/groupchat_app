@@ -72,11 +72,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[900],
+      backgroundColor: Color(0xFF121212),
       appBar: AppBar(
         elevation: 0.0,
         title: Text('keepUp'),
-        backgroundColor: Colors.grey[900],
+        backgroundColor: Color(0xFF121212),
         leading: GestureDetector(
           onTap: () {
             Navigator.push(
@@ -128,6 +128,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
+                      color: Colors.grey[700],
                     ),
                   ),
                 ),
@@ -142,6 +143,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
+                      color: Colors.grey[700],
                     ),
                   ),
                 ),

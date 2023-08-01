@@ -1,4 +1,5 @@
 // ignore_for_file: deprecated_member_use
+import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 import 'package:camera/camera.dart';
@@ -112,8 +113,8 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
             Padding(
                 padding: EdgeInsets.only(bottom: 50),
                 child: Image.asset(
-                  "assets/rebeals.png",
-                  height: 130,
+                  "assets/logo/logo.png",
+                  height: 35,
                 )),
           ],
         ),
@@ -276,14 +277,14 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
       if (!mounted) {
         return;
       }
-      // _controller?.getMinZoomLevel().then((value) {
-      //   zoomLevel = value;
-      //   minZoomLevel = value;
-      // });
-      // _controller?.getMaxZoomLevel().then((value) {
-      //   maxZoomLevel = value;
-      // });
-      // _controller?.startImageStream(_processCameraImage);
+      _controller?.getMinZoomLevel().then((value) {
+        zoomLevel = value;
+        minZoomLevel = value;
+      });
+      _controller?.getMaxZoomLevel().then((value) {
+        maxZoomLevel = value;
+      });
+      _controller?.startImageStream(_processCameraImage);
       setState(() {});
     });
   }
@@ -291,33 +292,45 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
   Future<void> _takePicture() async {
     HapticFeedback.heavyImpact();
     var state = Provider.of<AuthState>(context, listen: false);
-    _controller!.takePicture().then((fpath) async {
+
+    // Take the first picture (front image)
+    await _controller!.takePicture().then((fpath) async {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _switchFrontCamera();
       });
-      uploadImageToStorage(File(fpath.path)).then((path) {
+
+      // Upload the front image to Firebase Storage
+      await uploadImageToStorage(File(fpath.path)).then((path) {
         setState(() {
-          backImagePath = path;
+          frontImagePath = path;
         });
       });
-      return _controller!.takePicture();
-    }).then((bpath) {
-      uploadImageToStorage(File(bpath.path)).then((path) {
+    });
+
+    // Show a black screen for a brief duration to turn the camera around
+    await Future.delayed(
+        Duration(milliseconds: 500)); // Adjust the duration as needed
+
+    // Take the second picture (back image)
+    await _controller!.takePicture().then((bpath) async {
+      // Upload the back image to Firebase Storage
+      await uploadImageToStorage(File(bpath.path)).then((path) {
         UserModel user = UserModel(
           displayName: state.profileUserModel!.displayName ?? "",
           profilePic: state.profileUserModel!.profilePic,
           userId: state.profileUserModel!.userId,
           localisation: state.profileUserModel!.localisation,
         );
+
+        // Create and add the post to the database
         PostModel post = PostModel(
           user: user,
-          imageFrontPath: backImagePath,
+          imageFrontPath: frontImagePath,
           imageBackPath: path,
           createdAt: DateTime.now().toUtc().toString(),
         );
         addPostToDatabase(post);
       });
-      return bpath;
     });
   }
 
