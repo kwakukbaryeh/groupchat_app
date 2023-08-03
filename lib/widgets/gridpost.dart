@@ -20,6 +20,7 @@ class _GridPostWidgetState extends State<GridPostWidget> {
 
   @override
   Widget build(BuildContext context) {
+    print("Rendering GridPostWidget: ${widget.postModel.key}");
     DateTime now = DateTime.now();
     DateTime? createdAt;
 

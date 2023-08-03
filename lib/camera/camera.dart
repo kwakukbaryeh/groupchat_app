@@ -41,6 +41,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
   bool isBackImageTaken = false;
   AnimationController? rotationController;
   final Duration animationDuration = Duration(milliseconds: 1000);
+
   @override
   void initState() {
     super.initState();
@@ -95,15 +96,17 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
     return Scaffold(
       appBar: AppBar(
         leading: Padding(
-            padding: EdgeInsets.only(bottom: 50),
-            child: GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                },
-                child: Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  size: 35,
-                ))),
+          padding: EdgeInsets.only(bottom: 50),
+          child: GestureDetector(
+            onTap: () {
+              Navigator.pop(context);
+            },
+            child: Icon(
+              Icons.keyboard_arrow_down_rounded,
+              size: 35,
+            ),
+          ),
+        ),
         centerTitle: true,
         toolbarHeight: 78,
         elevation: 0,
@@ -111,11 +114,12 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
           alignment: Alignment.center,
           children: [
             Padding(
-                padding: EdgeInsets.only(bottom: 50),
-                child: Image.asset(
-                  "assets/logo/logo.png",
-                  height: 35,
-                )),
+              padding: EdgeInsets.only(bottom: 50),
+              child: Image.asset(
+                "assets/logo/logo.png",
+                height: 35,
+              ),
+            ),
           ],
         ),
         backgroundColor: Colors.black,
@@ -127,17 +131,18 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
   }
 
   Widget _body() {
-    if (_controller?.value.isInitialized == false) {
-      return Container();
-    }
-    final size = MediaQuery.of(context).size;
-    var scale = size.aspectRatio * _controller!.value.aspectRatio;
+    if (!isFrontImageTaken) {
+      if (_controller?.value.isInitialized == false) {
+        return Container();
+      }
+      final size = MediaQuery.of(context).size;
+      var scale = size.aspectRatio * _controller!.value.aspectRatio;
 
-    if (scale < 1) scale = 1 / scale;
+      if (scale < 1) scale = 1 / scale;
 
-    return Column(
-      children: [
-        ClipRRect(
+      return Column(
+        children: [
+          ClipRRect(
             borderRadius: BorderRadius.circular(20),
             child: Container(
               color: Colors.black,
@@ -164,103 +169,116 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
                         }
                       },
                       child: FittedBox(
-                          fit: BoxFit.cover,
-                          child: SizedBox(
-                              width: _controller!.value.previewSize!.height,
-                              height: _controller!.value.previewSize!.width,
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  CameraPreview(_controller!),
-                                  GestureDetector(
-                                      onTap: _switchGiantAngle,
-                                      child: _cameraIndex == 1
-                                          ? Container()
-                                          : Padding(
-                                              padding: EdgeInsets.only(
-                                                  top: MediaQuery.of(context)
-                                                          .size
-                                                          .height /
-                                                      0.95),
-                                              child: Container(
-                                                height: 65,
-                                                width: 65,
-                                                decoration: BoxDecoration(
-                                                  color: Colors.black,
-                                                  shape: BoxShape.circle,
-                                                ),
-                                                alignment: Alignment.center,
-                                                child: Text(
-                                                  _cameraIndex == 2
-                                                      ? "0.5x"
-                                                      : "1x",
-                                                  style: TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: 25),
-                                                ),
-                                              )))
-                                ],
-                              )))),
-            )),
-        Container(
-          height: 40,
-        ),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            GestureDetector(
-              onTap: _cameraIndex == 1
-                  ? () {
-                      HapticFeedback.heavyImpact();
-                    }
-                  : _flashEnable,
-              child: Icon(
-                flashEnabled ? Iconsax.flash_15 : Iconsax.flash_slash5,
-                color: Colors.white,
-                size: 35,
+                        fit: BoxFit.cover,
+                        child: SizedBox(
+                          width: _controller!.value.previewSize!.height,
+                          height: _controller!.value.previewSize!.width,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              CameraPreview(_controller!),
+                              GestureDetector(
+                                onTap: _switchGiantAngle,
+                                child: _cameraIndex == 1
+                                    ? Container()
+                                    : Padding(
+                                        padding: EdgeInsets.only(
+                                          top: MediaQuery.of(context)
+                                                  .size
+                                                  .height /
+                                              0.95,
+                                        ),
+                                        child: Container(
+                                          height: 65,
+                                          width: 65,
+                                          decoration: BoxDecoration(
+                                            color: Colors.black,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          alignment: Alignment.center,
+                                          child: Text(
+                                            _cameraIndex == 2 ? "0.5x" : "1x",
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 25,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+            ),
+          ),
+          Container(
+            height: 40,
+          ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              GestureDetector(
+                onTap: _cameraIndex == 1
+                    ? () {
+                        HapticFeedback.heavyImpact();
+                      }
+                    : _flashEnable,
+                child: Icon(
+                  flashEnabled ? Iconsax.flash_15 : Iconsax.flash_slash5,
+                  color: Colors.white,
+                  size: 35,
+                ),
               ),
-            ),
-            Container(
-              width: 25,
-            ),
-            GestureDetector(
+              Container(
+                width: 25,
+              ),
+              GestureDetector(
                 onTap: _takePicture,
                 child: Container(
-                    height: 80,
-                    width: 80,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.white, width: 6),
-                      shape: BoxShape.circle,
-                    ))),
-            Container(
-              width: 25,
-            ),
-            GestureDetector(
-              onTap: _switchFrontCamera,
-              child: AnimatedBuilder(
-                animation: rotationController!,
-                builder: (context, child) {
-                  return Transform.rotate(
-                    angle: rotationController!.value * 2.0 * pi,
-                    child: child,
-                  );
-                },
-                child: Transform(
-                  transform: Matrix4.identity()..scale(-1.0, 1.0, -1.0),
-                  alignment: Alignment.center,
-                  child: Icon(
-                    Icons.loop_rounded,
-                    color: Colors.white,
-                    size: 37,
+                  height: 80,
+                  width: 80,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.white, width: 6),
+                    shape: BoxShape.circle,
                   ),
                 ),
               ),
-            )
-          ],
-        )
-      ],
-    );
+              Container(
+                width: 25,
+              ),
+              GestureDetector(
+                onTap: _switchFrontCamera,
+                child: AnimatedBuilder(
+                  animation: rotationController!,
+                  builder: (context, child) {
+                    return Transform.rotate(
+                      angle: rotationController!.value * 2.0 * pi,
+                      child: child,
+                    );
+                  },
+                  child: Transform(
+                    transform: Matrix4.identity()..scale(-1.0, 1.0, -1.0),
+                    alignment: Alignment.center,
+                    child: Icon(
+                      Icons.loop_rounded,
+                      color: Colors.white,
+                      size: 37,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+    } else {
+      return Container(
+          // You can show a loading indicator or any other UI here while the second picture is being taken and uploaded
+          );
+    }
   }
 
   Future _startLiveFeed() async {
@@ -303,6 +321,8 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
       await uploadImageToStorage(File(fpath.path)).then((path) {
         setState(() {
           frontImagePath = path;
+          isFrontImageTaken =
+              true; // Set the flag to true after the first image is taken
         });
       });
     });
@@ -329,7 +349,11 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
           imageBackPath: path,
           createdAt: DateTime.now().toUtc().toString(),
         );
+
         addPostToDatabase(post);
+
+        // Navigate back to the previous page after both images are taken and uploaded
+        Navigator.pop(context);
       });
     });
   }

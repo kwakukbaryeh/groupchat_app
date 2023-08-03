@@ -20,6 +20,7 @@ class _FeedPostWidgetState extends State<FeedPostWidget> {
 
   @override
   Widget build(BuildContext context) {
+    print("Rendering FeedPostWidget: ${widget.postModel.key}");
     String localisation;
     if (widget.postModel.user?.localisation.toString().replaceAll("null", "") ==
         "") {

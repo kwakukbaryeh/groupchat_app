@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'package:flutter/src/widgets/basic.dart';
+import 'package:groupchat_firebase/models/groupchat.dart';
 import 'user.dart';
 
 class PostModel {
@@ -11,7 +12,7 @@ class PostModel {
   late String createdAt;
   UserModel? user;
   List<String?>? comment;
-  String? groupChatId; // Add the groupChatId property
+  GroupChat? groupChat;
 
   PostModel({
     this.key,
@@ -20,7 +21,7 @@ class PostModel {
     this.bio,
     this.imageBackPath,
     this.user,
-    this.groupChatId, // Initialize the groupChatId property
+    this.groupChat,
   });
 
   toJson() {
@@ -30,7 +31,7 @@ class PostModel {
       "imageBackPath": imageBackPath,
       "imageFrontPath": imageFrontPath,
       "user": user == null ? null : user!.toJson(),
-      "groupChatId": groupChatId, // Include groupChatId in toJson()
+      "groupChat": groupChat == null ? null : user!.toJson(),
     };
   }
 
@@ -41,8 +42,10 @@ class PostModel {
     createdAt = map['createdAt'];
     imageFrontPath = map['imageFrontPath'];
     user = UserModel.fromJson(map['user']);
-    groupChatId = map['groupChatId']; // Get the groupChatId from the map
+    groupChat = GroupChat.fromJson(map['groupChat']);
   }
+
+  // ... Your existing code ...
 
   map(Stack Function(dynamic model) param0) {}
 }

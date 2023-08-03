@@ -9,6 +9,7 @@ import 'package:groupchat_firebase/common/locator.dart';
 import 'package:groupchat_firebase/helper/enum.dart';
 import 'package:groupchat_firebase/helper/shared_preference_helper.dart';
 import 'package:groupchat_firebase/helper/utility.dart';
+import 'package:groupchat_firebase/models/groupchat.dart';
 import 'package:groupchat_firebase/models/user.dart';
 import 'package:groupchat_firebase/state/appState.dart';
 import 'package:path/path.dart' as path;

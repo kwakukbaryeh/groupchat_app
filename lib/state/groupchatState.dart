@@ -10,10 +10,18 @@ class GroupChatState extends ChangeNotifier {
   List<GroupChat>? _groupChats;
   Timer? _timer;
   User? _currentUser;
+  String? _userId; // New property to store the user ID
   List<GroupChat>? get groupChats => _groupChats;
+  String? get userId => _userId; // Getter for the user ID
 
   List<GroupChat>? getGroupChats() {
     return _groupChats;
+  }
+
+  void setCurrentUser(User user) {
+    _userId = user.uid; // Set the user ID when the current user is fetched
+    _currentUser = user;
+    notifyListeners();
   }
 
   void startTimer() {

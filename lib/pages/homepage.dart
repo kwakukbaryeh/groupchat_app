@@ -240,10 +240,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               context,
                               MaterialPageRoute(
                                 builder: (context) => GroupScreen(
-                                  userId:
-                                      "your_user_id_here", // Replace with the actual user ID
-                                  groupChats: groupChatState
-                                      .groupChats, // Use groupChats from groupChatState
+                                  groupChat: groupChat,
                                 ),
                               ),
                             );
@@ -339,9 +336,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               context,
               MaterialPageRoute(
                 builder: (context) => GroupScreen(
-                  userId:
-                      "your_user_id_here", // Replace with the actual user ID
-                  groupChats: groupChats,
+                  groupChat: groupChat,
                 ),
               ),
             );
@@ -403,8 +398,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         context,
         MaterialPageRoute(
           builder: (context) => GroupScreen(
-            userId: "your_user_id_here", // Replace with the actual user ID
-            groupChats: groupChatState.groupChats,
+            groupChat: existingGroupChat,
           ),
         ),
       );
@@ -432,8 +426,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           context,
           MaterialPageRoute(
             builder: (context) => GroupScreen(
-              userId: "your_user_id_here", // Replace with the actual user ID
-              groupChats: groupChatState.groupChats,
+              groupChat: newGroupChat,
             ),
           ),
         );

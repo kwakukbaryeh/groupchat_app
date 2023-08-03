@@ -72,7 +72,7 @@ class PostState extends AppStates {
   }
 
   void setFeedModel(PostModel model) {
-    String groupChatId = model.groupChatId ??
+    String groupChatId = model.groupChat!.key ??
         'default'; // Use 'default' as a fallback if groupChatId is null or empty
     groupChatPostMap[groupChatId] ??= [];
     groupChatPostMap[groupChatId]!.add(model);
@@ -91,8 +91,10 @@ class PostState extends AppStates {
               .listen((event) => onPostAdded(groupChat.key!, event));
         }
       }
+      print("Queries initialized successfully.");
       return Future.value(true);
     } catch (error) {
+      print("Error initializing queries: $error");
       return Future.value(false);
     }
   }
@@ -107,6 +109,7 @@ class PostState extends AppStates {
         if (snapshot.value != null) {
           var map = snapshot.value as Map<dynamic, dynamic>?;
           if (map != null) {
+            print("Looping through group chats...");
             map.forEach((groupChatId, value) {
               var postMap = value as Map<dynamic, dynamic>;
               if (postMap != null) {
@@ -119,15 +122,19 @@ class PostState extends AppStates {
                 postList.sort((x, y) => DateTime.parse(x.createdAt)
                     .compareTo(DateTime.parse(y.createdAt)));
                 groupChatPostMap[groupChatId] = postList;
+                print("Data fetched for group chat: $groupChatId");
               }
             });
           }
+          print("Looping through group chats completed.");
         }
         isBusy = false;
         notifyListeners();
+        print("Data fetching completed successfully.");
       });
     } catch (error) {
       isBusy = false;
+      print("Error fetching data: $error");
     }
   }
 
@@ -154,23 +161,31 @@ class PostState extends AppStates {
             postList.sort((x, y) => DateTime.parse(x.createdAt)
                 .compareTo(DateTime.parse(y.createdAt)));
             groupChatPostMap[groupChatId] = postList;
+            print("Data fetched for group chat: $groupChatId");
           }
+        } else {
+          print("No data found for group chat: $groupChatId");
         }
         isBusy = false;
         notifyListeners();
+        print("Data fetching completed for group chat: $groupChatId");
       });
     } catch (error) {
       isBusy = false;
+      print("Error fetching data for group chat: $groupChatId, Error: $error");
     }
   }
 
   void onPostAdded(String groupChatId, DatabaseEvent event) {
     PostModel post = PostModel.fromJson(event.snapshot.value as Map);
     post.key = event.snapshot.key!;
-    post.groupChatId = groupChatId;
+    post.groupChat!.key = groupChatId;
     groupChatPostMap[groupChatId] ??= [];
     if (!groupChatPostMap[groupChatId]!.any((x) => x.key == post.key)) {
       groupChatPostMap[groupChatId]!.add(post);
+      print("Post added to groupChatPostMap: $post");
+    } else {
+      print("Post already exists in groupChatPostMap: $post");
     }
     isBusy = false;
     notifyListeners();

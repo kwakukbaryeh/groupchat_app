@@ -6,8 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:groupchat_firebase/camera/camera.dart';
 import 'package:groupchat_firebase/models/groupchat.dart';
 import 'package:groupchat_firebase/models/post.dart';
-import 'package:groupchat_firebase/models/user.dart';
-import 'package:groupchat_firebase/pages/homepage.dart';
 import 'package:groupchat_firebase/pages/myprofile.dart';
 import 'package:groupchat_firebase/services/user_tile_page.dart';
 import 'package:groupchat_firebase/state/auth_state.dart';
@@ -17,14 +15,12 @@ import 'package:groupchat_firebase/widgets/custom/rippleButton.dart';
 import 'package:groupchat_firebase/widgets/feedpost.dart';
 import 'package:groupchat_firebase/widgets/gridpost.dart';
 import 'package:provider/provider.dart';
+import 'package:groupchat_firebase/state/groupchatState.dart';
 
 class GroupScreen extends StatefulWidget {
-  final String userId; // Add this property to store the user ID
-  final List<GroupChat>?
-      groupChats; // Add this property to store the list of group chats
+  final GroupChat groupChat;
 
-  const GroupScreen({Key? key, required this.userId, required this.groupChats})
-      : super(key: key);
+  const GroupScreen({Key? key, required this.groupChat}) : super(key: key);
 
   @override
   _GroupScreenState createState() => _GroupScreenState();
@@ -36,50 +32,37 @@ class _GroupScreenState extends State<GroupScreen>
   ScrollController _scrollController = ScrollController();
   bool _isScrolledDown = false;
   bool _isGrid = false;
-  List<PostModel>? list;
 
   @override
   void initState() {
-    var authState = Provider.of<AuthState>(context, listen: false);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      authState.getCurrentUser();
-      initPosts();
-      initSearch();
-      initProfile();
-    });
-    _scrollController.addListener(_scrollListener);
-    _tabController = TabController(length: 2, vsync: this);
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _scrollController.addListener(_scrollListener);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initData();
+    });
   }
 
-  @override
-  void dispose() {
-    _scrollController.removeListener(_scrollListener);
-    _scrollController.dispose();
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  void initSearch() {
+  void _initData() {
+    var authState = Provider.of<AuthState>(context, listen: false);
+    var postState = Provider.of<PostState>(context, listen: false);
     var searchState = Provider.of<SearchState>(context, listen: false);
+    var groupChatState = Provider.of<GroupChatState>(context, listen: false);
+
+    // Get the current user ID from the auth state
+    String userId = authState.userId;
+
+    // Fetch user data from the database
+    authState.getCurrentUser();
+    authState.databaseInit();
+
+    // Fetch user posts from the database for the specific group chat
+    postState.databaseInit([widget.groupChat]); // Pass the group chat as a list
+
+    postState.getDataFromDatabaseForGroupChat(widget.groupChat.key!);
+
+    // Fetch search data from the database
     searchState.getDataFromDatabase();
-  }
-
-  void initProfile() {
-    var state = Provider.of<AuthState>(context, listen: false);
-    state.databaseInit();
-  }
-
-  void initPosts() {
-    var state = Provider.of<PostState>(context, listen: false);
-
-    if (widget.groupChats != null) {
-      state.databaseInit(widget.groupChats!);
-
-      for (var groupChat in widget.groupChats!) {
-        state.getDataFromDatabaseForGroupChat(groupChat.key!);
-      }
-    }
   }
 
   void _scrollListener() {
@@ -113,7 +96,6 @@ class _GroupScreenState extends State<GroupScreen>
   Widget empty(List<PostModel>? groupList) {
     print("Checking condition: groupList == null || groupList.isEmpty");
     print("groupList: $groupList");
-    print("List: $list");
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10),
       child: Column(
@@ -148,8 +130,7 @@ class _GroupScreenState extends State<GroupScreen>
   Widget build(BuildContext context) {
     var authState = Provider.of<AuthState>(context, listen: false);
     final state = Provider.of<SearchState>(context);
-
-    print("Building GroupScreen...");
+    final groupChatsState = Provider.of<GroupChatState>(context);
 
     return Scaffold(
       extendBody: true,
@@ -252,7 +233,7 @@ class _GroupScreenState extends State<GroupScreen>
                       padding: const EdgeInsets.only(left: 20),
                       child: Tab(
                         child: Text(
-                          'My Friends',
+                          widget.groupChat.groupName,
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
@@ -294,8 +275,9 @@ class _GroupScreenState extends State<GroupScreen>
                   controller: _tabController,
                   children: [
                     // Tab 1: Group Chat Posts
-                    if (widget.groupChats != null)
-                      for (var groupChat in widget.groupChats!)
+
+                    if (groupChatsState.groupChats != null)
+                      for (var groupChat in groupChatsState.groupChats!)
                         Consumer<PostState>(
                           builder: (context, state, child) {
                             final String groupChatId = groupChat.key!;
@@ -345,7 +327,7 @@ class _GroupScreenState extends State<GroupScreen>
                                   );
                           },
                         ),
-                    if (widget.groupChats == null)
+                    if (groupChatsState.groupChats == null)
                       Center(
                         child: Text(
                             'Loading...'), // Placeholder or any other widget
