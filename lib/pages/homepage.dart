@@ -1,19 +1,20 @@
+import 'dart:core';
 import 'dart:math';
 import 'dart:typed_data';
+
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:groupchat_firebase/models/user.dart';
+import 'package:groupchat_firebase/models/groupchat.dart';
 import 'package:groupchat_firebase/pages/directmessage.dart';
 import 'package:groupchat_firebase/pages/myprofile.dart';
-import 'package:provider/provider.dart';
-import 'package:groupchat_firebase/models/groupchat.dart';
 import 'package:groupchat_firebase/state/groupchatState.dart';
-import 'group_screen.dart';
-import 'dart:core';
-import 'package:qr_flutter/qr_flutter.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:provider/provider.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:uuid/uuid.dart';
+
+import 'group_screen.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -51,13 +52,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   void _scrollListener() {
-    if (_scrollController.position.userScrollDirection ==
-        ScrollDirection.reverse) {
+    if (_scrollController.position.userScrollDirection == ScrollDirection.reverse) {
       setState(() {
         _isScrolledDown = true;
       });
-    } else if (_scrollController.position.userScrollDirection ==
-        ScrollDirection.forward) {
+    } else if (_scrollController.position.userScrollDirection == ScrollDirection.forward) {
       setState(() {
         _isScrolledDown = false;
       });
@@ -222,20 +221,22 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         onPressed: () async {
                           var groupName = _groupNameController.text;
                           if (groupName.isNotEmpty) {
-                            var groupChatState = Provider.of<GroupChatState>(
-                                context,
-                                listen: false);
+                            var groupChatState = Provider.of<GroupChatState>(context, listen: false);
                             var groupChat = GroupChat(
                               groupName: groupName,
                               participantCount: 1,
                               createdAt: DateTime.now(),
-                              expiryDate:
-                                  DateTime.now().add(const Duration(hours: 12)),
+                              expiryDate: DateTime.now().add(const Duration(hours: 12)),
                             );
-                            await groupChatState
-                                .saveGroupChatToDatabase(groupChat);
+                            await groupChatState.saveGroupChatToDatabase(
+                              groupChat,
+                              (groupKey) {
+                                groupChat.key = groupKey;
+                              },
+                            );
 
                             // Pass the groupChats variable to the GroupScreen widget
+                            print(groupChat);
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -267,16 +268,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             MaterialPageRoute(
                               builder: (context) => MobileScanner(
                                 onDetect: (capture) {
-                                  final List<Barcode> barcodes =
-                                      capture.barcodes;
+                                  final List<Barcode> barcodes = capture.barcodes;
                                   final Uint8List? image = capture.image;
 
                                   for (final barcode in barcodes) {
-                                    String scannedData =
-                                        barcode.rawValue as String;
+                                    String scannedData = barcode.rawValue as String;
                                     // Use the scannedData variable to navigate to the GroupScreen
-                                    navigateToGroupChatPage(
-                                        context, scannedData);
+                                    navigateToGroupChatPage(context, scannedData);
 
                                     debugPrint('Barcode found! $scannedData');
                                   }
@@ -315,8 +313,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     }
 
     final double appBarHeight = kToolbarHeight;
-    final double availableHeight =
-        MediaQuery.of(context).size.height - (appBarHeight + 154.0);
+    final double availableHeight = MediaQuery.of(context).size.height - (appBarHeight + 154.0);
     final double buttonHeight = availableHeight / groupChats.length;
 
     return ListView.separated(
@@ -353,8 +350,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 borderRadius: BorderRadius.circular(10.0),
               ),
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
@@ -388,7 +384,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  void navigateToGroupChatPage(BuildContext context, String groupChatKey) {
+  Future<void> navigateToGroupChatPage(BuildContext context, String groupChatKey) async {
     final groupChatState = Provider.of<GroupChatState>(context, listen: false);
 
     // Case 1: Group chat exists for the scanned groupChatKey
@@ -419,9 +415,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         );
 
         // Save the new group chat to the database
-        groupChatState.saveGroupChatToDatabase(newGroupChat);
+        await groupChatState.saveGroupChatToDatabase(
+          newGroupChat,
+          (groupKey) {
+            newGroupChat.key = groupKey;
+          },
+        );
 
         // Navigate to the new group chat passing the required parameters
+        print(newGroupChat);
         Navigator.push(
           context,
           MaterialPageRoute(

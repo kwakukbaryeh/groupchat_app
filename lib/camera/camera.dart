@@ -2,23 +2,23 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
+
 import 'package:camera/camera.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:groupchat_firebase/models/post.dart';
 import 'package:groupchat_firebase/models/user.dart';
 import 'package:groupchat_firebase/state/auth_state.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:provider/provider.dart';
-import '../main.dart';
-import 'package:firebase_database/firebase_database.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path/path.dart' as Path;
+import 'package:provider/provider.dart';
+
+import '../main.dart';
 
 class CameraPage extends StatefulWidget {
-  CameraPage(
-      {Key? key, this.text, this.initialDirection = CameraLensDirection.back})
-      : super(key: key);
+  CameraPage({Key? key, this.text, this.initialDirection = CameraLensDirection.back}) : super(key: key);
 
   final String? text;
   final CameraLensDirection initialDirection;
@@ -50,14 +50,10 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
       duration: animationDuration,
     );
     if (cameras.any(
-      (element) =>
-          element.lensDirection == widget.initialDirection &&
-          element.sensorOrientation == 90,
+      (element) => element.lensDirection == widget.initialDirection && element.sensorOrientation == 90,
     )) {
       _cameraIndex = cameras.indexOf(
-        cameras.firstWhere((element) =>
-            element.lensDirection == widget.initialDirection &&
-            element.sensorOrientation == 90),
+        cameras.firstWhere((element) => element.lensDirection == widget.initialDirection && element.sensorOrientation == 90),
       );
     } else {
       for (var i = 0; i < cameras.length; i++) {
@@ -183,10 +179,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
                                     ? Container()
                                     : Padding(
                                         padding: EdgeInsets.only(
-                                          top: MediaQuery.of(context)
-                                                  .size
-                                                  .height /
-                                              0.95,
+                                          top: MediaQuery.of(context).size.height / 0.95,
                                         ),
                                         child: Container(
                                           height: 65,
@@ -287,9 +280,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
       camera,
       ResolutionPreset.high,
       enableAudio: false,
-      imageFormatGroup: Platform.isAndroid
-          ? ImageFormatGroup.nv21
-          : ImageFormatGroup.bgra8888,
+      imageFormatGroup: Platform.isAndroid ? ImageFormatGroup.nv21 : ImageFormatGroup.bgra8888,
     );
     _controller?.initialize().then((_) {
       if (!mounted) {
@@ -313,23 +304,21 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
 
     // Take the first picture (front image)
     await _controller!.takePicture().then((fpath) async {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _switchFrontCamera();
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        await _switchFrontCamera();
       });
 
       // Upload the front image to Firebase Storage
       await uploadImageToStorage(File(fpath.path)).then((path) {
         setState(() {
           frontImagePath = path;
-          isFrontImageTaken =
-              true; // Set the flag to true after the first image is taken
+          isFrontImageTaken = true; // Set the flag to true after the first image is taken
         });
       });
     });
 
     // Show a black screen for a brief duration to turn the camera around
-    await Future.delayed(
-        Duration(milliseconds: 500)); // Adjust the duration as needed
+    await Future.delayed(Duration(milliseconds: 500)); // Adjust the duration as needed
 
     // Take the second picture (back image)
     await _controller!.takePicture().then((bpath) async {

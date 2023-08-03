@@ -87,11 +87,12 @@ class GroupChatState extends ChangeNotifier {
     }
   }
 
-  Future<void> saveGroupChatToDatabase(GroupChat groupChat) async {
+  Future<void> saveGroupChatToDatabase(GroupChat groupChat,Function(String groupKey) returnKey) async {
     try {
       // Create a new group chat node in the database
       DatabaseReference groupChatRef = kDatabase.child('groupchats').push();
       String groupChatId = groupChatRef.key!;
+      returnKey.call(groupChatId);
 
       // Calculate the expiry date
       DateTime expiryDate = DateTime.now().add(Duration(hours: 12));

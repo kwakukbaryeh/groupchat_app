@@ -1,4 +1,4 @@
-import 'dart:io' as d;
+import 'package:camera/camera.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:groupchat_firebase/common/locator.dart';
@@ -10,27 +10,15 @@ import 'package:groupchat_firebase/state/post_state.dart';
 import 'package:groupchat_firebase/state/search_state.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:camera/camera.dart';
-
-import 'pages/homepage.dart';
 
 List<CameraDescription> cameras = [];
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   cameras = await availableCameras();
-  if (d.Platform.isIOS)
-    Firebase.initializeApp();
-  else
-    await Firebase.initializeApp(
-        options: FirebaseOptions(
-            apiKey: "apiKey",
-            authDomain: "authDomain",
-            databaseURL: "databaseURL",
-            projectId: "projectId",
-            storageBucket: "storageBucket",
-            messagingSenderId: "messagingSenderId",
-            appId: "appId",
-            measurementId: "measurementId"));
+
+  Firebase.initializeApp();
+
   setupDependencies();
   final sharedPreferences = await SharedPreferences.getInstance();
   runApp(MyApp(
@@ -41,6 +29,7 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({Key? key, required this.sharedPreferences}) : super(key: key);
   final SharedPreferences sharedPreferences;
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -51,11 +40,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<SearchState>(create: (_) => SearchState()),
         ChangeNotifierProvider<GroupChatState>(create: (_) => GroupChatState()),
       ],
-      child: MaterialApp(
-          theme: ThemeData(brightness: Brightness.dark),
-          title: 'ReBeal.',
-          debugShowCheckedModeBanner: false,
-          home: SplashPage()),
+      child: MaterialApp(theme: ThemeData(brightness: Brightness.dark), title: 'ReBeal.', debugShowCheckedModeBanner: false, home: SplashPage()),
     );
   }
 }
@@ -66,13 +51,7 @@ class AppPage extends StatelessWidget {
   final bool hasDirectMessageIcon;
   final Widget page;
 
-  const AppPage(
-      {Key? key,
-      required this.title,
-      this.hasHamburgerMenu = false,
-      this.hasDirectMessageIcon = false,
-      required this.page})
-      : super(key: key);
+  const AppPage({Key? key, required this.title, this.hasHamburgerMenu = false, this.hasDirectMessageIcon = false, required this.page}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

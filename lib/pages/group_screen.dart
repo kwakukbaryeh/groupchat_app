@@ -9,13 +9,13 @@ import 'package:groupchat_firebase/models/post.dart';
 import 'package:groupchat_firebase/pages/myprofile.dart';
 import 'package:groupchat_firebase/services/user_tile_page.dart';
 import 'package:groupchat_firebase/state/auth_state.dart';
+import 'package:groupchat_firebase/state/groupchatState.dart';
 import 'package:groupchat_firebase/state/post_state.dart';
 import 'package:groupchat_firebase/state/search_state.dart';
 import 'package:groupchat_firebase/widgets/custom/rippleButton.dart';
 import 'package:groupchat_firebase/widgets/feedpost.dart';
 import 'package:groupchat_firebase/widgets/gridpost.dart';
 import 'package:provider/provider.dart';
-import 'package:groupchat_firebase/state/groupchatState.dart';
 
 class GroupScreen extends StatefulWidget {
   final GroupChat groupChat;
@@ -26,8 +26,7 @@ class GroupScreen extends StatefulWidget {
   _GroupScreenState createState() => _GroupScreenState();
 }
 
-class _GroupScreenState extends State<GroupScreen>
-    with TickerProviderStateMixin {
+class _GroupScreenState extends State<GroupScreen> with TickerProviderStateMixin {
   late TabController _tabController;
   ScrollController _scrollController = ScrollController();
   bool _isScrolledDown = false;
@@ -66,13 +65,11 @@ class _GroupScreenState extends State<GroupScreen>
   }
 
   void _scrollListener() {
-    if (_scrollController.position.userScrollDirection ==
-        ScrollDirection.reverse) {
+    if (_scrollController.position.userScrollDirection == ScrollDirection.reverse) {
       setState(() {
         _isScrolledDown = true;
       });
-    } else if (_scrollController.position.userScrollDirection ==
-        ScrollDirection.forward) {
+    } else if (_scrollController.position.userScrollDirection == ScrollDirection.forward) {
       setState(() {
         _isScrolledDown = false;
       });
@@ -116,8 +113,7 @@ class _GroupScreenState extends State<GroupScreen>
               );
             },
             style: ElevatedButton.styleFrom(
-              primary:
-                  Colors.grey[700], // Set the background color to grey[700]
+              primary: Colors.grey[700], // Set the background color to grey[700]
             ),
             child: const Text("Take your BeReal"),
           ),
@@ -202,9 +198,7 @@ class _GroupScreenState extends State<GroupScreen>
                     height: 30,
                     width: 30,
                     child: CachedNetworkImage(
-                      imageUrl: authState.profileUserModel?.profilePic
-                              ?.toString() ??
-                          "https://i.pinimg.com/originals/f1/0f/f7/f10ff70a7155e5ab666bcdd1b45b726d.jpg",
+                      imageUrl: authState.profileUserModel?.profilePic?.toString() ?? "https://i.pinimg.com/originals/f1/0f/f7/f10ff70a7155e5ab666bcdd1b45b726d.jpg",
                     ),
                   ),
                 ),
@@ -281,15 +275,12 @@ class _GroupScreenState extends State<GroupScreen>
                         Consumer<PostState>(
                           builder: (context, state, child) {
                             final String groupChatId = groupChat.key!;
-                            final List<PostModel>? groupList =
-                                state.groupChatPostMap[groupChatId];
+                            final List<PostModel>? groupList = state.groupChatPostMap[groupChatId];
 
                             // Add any additional logic here, if needed
                             print("Debug: groupList is ${groupList}");
-                            print(
-                                "Debug: groupList is null: ${groupList == null}");
-                            print(
-                                "Debug: groupList is empty: ${groupList?.isEmpty ?? false}");
+                            print("Debug: groupList is null: ${groupList == null}");
+                            print("Debug: groupList is empty: ${groupList?.isEmpty ?? false}");
 
                             return groupList == null || groupList.isEmpty
                                 ? empty(groupList)
@@ -302,13 +293,11 @@ class _GroupScreenState extends State<GroupScreen>
                                     },
                                     child: AnimatedOpacity(
                                       opacity: _isGrid ? 1 : 0,
-                                      duration:
-                                          const Duration(milliseconds: 1000),
+                                      duration: const Duration(milliseconds: 1000),
                                       child: Padding(
                                         padding: const EdgeInsets.all(15),
                                         child: GridView.builder(
-                                          gridDelegate:
-                                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                                             crossAxisCount: 3,
                                             childAspectRatio: 0.8,
                                             mainAxisSpacing: 10,
@@ -329,8 +318,7 @@ class _GroupScreenState extends State<GroupScreen>
                         ),
                     if (groupChatsState.groupChats == null)
                       Center(
-                        child: Text(
-                            'Loading...'), // Placeholder or any other widget
+                        child: Text('Loading...'), // Placeholder or any other widget
                       ),
                   ],
                 )
@@ -341,8 +329,7 @@ class _GroupScreenState extends State<GroupScreen>
                     // Tab 2: All User's Posts (Assuming you need to show all user posts here)
                     Consumer<PostState>(
                       builder: (context, state, child) {
-                        final List<PostModel>? list =
-                            state.getPostLists(authState.userModel);
+                        final List<PostModel>? list = state.getPostLists(authState.userModel);
 
                         return RefreshIndicator(
                           color: Colors.transparent,
@@ -447,8 +434,7 @@ class _GroupScreenState extends State<GroupScreen>
                                   splashColor: Colors.transparent,
                                   child: Container(
                                     height: 55,
-                                    width:
-                                        MediaQuery.of(context).size.width - 40,
+                                    width: MediaQuery.of(context).size.width - 40,
                                     decoration: BoxDecoration(
                                       color: Colors.white,
                                       borderRadius: BorderRadius.circular(15),
