@@ -4,6 +4,7 @@ import 'package:groupchat_firebase/models/post.dart';
 
 class FeedPostWidget extends StatefulWidget {
   PostModel postModel;
+
   FeedPostWidget({required this.postModel, super.key});
 
   @override
@@ -12,6 +13,7 @@ class FeedPostWidget extends StatefulWidget {
 
 class _FeedPostWidgetState extends State<FeedPostWidget> {
   bool switcher = false;
+
   void switcherFunc() {
     setState(() {
       switcher = !switcher;
@@ -22,8 +24,7 @@ class _FeedPostWidgetState extends State<FeedPostWidget> {
   Widget build(BuildContext context) {
     print("Rendering FeedPostWidget: ${widget.postModel.key}");
     String localisation;
-    if (widget.postModel.user?.localisation.toString().replaceAll("null", "") ==
-        "") {
+    if (widget.postModel.user?.localisation.toString().replaceAll("null", "") == "") {
       localisation = "";
     } else {
       localisation = widget.postModel.user!.localisation.toString() + " •";
@@ -46,7 +47,10 @@ class _FeedPostWidgetState extends State<FeedPostWidget> {
     }
     return Container(
         color: Colors.black,
-        height: MediaQuery.of(context).size.height / 1.3,
+        height: MediaQuery
+            .of(context)
+            .size
+            .height / 1.3,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
@@ -57,20 +61,21 @@ class _FeedPostWidgetState extends State<FeedPostWidget> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 ClipRRect(
-                    borderRadius: BorderRadius.circular(100),
-                    child: Container(
-                        height: 35,
-                        width: 35,
-                        child: CachedNetworkImage(
-                          imageUrl:
-                              widget.postModel.user!.profilePic.toString(),
-                        ))),
+                  borderRadius: BorderRadius.circular(100),
+                  child: Container(
+                    height: 35,
+                    width: 35,
+                    child: CachedNetworkImage(
+                      imageUrl: widget.postModel.user?.profilePic ?? "https://i.pinimg.com/originals/f1/0f/f7/f10ff70a7155e5ab666bcdd1b45b726d.jpg",
+
+                    ),
+                  ),
+                ),
                 Text.rich(
                   TextSpan(
                     children: [
                       TextSpan(
-                        text: widget.postModel.user!.displayName.toString() +
-                            "\n",
+                        text: widget.postModel.user!.displayName.toString() + "\n",
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w500,
@@ -87,7 +92,10 @@ class _FeedPostWidgetState extends State<FeedPostWidget> {
                   ),
                 ),
                 Container(
-                  width: MediaQuery.of(context).size.width / 3,
+                  width: MediaQuery
+                      .of(context)
+                      .size
+                      .width / 3,
                 ),
                 Icon(Icons.more_horiz, color: Colors.white)
               ],
@@ -100,42 +108,42 @@ class _FeedPostWidgetState extends State<FeedPostWidget> {
                 child: ClipRRect(
                     borderRadius: BorderRadius.circular(15),
                     child: Container(
-                        height: MediaQuery.of(context).size.height / 1.63,
-                        width: MediaQuery.of(context).size.width,
+                        height: MediaQuery
+                            .of(context)
+                            .size
+                            .height / 1.63,
+                        width: MediaQuery
+                            .of(context)
+                            .size
+                            .width,
                         child: Stack(
                           children: [
                             FittedBox(
                                 fit: BoxFit.cover,
                                 child: SizedBox(
-                                    width: MediaQuery.of(context).size.width,
-                                    height: MediaQuery.of(context).size.height /
-                                        1.63,
-                                    child: CachedNetworkImage(
-                                        fit: BoxFit.cover,
-                                        imageUrl: switcher
-                                            ? widget.postModel.imageFrontPath
-                                                .toString()
-                                            : widget.postModel.imageBackPath
-                                                .toString()))),
+                                    width: MediaQuery
+                                        .of(context)
+                                        .size
+                                        .width,
+                                    height: MediaQuery
+                                        .of(context)
+                                        .size
+                                        .height / 1.63,
+                                    child: CachedNetworkImage(fit: BoxFit.cover, imageUrl: switcher ? widget.postModel.imageFrontPath.toString() : widget.postModel.imageBackPath.toString()))),
                             Padding(
                                 padding: EdgeInsets.all(20),
                                 child: ClipRRect(
                                     borderRadius: BorderRadius.circular(10),
                                     child: Container(
-                                        height:
-                                            MediaQuery.of(context).size.height /
-                                                6,
-                                        width:
-                                            MediaQuery.of(context).size.width /
-                                                3.9,
-                                        child: CachedNetworkImage(
-                                            fit: BoxFit.cover,
-                                            imageUrl: !switcher
-                                                ? widget
-                                                    .postModel.imageFrontPath
-                                                    .toString()
-                                                : widget.postModel.imageBackPath
-                                                    .toString())))),
+                                        height: MediaQuery
+                                            .of(context)
+                                            .size
+                                            .height / 6,
+                                        width: MediaQuery
+                                            .of(context)
+                                            .size
+                                            .width / 3.9,
+                                        child: CachedNetworkImage(fit: BoxFit.cover, imageUrl: !switcher ? widget.postModel.imageFrontPath.toString() : widget.postModel.imageBackPath.toString())))),
                           ],
                         )))),
           ],

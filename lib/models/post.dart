@@ -2,6 +2,7 @@
 
 import 'package:flutter/src/widgets/basic.dart';
 import 'package:groupchat_firebase/models/groupchat.dart';
+
 import 'user.dart';
 
 class PostModel {
@@ -26,12 +27,13 @@ class PostModel {
 
   toJson() {
     return {
+      "key": key,
       "createdAt": createdAt,
       "bio": bio,
       "imageBackPath": imageBackPath,
       "imageFrontPath": imageFrontPath,
       "user": user == null ? null : user!.toJson(),
-      "groupChat": groupChat == null ? null : user!.toJson(),
+      "groupChat": groupChat == null ? null : groupChat!.toJson(),
     };
   }
 
@@ -42,10 +44,9 @@ class PostModel {
     createdAt = map['createdAt'];
     imageFrontPath = map['imageFrontPath'];
     user = UserModel.fromJson(map['user']);
-    groupChat = GroupChat.fromJson(map['groupChat']);
+    groupChat = map.containsKey('groupChat') && map['groupChat'] != null ? GroupChat.fromJson(map['groupChat'].cast<String, dynamic>()) : null;
   }
 
   // ... Your existing code ...
-
   map(Stack Function(dynamic model) param0) {}
 }

@@ -42,7 +42,7 @@ class _GroupScreenState extends State<GroupScreen> with TickerProviderStateMixin
     });
   }
 
-  void _initData() {
+  Future<void> _initData() async {
     var authState = Provider.of<AuthState>(context, listen: false);
     var postState = Provider.of<PostState>(context, listen: false);
     var searchState = Provider.of<SearchState>(context, listen: false);
@@ -56,9 +56,9 @@ class _GroupScreenState extends State<GroupScreen> with TickerProviderStateMixin
     authState.databaseInit();
 
     // Fetch user posts from the database for the specific group chat
-    postState.databaseInit([widget.groupChat]); // Pass the group chat as a list
+    await postState.databaseInit([widget.groupChat]); // Pass the group chat as a list
 
-    postState.getDataFromDatabaseForGroupChat(widget.groupChat.key!);
+    await postState.getDataFromDatabaseForGroupChat(widget.groupChat.key!);
 
     // Fetch search data from the database
     searchState.getDataFromDatabase();
@@ -108,7 +108,9 @@ class _GroupScreenState extends State<GroupScreen> with TickerProviderStateMixin
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => CameraPage(),
+                  builder: (context) => CameraPage(
+                    groupChat: widget.groupChat,
+                  ),
                 ),
               );
             },
@@ -144,7 +146,9 @@ class _GroupScreenState extends State<GroupScreen> with TickerProviderStateMixin
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => CameraPage(),
+                      builder: (context) => CameraPage(
+                        groupChat: widget.groupChat,
+                      ),
                     ),
                   );
                 },
@@ -330,7 +334,6 @@ class _GroupScreenState extends State<GroupScreen> with TickerProviderStateMixin
                     Consumer<PostState>(
                       builder: (context, state, child) {
                         final List<PostModel>? list = state.getPostLists(authState.userModel);
-
                         return RefreshIndicator(
                           color: Colors.transparent,
                           backgroundColor: Colors.transparent,

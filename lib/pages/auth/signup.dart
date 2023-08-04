@@ -1,12 +1,13 @@
 import 'dart:io';
 import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:groupchat_firebase/animation/animation.dart';
-import 'package:groupchat_firebase/widgets/custom/rippleButton.dart';
 import 'package:groupchat_firebase/helper/utility.dart';
-import 'package:groupchat_firebase/permission/contact.dart';
 import 'package:groupchat_firebase/models/user.dart';
+import 'package:groupchat_firebase/permission/contact.dart';
 import 'package:groupchat_firebase/state/auth_state.dart';
+import 'package:groupchat_firebase/widgets/custom/rippleButton.dart';
 import 'package:provider/provider.dart';
 
 class Signup extends StatefulWidget {
@@ -15,8 +16,8 @@ class Signup extends StatefulWidget {
   final String? birth;
   final File? file;
 
-  const Signup({Key? key, this.loginCallback, this.name, this.birth, this.file})
-      : super(key: key);
+  const Signup({Key? key, this.loginCallback, this.name, this.birth, this.file}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() => _SignupState();
 }
@@ -47,8 +48,7 @@ class _SignupState extends State<Signup> {
       ),
       Text(
         "Create your account with your\ne-mail address",
-        style: TextStyle(
-            color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),
+        style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),
         textAlign: TextAlign.center,
       ),
       Container(
@@ -58,10 +58,8 @@ class _SignupState extends State<Signup> {
         padding: EdgeInsets.symmetric(horizontal: 20),
         child: Column(
           children: [
-            _entryFeild('Enter email',
-                controller: _emailController, isEmail: true),
-            _entryFeild('Enter password',
-                controller: _passwordController, isPassword: true),
+            _entryFeild('Enter email', controller: _emailController, isEmail: true),
+            _entryFeild('Enter password', controller: _passwordController, isPassword: true),
             Container(
               height: MediaQuery.of(context).size.height / 3.5,
             ),
@@ -72,10 +70,7 @@ class _SignupState extends State<Signup> {
     ]);
   }
 
-  Widget _entryFeild(String hint,
-      {required TextEditingController controller,
-      bool isPassword = false,
-      bool isEmail = false}) {
+  Widget _entryFeild(String hint, {required TextEditingController controller, bool isPassword = false, bool isEmail = false}) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 15),
       child: TextField(
@@ -107,8 +102,7 @@ class _SignupState extends State<Signup> {
             size: 18,
           ),
           enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(
-                color: Color.fromARGB(255, 163, 163, 163), width: 1.5),
+            borderSide: BorderSide(color: Color.fromARGB(255, 163, 163, 163), width: 1.5),
             borderRadius: BorderRadius.circular(10.0),
           ),
           floatingLabelStyle: TextStyle(
@@ -116,8 +110,7 @@ class _SignupState extends State<Signup> {
             fontSize: 18.0,
           ),
           focusedBorder: OutlineInputBorder(
-            borderSide:
-                BorderSide(color: Color.fromARGB(255, 61, 61, 61), width: 1.5),
+            borderSide: BorderSide(color: Color.fromARGB(255, 61, 61, 61), width: 1.5),
             borderRadius: BorderRadius.circular(10.0),
           ),
         ),
@@ -132,13 +125,8 @@ class _SignupState extends State<Signup> {
         child: Padding(
             padding: EdgeInsets.only(left: 20, right: 20, bottom: 40),
             child: Column(children: [
-              Text(
-                  "By continuing, you agree to our\nPrivacy Policy and Terms of Service.\n",
-                  style: TextStyle(
-                      color: Color.fromARGB(255, 61, 61, 61),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500),
-                  textAlign: TextAlign.center),
+              Text("By continuing, you agree to our\nPrivacy Policy and Terms of Service.\n",
+                  style: TextStyle(color: Color.fromARGB(255, 61, 61, 61), fontSize: 13, fontWeight: FontWeight.w500), textAlign: TextAlign.center),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -148,20 +136,13 @@ class _SignupState extends State<Signup> {
                           height: 60,
                           width: MediaQuery.of(context).size.width - 80,
                           decoration: BoxDecoration(
-                            color: _emailController.text.length < 30 &&
-                                    _emailController.text.isNotEmpty
-                                ? Colors.white
-                                : Color.fromARGB(255, 61, 61, 61),
+                            color: _emailController.text.length < 30 && _emailController.text.isNotEmpty ? Colors.white : Color.fromARGB(255, 61, 61, 61),
                             borderRadius: BorderRadius.circular(15),
                           ),
                           child: Center(
                               child: Text(
                             "Continue",
-                            style: TextStyle(
-                                fontFamily: "icons.ttf",
-                                color: Colors.black,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w800),
+                            style: TextStyle(fontFamily: "icons.ttf", color: Colors.black, fontSize: 18, fontWeight: FontWeight.w800),
                           ))),
                       onPressed: _submitForm),
                 ],
@@ -171,13 +152,11 @@ class _SignupState extends State<Signup> {
 
   void _submitForm() {
     if (_emailController.text.length > 30) {
-      Utility.customSnackBar(
-          _scaffoldKey, 'Username length cannot exceed 50 character', context);
+      Utility.customSnackBar(_scaffoldKey, 'Username length cannot exceed 50 character', context);
       return;
     }
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      Utility.customSnackBar(
-          _scaffoldKey, 'Please fill the form carefully', context);
+      Utility.customSnackBar(_scaffoldKey, 'Please fill the form carefully', context);
       return;
     }
 
@@ -186,7 +165,7 @@ class _SignupState extends State<Signup> {
     UserModel user = UserModel(
       email: _emailController.text.toLowerCase(),
       displayName: widget.name,
-      userName: "@" + "${widget.name}" + "${Random().nextInt(1000)}",
+      userName: "@${widget.name}${Random().nextInt(1000)}",
     );
     state
         .signUp(

@@ -39,7 +39,7 @@ class _NotificationState extends State<NotifcationTest> {
               height: 30,
             ),
             Text(
-              "\n${state.profileUserModel!.displayName}, we know you can do it!\nTap the\nnotification to get your first ReBeal.",
+              "\n${state.profileUserModel?.displayName}, we know you can do it!\nTap the\nnotification to get your first ReBeal.",
               style: TextStyle(
                   color: Colors.white,
                   fontSize: 40,

@@ -133,12 +133,12 @@ class PostState extends AppStates {
     }
   }
 
-  void getDataFromDatabaseForGroupChat(String groupChatId) {
+  Future<void> getDataFromDatabaseForGroupChat(String groupChatId) async {
     try {
       isBusy = true;
       groupChatPostMap[groupChatId] = null;
       notifyListeners();
-      kDatabase.child('posts').child(groupChatId).once().then((DatabaseEvent event) {
+      await kDatabase.child('posts').child(groupChatId).once().then((DatabaseEvent event) {
         final snapshot = event.snapshot;
         if (snapshot.value != null) {
           var postMap = snapshot.value as Map<dynamic, dynamic>?;

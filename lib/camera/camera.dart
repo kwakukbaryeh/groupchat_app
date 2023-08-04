@@ -16,9 +16,12 @@ import 'package:path/path.dart' as Path;
 import 'package:provider/provider.dart';
 
 import '../main.dart';
+import '../models/groupchat.dart';
 
 class CameraPage extends StatefulWidget {
-  CameraPage({Key? key, this.text, this.initialDirection = CameraLensDirection.back}) : super(key: key);
+  final GroupChat groupChat;
+
+  CameraPage({Key? key, this.text, this.initialDirection = CameraLensDirection.back, required this.groupChat}) : super(key: key);
 
   final String? text;
   final CameraLensDirection initialDirection;
@@ -83,7 +86,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
   }
 
   Future<void> addPostToDatabase(PostModel post) async {
-    var newPostRef = _databaseRef.child('posts').push();
+    var newPostRef = _databaseRef.child('posts').child(post.key!).push();
     newPostRef.set(post.toJson());
   }
 
@@ -337,6 +340,8 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
           imageFrontPath: frontImagePath,
           imageBackPath: path,
           createdAt: DateTime.now().toUtc().toString(),
+          key: widget.groupChat.key,
+          groupChat: widget.groupChat,
         );
 
         addPostToDatabase(post);
