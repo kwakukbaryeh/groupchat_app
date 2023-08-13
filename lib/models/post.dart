@@ -13,17 +13,18 @@ class PostModel {
   late String createdAt;
   UserModel? user;
   List<String?>? comment;
+  List<UserModel>? taggedUsers;
   GroupChat? groupChat;
 
-  PostModel({
-    this.key,
-    required this.createdAt,
-    this.imageFrontPath,
-    this.bio,
-    this.imageBackPath,
-    this.user,
-    this.groupChat,
-  });
+  PostModel(
+      {this.key,
+      required this.createdAt,
+      this.imageFrontPath,
+      this.bio,
+      this.imageBackPath,
+      this.user,
+      this.groupChat,
+      this.taggedUsers});
 
   toJson() {
     return {
@@ -34,6 +35,9 @@ class PostModel {
       "imageFrontPath": imageFrontPath,
       "user": user == null ? null : user!.toJson(),
       "groupChat": groupChat == null ? null : groupChat!.toJson(),
+      "taggedUsers": taggedUsers != null
+          ? taggedUsers!.map((e) => e.toJson()).toList()
+          : null
     };
   }
 
@@ -44,7 +48,14 @@ class PostModel {
     createdAt = map['createdAt'];
     imageFrontPath = map['imageFrontPath'];
     user = UserModel.fromJson(map['user']);
-    groupChat = map.containsKey('groupChat') && map['groupChat'] != null ? GroupChat.fromJson(map['groupChat'].cast<String, dynamic>()) : null;
+    taggedUsers = map["taggedUsers"] != null
+        ? (map["taggedUsers"] as List)
+            .map((e) => UserModel.fromJson(e))
+            .toList()
+        : null;
+    groupChat = map.containsKey('groupChat') && map['groupChat'] != null
+        ? GroupChat.fromJson(map['groupChat'].cast<String, dynamic>())
+        : null;
   }
 
   // ... Your existing code ...

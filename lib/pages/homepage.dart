@@ -6,8 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:groupchat_firebase/models/groupchat.dart';
 import 'package:groupchat_firebase/models/user.dart';
-import 'package:groupchat_firebase/pages/directmessage.dart';
-import 'package:groupchat_firebase/pages/messages_screen.dart';
+import 'package:groupchat_firebase/pages/direct_message.dart';
 import 'package:groupchat_firebase/pages/myprofile.dart';
 import 'package:groupchat_firebase/state/auth_state.dart';
 import 'package:groupchat_firebase/state/groupchatState.dart';
@@ -72,7 +71,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    AuthState auth = Provider.of<AuthState>(context);
+    AuthState auth = Provider.of<AuthState>(context, listen: false);
     return Scaffold(
       backgroundColor: Color(0xFF121212),
       appBar: AppBar(
@@ -84,7 +83,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => Messages(user: auth.userModel!),
+                builder: (context) => DirectMessages(user: auth.userModel!),
               ),
             );
           },
@@ -223,7 +222,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         ),
                         onPressed: () async {
                           //print(auth.userId);
-                          //print(auth.userModel);
                           var groupName = _groupNameController.text;
                           if (groupName.isNotEmpty) {
                             var groupChatState = Provider.of<GroupChatState>(
@@ -234,6 +232,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               groupName: groupName,
                               participantCount: 1,
                               participantIds: [auth.userId],
+                              participantFcmTokens: [auth.userModel!.fcmToken!],
                               createdAt: DateTime.now(),
                               expiryDate:
                                   DateTime.now().add(const Duration(hours: 12)),
@@ -246,7 +245,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             );
 
                             // Pass the groupChats variable to the GroupScreen widget
-                            print(groupChat);
+                            // print(groupChat);
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -268,22 +267,26 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             child: CircularProgressIndicator(),
                           );
                         } else if (groupChatState.groupChats == null) {
+                          //print("${auth.userId} ${auth.userModel!.fcmToken}");
                           return Center(
                             child: SizedBox(
                               width: 250,
                               height: 250,
                               child: QrImageView(
-                                data: "${auth.userId}",
+                                data:
+                                    "${auth.userId} ${auth.userModel!.fcmToken}",
                                 version: QrVersions.auto,
                               ),
                             ),
                           );
                         } else {
                           final groupChats = groupChatState.groupChats!;
-                          String data = "${auth.userId}";
+                          String data =
+                              "${auth.userId} ${auth.userModel!.fcmToken}";
                           for (GroupChat groupChat in groupChats) {
                             if (groupChat.creatorId == auth.userId) {
-                              data = "${auth.userId}_${groupChat.key}";
+                              data =
+                                  "${auth.userId} ${auth.userModel!.fcmToken} ${groupChat.key}";
                             }
                           }
                           //print(data);
@@ -305,6 +308,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             context,
                             MaterialPageRoute(
                               builder: (context) => MobileScanner(
+                                controller: MobileScannerController(
+                                  detectionSpeed: DetectionSpeed.noDuplicates,
+                                ),
                                 onDetect: (capture) {
                                   final List<Barcode> barcodes =
                                       capture.barcodes;
@@ -430,11 +436,20 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Future<void> navigateToGroupChatPage(
       BuildContext context, String data) async {
     final groupChatState = Provider.of<GroupChatState>(context, listen: false);
-    AuthState auth = Provider.of<AuthState>(context);
-    String groupChatKey = data.contains("_") ? data.split("_")[1] : data;
+    AuthState auth = Provider.of<AuthState>(context, listen: false);
+    String groupChatKey = data.split(" ")[data.split(" ").length - 1];
+    //print(groupChatKey);
     // Case 1: Group chat exists for the scanned groupChatKey
     final existingGroupChat = groupChatState.getGroupChatByKey(groupChatKey);
     if (existingGroupChat != null) {
+      List<String> participantIds = existingGroupChat.participantIds;
+      List<String> participantFcmTokens =
+          existingGroupChat.participantFcmTokens;
+      participantIds.add(auth.userId);
+      participantFcmTokens.add(auth.userModel!.fcmToken!);
+      existingGroupChat.participantIds = participantIds;
+      existingGroupChat.participantFcmTokens = participantFcmTokens;
+      await groupChatState.updateGroutChatParticipant(existingGroupChat);
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -446,16 +461,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     } else {
       // Case 2: Group chat does not exist for the scanned groupChatKey
       // Create a new group chat
-      UserModel? userModel = await auth.getUserDetail(data);
+      UserModel? userModel = await auth.getUserDetail(data.split(" ")[0]);
       if (userModel != null) {
         String groupName =
             "${userModel.displayName?.split(" ")[0]}'s GroupChat";
 
         // You can set the participant count and other properties based on your requirements
         var newGroupChat = GroupChat(
-          creatorId: userModel.userId!,
+          creatorId: data.split(" ")[0],
           groupName: groupName,
-          participantIds: [auth.userId, userModel.userId!],
+          participantIds: [data.split(" ")[0], auth.userId],
+          participantFcmTokens: [data.split(" ")[1], auth.userModel!.fcmToken!],
           participantCount: 2,
           createdAt: DateTime.now(),
           // Set an expiry date if needed
@@ -471,7 +487,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         );
 
         // Navigate to the new group chat passing the required parameters
-        print(newGroupChat);
+        //print(newGroupChat);
         Navigator.push(
           context,
           MaterialPageRoute(

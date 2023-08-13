@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/firebase_database.dart' as db;
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:groupchat_firebase/common/locator.dart';
@@ -18,16 +19,15 @@ import 'package:path/path.dart' as path;
 class AuthState extends AppStates {
   AuthStatus authStatus = AuthStatus.NOT_DETERMINED;
   bool isSignInWithGoogle = false;
-  User? user;
-  late String userId;
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final FirebaseStorage _firebaseStorage = FirebaseStorage.instance;
   db.Query? _profileQuery;
-  late AuthState authRepository;
+
+  late String userId;
+  User? user;
   UserModel? _userModel;
 
   UserModel? get userModel => _userModel;
-
   UserModel? get profileUserModel => _userModel;
 
   void logoutCallback() async {
@@ -95,9 +95,10 @@ class AuthState extends AppStates {
       );
       result.user!.updatePhotoURL(userModel.profilePic);
 
-      _userModel = userModel;
+      _userModel = userModel; //contains email and displayname here
       _userModel!.key = user!.uid;
       _userModel!.userId = user!.uid;
+      _userModel!.fcmToken = await FirebaseMessaging.instance.getToken();
       createUser(_userModel!, newUser: true);
       return user!.uid;
     } catch (error) {
@@ -113,6 +114,7 @@ class AuthState extends AppStates {
           Utility.getUserName(id: user.userId!, name: user.displayName!);
       kAnalytics.logEvent(name: 'create_newUser');
     }
+    // user has key,userid,displayname,email username
 
     kDatabase.child('profile').child(user.userId!).set(user.toJson());
     _userModel = user;

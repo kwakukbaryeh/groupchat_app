@@ -106,6 +106,8 @@ class GroupChatState extends ChangeNotifier {
         creatorId: groupChat.creatorId,
         groupName: groupChat.groupName,
         participantCount: groupChat.participantCount,
+        participantIds: groupChat.participantIds,
+        participantFcmTokens: groupChat.participantFcmTokens,
         createdAt: DateTime.now(),
         expiryDate: expiryDate,
       );
@@ -116,6 +118,27 @@ class GroupChatState extends ChangeNotifier {
       // Update the local group chats list
       _groupChats ??= [];
       _groupChats!.add(newGroupChat);
+      notifyListeners();
+    } catch (error) {
+      print(error);
+      throw error;
+    }
+  }
+
+  Future<void> updateGroutChatParticipant(GroupChat groupChat) async {
+    try {
+      DatabaseReference groupChatRef =
+          kDatabase.child('groupchats').child(groupChat.key!);
+
+      // Save the group chat to the database
+      await groupChatRef.update({
+        "participantIds": groupChat.participantIds,
+        "participantFcmTokens": groupChat.participantFcmTokens
+      });
+
+      // Update the local group chats list
+      _groupChats!.removeWhere((element) => element.key == groupChat.key);
+      _groupChats!.add(groupChat);
       notifyListeners();
     } catch (error) {
       print(error);

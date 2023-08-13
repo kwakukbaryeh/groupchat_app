@@ -1,13 +1,19 @@
+import 'dart:developer';
 import 'package:animate_do/animate_do.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:groupchat_firebase/camera/camera.dart';
+import 'package:groupchat_firebase/helper/utility.dart';
 import 'package:groupchat_firebase/models/groupchat.dart';
 import 'package:groupchat_firebase/models/post.dart';
 import 'package:groupchat_firebase/models/user.dart';
-import 'package:groupchat_firebase/pages/myprofile.dart';
+import 'package:groupchat_firebase/pages/group_users.dart';
+import 'package:groupchat_firebase/pages/homepage.dart';
+import 'package:groupchat_firebase/pages/shareqr.dart';
 import 'package:groupchat_firebase/services/user_tile_page.dart';
 import 'package:groupchat_firebase/state/auth_state.dart';
 import 'package:groupchat_firebase/state/groupchatState.dart';
@@ -48,10 +54,10 @@ class _GroupScreenState extends State<GroupScreen>
     var authState = Provider.of<AuthState>(context, listen: false);
     var postState = Provider.of<PostState>(context, listen: false);
     var searchState = Provider.of<SearchState>(context, listen: false);
-    var groupChatState = Provider.of<GroupChatState>(context, listen: false);
+    //var groupChatState = Provider.of<GroupChatState>(context, listen: false);
 
     // Get the current user ID from the auth state
-    String userId = authState.userId;
+    //String userId = authState.userId;
 
     // Fetch user data from the database
     authState.getCurrentUser();
@@ -135,8 +141,6 @@ class _GroupScreenState extends State<GroupScreen>
     final state = Provider.of<SearchState>(context);
     final groupChatsState = Provider.of<GroupChatState>(context);
 
-    List<UserModel> groupUsers = state.userlist!;
-
     return Scaffold(
       extendBody: true,
       bottomNavigationBar: AnimatedOpacity(
@@ -192,31 +196,128 @@ class _GroupScreenState extends State<GroupScreen>
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             Padding(
-              padding: const EdgeInsets.only(right: 10, top: 59),
-              child: GestureDetector(
-                onTap: () {
-                  HapticFeedback.mediumImpact();
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const MyProfilePage(),
-                    ),
-                  );
-                },
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(100),
-                  child: Container(
-                    height: 30,
-                    width: 30,
-                    child: CachedNetworkImage(
-                      imageUrl: authState.profileUserModel?.profilePic
-                              ?.toString() ??
-                          "https://i.pinimg.com/originals/f1/0f/f7/f10ff70a7155e5ab666bcdd1b45b726d.jpg",
-                    ),
-                  ),
-                ),
-              ),
-            ),
+                padding: const EdgeInsets.only(right: 10, top: 40),
+                child: authState.userId == widget.groupChat.creatorId
+                    ? PopupMenuButton<String>(
+                        onSelected: (String result) {
+                          // Handle the selected menu item
+                          print('Selected: $result');
+                          if (result == "0") {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (ctx) =>
+                                        ShareQr(groupChat: widget.groupChat)));
+                          }
+                          if (result == "1") {
+                            if (state.userlist != null) {
+                              List<UserModel> users = state.userlist!
+                                  .where((element) => widget
+                                      .groupChat.participantIds
+                                      .contains(element.userId))
+                                  .toList();
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (ctx) => GroupUsers(
+                                            groupUsers: users,
+                                            groupChat: widget.groupChat,
+                                          )));
+                            }
+                          }
+                          if (result == "2") {
+                            kDatabase
+                                .child("groupchats")
+                                .child(widget.groupChat.key!)
+                                .remove();
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                backgroundColor: Colors.blue,
+                                content: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "Group deleted successfully",
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  ],
+                                )));
+                            Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(builder: (ctx) => HomePage()),
+                                (route) => false);
+                          }
+                        },
+                        itemBuilder: (BuildContext context) =>
+                            <PopupMenuEntry<String>>[
+                          const PopupMenuItem<String>(
+                            value: '0',
+                            child: Text('Share Qr code'),
+                          ),
+                          const PopupMenuItem<String>(
+                            value: '1',
+                            child: Text('Remove User'),
+                          ),
+                          const PopupMenuItem<String>(
+                            value: '2',
+                            child: Text('Delete Group'),
+                          ),
+                        ],
+                        child: IconButton(
+                          icon: Icon(Icons.menu),
+                          onPressed:
+                              null, // null onPressed to disable the IconButton
+                        ),
+                      )
+                    : PopupMenuButton<String>(
+                        onSelected: (String result) async {
+                          // Handle the selected menu item
+                          print('Selected: $result');
+                          if (result == "0") {
+                            DatabaseEvent event = await kDatabase
+                                .child("groupchats")
+                                .child(widget.groupChat.key!)
+                                .child("participantIds")
+                                .once();
+                            List list = event.snapshot.value as List;
+                            List newlist = [];
+                            list.forEach((id) {
+                              if (id != authState.userId) {
+                                newlist.add(authState.userId);
+                              }
+                            });
+                            event.snapshot.ref.set(newlist);
+                            groupChatsState.getDataFromDatabase();
+                            log(event.snapshot.value.toString());
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                backgroundColor: Colors.blue,
+                                content: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "You left group successfully",
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  ],
+                                )));
+                            Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(builder: (ctx) => HomePage()),
+                                (route) => false);
+                          }
+                        },
+                        itemBuilder: (BuildContext context) =>
+                            <PopupMenuEntry<String>>[
+                          const PopupMenuItem<String>(
+                            value: '0',
+                            child: Text('Leave Group'),
+                          ),
+                        ],
+                        child: IconButton(
+                          icon: Icon(Icons.menu),
+                          onPressed:
+                              null, // null onPressed to disable the IconButton
+                        ),
+                      )),
           ],
         ),
         bottom: _isScrolledDown && tab != 1 || _isGrid
@@ -427,22 +528,61 @@ class _GroupScreenState extends State<GroupScreen>
                                   ),
                                 ),
                               ),
-                              Container(
-                                height: 300,
-                                child: ListView.builder(
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  itemBuilder: (context, index) {
-                                    return Container(
-                                      height: 60,
-                                      child: UserTilePage(
-                                        user: groupUsers[index],
-                                        isadded: true,
-                                      ),
-                                    );
-                                  },
-                                  itemCount: groupUsers.length,
-                                ),
-                              ),
+                              state.userlist == null
+                                  ? Container()
+                                  : StreamBuilder<QuerySnapshot>(
+                                      stream: FirebaseFirestore.instance
+                                          .collection("friendship")
+                                          .doc(FirebaseAuth
+                                              .instance.currentUser!.uid)
+                                          .collection("friends")
+                                          .snapshots(),
+                                      builder: (context, snapshot) {
+                                        return snapshot.data == null
+                                            ? Center(
+                                                child:
+                                                    CircularProgressIndicator(
+                                                color: Colors.black,
+                                              ))
+                                            : Container(
+                                                height: 300,
+                                                child: ListView.builder(
+                                                  physics: ScrollPhysics(),
+                                                  itemBuilder:
+                                                      (context, index) {
+                                                    bool isadded = false;
+                                                    List ids = [];
+                                                    List docs =
+                                                        snapshot.data!.docs;
+                                                    for (DocumentSnapshot doc
+                                                        in docs) {
+                                                      ids.add(doc["userId"]);
+                                                    }
+                                                    isadded = ids.contains(state
+                                                        .userlist![index]
+                                                        .userId);
+                                                    return widget.groupChat
+                                                            .participantIds
+                                                            .contains(state
+                                                                .userlist![
+                                                                    index]
+                                                                .userId)
+                                                        ? Container(
+                                                            height: 60,
+                                                            child: UserTilePage(
+                                                              user: state
+                                                                      .userlist![
+                                                                  index],
+                                                              isadded: isadded,
+                                                            ),
+                                                          )
+                                                        : Container();
+                                                  },
+                                                  itemCount:
+                                                      state.userlist!.length,
+                                                ),
+                                              );
+                                      }),
                               Padding(
                                 padding: const EdgeInsets.only(
                                   left: 15,

@@ -16,7 +16,7 @@ class ContactPage extends StatefulWidget {
 }
 
 class _ContactPageState extends State<ContactPage> {
-  List<String> contactEmails = ["sansaliuhassan@gmail.com"];
+  List<String> contactEmails = [];
   @override
   void initState() {
     super.initState();

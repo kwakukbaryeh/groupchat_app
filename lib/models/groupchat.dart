@@ -9,16 +9,17 @@ class GroupChat extends Equatable {
   final DateTime? expiryDate;
   Duration? remainingTime;
   List<String> participantIds;
+  List<String> participantFcmTokens;
 
-  GroupChat({
-    this.key,
-    required this.creatorId,
-    required this.groupName,
-    required this.participantCount,
-    required this.createdAt,
-    this.expiryDate,
-    this.participantIds = const [],
-  });
+  GroupChat(
+      {this.key,
+      required this.creatorId,
+      required this.groupName,
+      required this.participantCount,
+      required this.createdAt,
+      required this.expiryDate,
+      required this.participantIds,
+      required this.participantFcmTokens});
 
   factory GroupChat.fromJson(Map<String, dynamic> json) {
     return GroupChat(
@@ -30,6 +31,9 @@ class GroupChat extends Equatable {
       expiryDate: json['expiryDate'] != null
           ? DateTime.parse(json['expiryDate'])
           : null,
+      participantFcmTokens: json["participantFcmTokens"] != null
+          ? List<String>.from(json['participantFcmTokens'])
+          : [],
       participantIds: json['participantIds'] != null
           ? List<String>.from(json['participantIds'])
           : [],
@@ -45,6 +49,7 @@ class GroupChat extends Equatable {
       'createdAt': createdAt.toUtc().toString(),
       'expiryDate': expiryDate?.toUtc().toString(),
       'participantIds': participantIds,
+      'participantFcmTokens': participantFcmTokens
     };
   }
 
@@ -69,6 +74,7 @@ class GroupChat extends Equatable {
         participantCount,
         createdAt,
         expiryDate,
-        participantIds
+        participantIds,
+        participantFcmTokens
       ];
 }

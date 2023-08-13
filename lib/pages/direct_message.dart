@@ -4,20 +4,20 @@ import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
 import 'package:groupchat_firebase/models/user.dart';
 import 'package:groupchat_firebase/pages/chat_screen.dart';
-import 'package:groupchat_firebase/pages/directmessage.dart';
+import 'package:groupchat_firebase/pages/friends.dart';
 import 'package:groupchat_firebase/services/database.dart';
 import 'package:groupchat_firebase/state/auth_state.dart';
 import 'package:provider/provider.dart';
 
-class Messages extends StatefulWidget {
+class DirectMessages extends StatefulWidget {
   UserModel user;
-  Messages({Key? key, required this.user}) : super(key: key);
+  DirectMessages({Key? key, required this.user}) : super(key: key);
   @override
-  _MessagesState createState() => _MessagesState();
+  _DirectMessagesState createState() => _DirectMessagesState();
 }
 
-class _MessagesState extends State<Messages> {
-  Stream? chatroomStream;
+class _DirectMessagesState extends State<DirectMessages> {
+  Stream<QuerySnapshot>? chatroomStream;
 
   getChatRooms() async {
     chatroomStream = await Database().getChatRooms(widget.user.userName!);
@@ -39,8 +39,8 @@ class _MessagesState extends State<Messages> {
           actions: [
             InkWell(
                 onTap: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (ctx) => DirectMessagePage()));
+                  Navigator.push(
+                      context, MaterialPageRoute(builder: (ctx) => Friends()));
                 },
                 child: Icon(Icons.person)),
             SizedBox(
@@ -48,26 +48,48 @@ class _MessagesState extends State<Messages> {
             )
           ],
         ),
-        body: StreamBuilder(
+        body: StreamBuilder<QuerySnapshot>(
             stream: chatroomStream,
             builder: (ctx, snapshot) {
               return snapshot.hasData
-                  ? ListView.builder(
-                      padding: EdgeInsets.all(0),
-                      itemCount: snapshot.data.docs.length,
-                      itemBuilder: (cxt, index) {
-                        DocumentSnapshot ds = snapshot.data.docs[index];
-                        return ChatRoomListTile(
-                          lastMessage: ds["lastMessage"],
-                          type: ds['type'],
-                          read: ds['read'],
-                          chatId: ds.id,
-                          sender: ds["sender"],
-                          receiver: ds["receiver"],
-                          dateString: ds["lastMessageSendTs"],
-                        );
-                      })
-                  : Container();
+                  ? snapshot.data!.docs.isNotEmpty
+                      ? ListView.builder(
+                          padding: EdgeInsets.all(0),
+                          itemCount: snapshot.data!.docs.length,
+                          itemBuilder: (cxt, index) {
+                            DocumentSnapshot ds = snapshot.data!.docs[index];
+                            if (!ds["expireAt"]
+                                .toDate()
+                                .isAfter(DateTime.now())) {
+                              ds.reference
+                                  .collection("chats")
+                                  .get()
+                                  .then((querysnap) => {
+                                        querysnap.docs.forEach((element) {
+                                          element.reference.delete();
+                                        })
+                                      })
+                                  .then((value) => ds.reference.delete());
+                            }
+                            return ds["expireAt"]
+                                    .toDate()
+                                    .isAfter(DateTime.now())
+                                ? ChatRoomListTile(
+                                    lastMessage: ds["lastMessage"],
+                                    type: ds['type'],
+                                    read: ds['read'],
+                                    chatId: ds.id,
+                                    sender: ds["sender"],
+                                    receiver: ds["receiver"],
+                                    dateString: ds["lastDirectMessagesendTs"],
+                                  )
+                                : Container();
+                          })
+                      : Center(child: Text("No direct messages yet"))
+                  : Center(
+                      child: CircularProgressIndicator(
+                      color: Colors.black,
+                    ));
             }));
   }
 }

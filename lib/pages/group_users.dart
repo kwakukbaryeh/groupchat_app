@@ -1,12 +1,19 @@
+import 'dart:developer';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:groupchat_firebase/helper/utility.dart';
+import 'package:groupchat_firebase/models/groupchat.dart';
 import 'package:groupchat_firebase/models/user.dart'; // Import the User model
 import 'package:groupchat_firebase/models/chat.dart';
 import 'package:groupchat_firebase/pages/chat_screen.dart';
+import 'package:groupchat_firebase/pages/homepage.dart';
 import 'package:groupchat_firebase/services/database.dart';
 import 'package:groupchat_firebase/state/auth_state.dart';
+import 'package:groupchat_firebase/state/groupchatState.dart';
 import 'package:provider/provider.dart'; // Import the Chat model
 
 /*class Friendship {
@@ -16,43 +23,26 @@ import 'package:provider/provider.dart'; // Import the Chat model
   Friendship({required this.user, this.isFriend = false});
 }*/
 
-class DirectMessagePage extends StatefulWidget {
+class GroupUsers extends StatefulWidget {
   @override
-  _DirectMessagePageState createState() => _DirectMessagePageState();
+  List<UserModel> groupUsers;
+  GroupChat groupChat;
+  GroupUsers({required this.groupUsers, required this.groupChat});
+  _GroupUsersState createState() => _GroupUsersState();
 }
 
-class _DirectMessagePageState extends State<DirectMessagePage> {
-  List<UserModel> _friendsList = []; // List to store the user's friends
+class _GroupUsersState extends State<GroupUsers> {
+  List<UserModel> _groupUsers = []; // List to store the user's friends
   List<UserModel> _searchResults = []; // List to store search results
   TextEditingController _searchController = TextEditingController();
-
-  getfriends() async {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      QuerySnapshot snap = await FirebaseFirestore.instance
-          .collection("friendship")
-          .doc(user.uid)
-          .collection("friends")
-          .get();
-      if (snap.docs.isNotEmpty) {
-        List<DocumentSnapshot> docs = snap.docs;
-        for (DocumentSnapshot document in docs) {
-          UserModel user =
-              UserModel.fromJson(document.data() as Map<String, dynamic>);
-          _searchController.text = "";
-          _friendsList.add(user);
-          setState(() {});
-        }
-      }
-    }
-  }
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
     // Initialize the friends list here or fetch it from your database
     //_loadFriendsList();
-    getfriends();
+    _groupUsers = widget.groupUsers;
   }
 
   @override
@@ -96,9 +86,9 @@ class _DirectMessagePageState extends State<DirectMessagePage> {
         _searchResults.clear();
       } else {
         // Filter friends list based on the search query
-        _searchResults = _friendsList
-            .where((friendship) =>
-                friendship.userName
+        _searchResults = _groupUsers
+            .where((groupUser) =>
+                groupUser.userName
                     ?.toLowerCase()
                     .contains(query.toLowerCase()) ??
                 false)
@@ -107,48 +97,15 @@ class _DirectMessagePageState extends State<DirectMessagePage> {
     });
   }
 
-  void _startChat(UserModel user, UserModel receiver) async {
-    // Create a new chat or fetch existing chat with the user
-    // Add logic to handle sending messages to this user
-    // For demonstration purposes, we'll just print the user's name for now
-    late String chatRoomId;
-    getChatRoomIdByUsernames(String a, String b) {
-      if (a.substring(0, 1).codeUnitAt(0) > b.substring(0, 1).codeUnitAt(0)) {
-        return "$b\_$a";
-      } else {
-        return "$a\_$b";
-      }
-    }
-
-    getChatRoomId() async {
-      chatRoomId = getChatRoomIdByUsernames(receiver.userName!, user.userName!);
-    }
-
-    getChatRoomId();
-
-    print('Starting chat with ${user.userName ?? "Unknown User"}');
-    Map<String, dynamic> chatRoomInfoMap = {
-      "users": [user.userName, receiver.userName],
-      "sender": user.toJson(),
-      "receiver": receiver.toJson()
-    };
-    await Database().createChatRoom(chatRoomId, chatRoomInfoMap);
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (ctx) => ChatScreen(
-                  receiver: receiver,
-                  sender: user,
-                )));
-  }
-
   @override
   Widget build(BuildContext context) {
     var authState = Provider.of<AuthState>(context, listen: false);
     var state = Provider.of<AuthState>(context);
+    final groupChatsState = Provider.of<GroupChatState>(context, listen: false);
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
-        title: Text('Friends'),
+        title: Text('Group Users'),
         backgroundColor: Colors.grey[900],
       ),
       body: Column(
@@ -168,15 +125,15 @@ class _DirectMessagePageState extends State<DirectMessagePage> {
           Expanded(
             child: ListView.builder(
               itemCount: _searchController.text == ""
-                  ? _friendsList.length
+                  ? _groupUsers.length
                   : _searchResults.length,
               itemBuilder: (context, index) {
-                final friendship = _searchController.text == ""
-                    ? _friendsList[index]
+                final groupUser = _searchController.text == ""
+                    ? _groupUsers[index]
                     : _searchResults[index];
                 return ListTile(
                   contentPadding: EdgeInsets.all(8),
-                  leading: friendship.profilePic == null
+                  leading: groupUser.profilePic == null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(100),
                           child: CachedNetworkImage(
@@ -187,11 +144,42 @@ class _DirectMessagePageState extends State<DirectMessagePage> {
                       : CircleAvatar(
                           radius: 30,
                           backgroundColor: Colors.white,
-                          child: Image.network(friendship.profilePic!)),
-                  title: Text(friendship.displayName ?? 'Unknown User'),
-                  onTap: () {
-                    _startChat(authState.userModel!, friendship);
-                  },
+                          child: Image.network(groupUser.profilePic!)),
+                  title: Text(groupUser.displayName ?? 'Unknown User'),
+                  trailing: InkWell(
+                      onTap: () async {
+                        DatabaseEvent event = await kDatabase
+                            .child("groupchats")
+                            .child(widget.groupChat.key!)
+                            .child("participantIds")
+                            .once();
+                        List list = event.snapshot.value as List;
+                        List newlist = [];
+                        list.forEach((id) {
+                          if (id != groupUser.userId) {
+                            newlist.add(groupUser.userId);
+                          }
+                        });
+                        event.snapshot.ref.set(newlist);
+                        groupChatsState.getDataFromDatabase();
+                        log(event.snapshot.value.toString());
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            backgroundColor: Colors.blue,
+                            content: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "User has been removed",
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ],
+                            )));
+                        Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(builder: (ctx) => HomePage()),
+                            (route) => false);
+                      },
+                      child: Text("Remove")),
                 );
               },
             ),

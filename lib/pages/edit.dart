@@ -51,7 +51,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     ImagePicker()
         .pickImage(source: source, imageQuality: 100)
         .then((XFile? file) async {
-      /*await ImageCropper.platform.cropImage(
+      await ImageCropper.platform.cropImage(
         sourcePath: file!.path,
         cropStyle: CropStyle.circle,
         aspectRatioPresets: [
@@ -63,10 +63,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
         ],
       ).then((value) => setState(() {
             onImageSelected(File(value!.path));
-          }));*/
-      setState(() {
+          }));
+      /*setState(() {
         onImageSelected(File(file!.path));
-      });
+      });*/
     });
   }
 

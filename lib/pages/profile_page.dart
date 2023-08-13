@@ -3,6 +3,8 @@ import 'dart:developer';
 import 'dart:ui';
 import 'package:awesome_icons/awesome_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:groupchat_firebase/models/post.dart';
@@ -13,12 +15,22 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({Key? key, required this.profileId, this.scaffoldKey})
+  const ProfilePage(
+      {Key? key,
+      required this.profileId,
+      required this.isadded,
+      required this.user,
+      this.scaffoldKey})
       : super(key: key);
   final GlobalKey<ScaffoldState>? scaffoldKey;
   final String profileId;
+  final bool isadded;
+  final UserModel user;
 
-  static PageRouteBuilder getRoute({required String profileId}) {
+  static PageRouteBuilder getRoute(
+      {required String profileId,
+      required bool isadded,
+      required UserModel user}) {
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) {
         return Provider(
@@ -27,6 +39,8 @@ class ProfilePage extends StatefulWidget {
             create: (BuildContext context) => ProfileState(profileId),
             builder: (_, child) => ProfilePage(
               profileId: profileId,
+              isadded: isadded,
+              user: user,
             ),
           ),
         );
@@ -68,7 +82,7 @@ class _ProfilePageState extends State<ProfilePage> {
     super.dispose();
   }
 
-  bool isFollower() {
+  /* bool isFollower() {
     var authstate = Provider.of<ProfileState>(context, listen: false);
     if (authstate.profileUserModel.followersList != null &&
         authstate.profileUserModel.followersList!.isNotEmpty) {
@@ -77,7 +91,7 @@ class _ProfilePageState extends State<ProfilePage> {
     } else {
       return false;
     }
-  }
+  }*/
 
   Future<bool> _onWillPop() async {
     return true;
@@ -138,7 +152,6 @@ class _ProfilePageState extends State<ProfilePage> {
     DateTime now = DateTime.now();
 
     if (state.groupChatPostMap != null && state.groupChatPostMap.isNotEmpty) {
-      log("error here");
       log(state.groupChatPostMap.toString());
       list = state.groupChatPostMap.values
           .expand((postList) => postList!) // Flatten the list of lists
@@ -343,17 +356,53 @@ class _ProfilePageState extends State<ProfilePage> {
                                   )),
                               isMyProfile
                                   ? Container()
-                                  : isFollower()
+                                  : widget.isadded
                                       ? Container()
                                       : Center(
                                           child: Padding(
                                             padding: EdgeInsets.fromLTRB(
                                                 0, 20, 0, 0),
                                             child: GestureDetector(
-                                                onTap: () {
-                                                  authstate.followUser(
+                                                onTap: () async {
+                                                  /*authstate.followUser(
                                                       removeFollower:
-                                                          isFollower());
+                                                          isFollower());*/
+                                                  User? user = FirebaseAuth
+                                                      .instance.currentUser;
+                                                  if (user != null) {
+                                                    print("called");
+                                                    await FirebaseFirestore
+                                                        .instance
+                                                        .collection(
+                                                            "friendship")
+                                                        .doc(user.uid)
+                                                        .set({"d": "d"});
+                                                    FirebaseFirestore.instance
+                                                        .collection(
+                                                            "friendship")
+                                                        .doc(user.uid)
+                                                        .collection("friends")
+                                                        .add({
+                                                      "email":
+                                                          widget.user.email,
+                                                      "userId":
+                                                          widget.user.userId,
+                                                      "userName":
+                                                          widget.user.userName,
+                                                      "displayName": widget
+                                                          .user.displayName,
+                                                      "localisation": widget
+                                                          .user.localisation,
+                                                      "bio": widget.user.bio,
+                                                      "profilePic": widget
+                                                          .user.profilePic,
+                                                      "key": widget.user.key,
+                                                      "createAt":
+                                                          widget.user.createAt,
+                                                      "fcmToken":
+                                                          widget.user.fcmToken
+                                                    });
+                                                  }
                                                 },
                                                 child: ClipRRect(
                                                   borderRadius:
@@ -406,7 +455,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                               isMyProfile
                                   ? Container()
-                                  : isFollower()
+                                  : widget.isadded
                                       ? Container()
                                       : Text(
                                           'Add your friends on App Title.',
@@ -419,7 +468,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                         ),
                               isMyProfile
                                   ? Container()
-                                  : isFollower()
+                                  : widget.isadded
                                       ? Container()
                                       : Column(
                                           crossAxisAlignment:

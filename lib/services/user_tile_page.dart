@@ -22,7 +22,8 @@ class UserTilePage extends StatelessWidget {
         log(user.userId!);
         Navigator.push(
           context,
-          ProfilePage.getRoute(profileId: user.userId!),
+          ProfilePage.getRoute(
+              profileId: user.userId!, isadded: isadded!, user: user),
         );
       },
       child: Container(
@@ -57,65 +58,67 @@ class UserTilePage extends StatelessWidget {
                 ],
               ),
             ),
-            Container(
-              width: 120,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  InkWell(
-                    onTap: () async {
-                      User? user = FirebaseAuth.instance.currentUser;
-                      if (user != null) {
-                        print("called");
-                        await FirebaseFirestore.instance
-                            .collection("friendship")
-                            .doc(user.uid)
-                            .set({"d": "d"});
-                        FirebaseFirestore.instance
-                            .collection("friendship")
-                            .doc(user.uid)
-                            .collection("friends")
-                            .add({
-                          "email": this.user.email,
-                          "userId": this.user.userId,
-                          "userName": this.user.userName,
-                          "displayName": this.user.displayName,
-                          "localisation": this.user.localisation,
-                          "bio": this.user.bio,
-                          "profilePic": this.user.profilePic,
-                          "key": this.user.key,
-                          "createAt": this.user.createAt,
-                          "fcmToken": this.user.fcmToken
-                        });
-                      }
-                    },
-                    child: Container(
-                      height: 30,
-                      width: 90,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: Color.fromARGB(221, 69, 69, 69),
-                        borderRadius: BorderRadius.circular(90),
-                      ),
-                      child: Text(
-                        "ADD",
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
+            isadded!
+                ? Container()
+                : Container(
+                    width: 120,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        InkWell(
+                          onTap: () async {
+                            User? user = FirebaseAuth.instance.currentUser;
+                            if (user != null) {
+                              print("called");
+                              await FirebaseFirestore.instance
+                                  .collection("friendship")
+                                  .doc(user.uid)
+                                  .set({"d": "d"});
+                              FirebaseFirestore.instance
+                                  .collection("friendship")
+                                  .doc(user.uid)
+                                  .collection("friends")
+                                  .add({
+                                "email": this.user.email,
+                                "userId": this.user.userId,
+                                "userName": this.user.userName,
+                                "displayName": this.user.displayName,
+                                "localisation": this.user.localisation,
+                                "bio": this.user.bio,
+                                "profilePic": this.user.profilePic,
+                                "key": this.user.key,
+                                "createAt": this.user.createAt,
+                                "fcmToken": this.user.fcmToken
+                              });
+                            }
+                          },
+                          child: Container(
+                            height: 30,
+                            width: 90,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: Color.fromARGB(221, 69, 69, 69),
+                              borderRadius: BorderRadius.circular(90),
+                            ),
+                            child: Text(
+                              "ADD",
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
+                        const SizedBox(width: 10),
+                        Icon(
+                          Icons.close,
+                          size: 18,
+                          color: Colors.grey[800],
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  Icon(
-                    Icons.close,
-                    size: 18,
-                    color: Colors.grey[800],
-                  ),
-                ],
-              ),
-            ),
           ],
         ),
       ),
