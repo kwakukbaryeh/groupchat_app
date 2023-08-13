@@ -8,11 +8,6 @@ import 'package:groupchat_firebase/models/groupchat.dart';
 import 'package:groupchat_firebase/models/user.dart';
 import 'package:groupchat_firebase/pages/direct_message.dart';
 import 'package:groupchat_firebase/pages/myprofile.dart';
-import 'package:groupchat_firebase/state/auth_state.dart';
-import 'package:groupchat_firebase/state/groupchatState.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:provider/provider.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 import 'group_screen.dart';
 
 class HomePage extends StatefulWidget {
