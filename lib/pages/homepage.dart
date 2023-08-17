@@ -8,6 +8,11 @@ import 'package:groupchat_firebase/models/groupchat.dart';
 import 'package:groupchat_firebase/models/user.dart';
 import 'package:groupchat_firebase/pages/direct_message.dart';
 import 'package:groupchat_firebase/pages/myprofile.dart';
+import 'package:groupchat_firebase/state/auth_state.dart';
+import 'package:groupchat_firebase/state/groupchatState.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:provider/provider.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'group_screen.dart';
 
 class HomePage extends StatefulWidget {
@@ -83,7 +88,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             );
           },
           child: Transform.rotate(
-            angle: pi / 4,
+            angle: 3 * pi / 4,
             child: Transform(
               alignment: Alignment.center,
               transform: Matrix4.identity()..scale(-1.0, 1.0, -1.0),
@@ -163,7 +168,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       );
                     } else if (groupChatState.groupChats == null) {
                       return Center(
-                        child: Text('Wow it\'s empty here... Add some groups!'),
+                        child: Text(
+                          'Wow it\'s empty here... Add some groups!',
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold),
+                        ),
                       );
                     } else {
                       final groupChats = groupChatState.groupChats!;
@@ -344,12 +353,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Widget _buildGroupChatButtons(List<GroupChat>? groupChats) {
     if (groupChats == null || groupChats.isEmpty) {
-      return Container(
-        alignment: Alignment.center,
-        child: Expanded(
-          child: Center(
-            child: Text('Wow it\'s empty here... Add some groups!'),
-          ),
+      return Center(
+        child: Text(
+          'Wow it\'s empty here... Add some groups!',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
       );
     }

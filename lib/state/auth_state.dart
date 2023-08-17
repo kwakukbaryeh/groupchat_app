@@ -6,10 +6,11 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/firebase_database.dart' as db;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
+import 'package:groupchat_firebase/common/locator.dart';
 import 'package:groupchat_firebase/helper/enum.dart';
 import 'package:groupchat_firebase/helper/shared_preference_helper.dart';
 import 'package:groupchat_firebase/helper/utility.dart';
-import 'package:groupchat_firebase/models/groupchat.dart';
 import 'package:groupchat_firebase/models/user.dart';
 import 'package:groupchat_firebase/state/appState.dart';
 import 'package:path/path.dart' as path;
@@ -50,7 +51,7 @@ class AuthState extends AppStates {
     } catch (error) {}
   }
 
-  /*Future<String?> signIn(String email, String password, BuildContext context,
+  Future<String?> signIn(String email, String password, BuildContext context,
       {required GlobalKey<ScaffoldState> scaffoldKey}) async {
     try {
       isBusy = true;
@@ -74,7 +75,7 @@ class AuthState extends AppStates {
     } finally {
       isBusy = false;
     }
-  }*/
+  }
 
   Future<String?> signUp(UserModel userModel, BuildContext context,
       {required GlobalKey<ScaffoldState> scaffoldKey,
@@ -107,16 +108,19 @@ class AuthState extends AppStates {
   }
 
   void createUser(UserModel user, {bool newUser = false}) {
-    if (newUser) {
-      user.userName =
-          Utility.getUserName(id: user.userId!, name: user.displayName!);
-      kAnalytics.logEvent(name: 'create_newUser');
+    try {
+      if (newUser) {
+        user.userName =
+            Utility.getUserName(id: user.userId!, name: user.displayName!);
+        kAnalytics.logEvent(name: 'create_newUser');
+      }
+      kDatabase.child('profile').child(user.userId!).set(user.toJson());
+      _userModel = user;
+    } catch (error) {
+      print('Error creating user: $error');
+    } finally {
+      isBusy = false;
     }
-    // user has key,userid,displayname,email username
-
-    kDatabase.child('profile').child(user.userId!).set(user.toJson());
-    _userModel = user;
-    isBusy = false;
   }
 
   Future<User?> getCurrentUser() async {
@@ -127,6 +131,7 @@ class AuthState extends AppStates {
       if (user != null) {
         userId = user!.uid;
         print('User ID: $userId'); // Add this line for debugging
+        log("$userId");
         await getProfileUser(); // Fetch profile user data
         authStatus = AuthStatus.LOGGED_IN;
       } else {

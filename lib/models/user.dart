@@ -116,7 +116,7 @@ class UserModel extends Equatable {
         followingList,
       ];
 
-  /*// Static method to get the list of user IDs that the given user is following
+  // Static method to get the list of user IDs that the given user is following
   static Future<List<String>?> getFollowingList(String userId) async {
     try {
       DocumentSnapshot doc = await FirebaseFirestore.instance
@@ -133,10 +133,10 @@ class UserModel extends Equatable {
       print("Error fetching following list: $e");
     }
     return null;
-  }*/
+  }
 
   // Static method to get the list of user IDs that are following the given user
-  /* static Future<List<String>?> getFollowersList(String userId) async {
+  static Future<List<String>?> getFollowersList(String userId) async {
     try {
       QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection('users')
@@ -151,7 +151,7 @@ class UserModel extends Equatable {
       print("Error fetching followers list: $e");
     }
     return null;
-  }*/
+  }
 
   // Static method to get the list of all users from the database
   static Future<List<UserModel>> getAllUsers() async {

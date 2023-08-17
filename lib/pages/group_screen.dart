@@ -1,13 +1,10 @@
-<<<<<<< HEAD
 import 'dart:developer';
+
 import 'package:animate_do/animate_do.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
-=======
-import 'package:animate_do/animate_do.dart';
-import 'package:cached_network_image/cached_network_image.dart';
->>>>>>> 158f3e2f8631bffcab521eba62b08767f49cfe40
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -69,13 +66,9 @@ class _GroupScreenState extends State<GroupScreen>
     authState.databaseInit();
 
     // Fetch user posts from the database for the specific group chat
-<<<<<<< HEAD
     await postState
         .databaseInit([widget.groupChat]); // Pass the group chat as a list
-=======
-    await postState.databaseInit([widget.groupChat]); // Pass the group chat as a list
 
->>>>>>> 158f3e2f8631bffcab521eba62b08767f49cfe40
     await postState.getDataFromDatabaseForGroupChat(widget.groupChat.key!);
 
     // Fetch search data from the database
@@ -83,7 +76,6 @@ class _GroupScreenState extends State<GroupScreen>
   }
 
   void _scrollListener() {
-<<<<<<< HEAD
     if (_scrollController.position.userScrollDirection ==
         ScrollDirection.reverse) {
       setState(() {
@@ -91,13 +83,6 @@ class _GroupScreenState extends State<GroupScreen>
       });
     } else if (_scrollController.position.userScrollDirection ==
         ScrollDirection.forward) {
-=======
-    if (_scrollController.position.userScrollDirection == ScrollDirection.reverse) {
-      setState(() {
-        _isScrolledDown = true;
-      });
-    } else if (_scrollController.position.userScrollDirection == ScrollDirection.forward) {
->>>>>>> 158f3e2f8631bffcab521eba62b08767f49cfe40
       setState(() {
         _isScrolledDown = false;
       });
@@ -143,12 +128,8 @@ class _GroupScreenState extends State<GroupScreen>
               );
             },
             style: ElevatedButton.styleFrom(
-<<<<<<< HEAD
               primary:
                   Colors.grey[700], // Set the background color to grey[700]
-=======
-              primary: Colors.grey[700], // Set the background color to grey[700]
->>>>>>> 158f3e2f8631bffcab521eba62b08767f49cfe40
             ),
             child: const Text("Take your BeReal"),
           ),
