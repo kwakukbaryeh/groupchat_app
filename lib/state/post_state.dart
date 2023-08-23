@@ -22,21 +22,17 @@ class PostState extends AppStates {
     _postToReplyModel = model;
   }
 
-  List<PostModel>? getPostLists(UserModel? userModel) {
-    if (userModel == null) {
+  List<PostModel>? getPostLists(UserModel? userModel, String? groupChatId) {
+    if (userModel == null || groupChatId == null) {
       return null;
     }
 
     List<PostModel>? list;
 
     if (!isBusy && groupChatPostMap.isNotEmpty) {
-      list = [];
-      groupChatPostMap.forEach((groupChatId, postList) {
-        if (postList != null) {
-          list!.addAll(postList);
-        }
-      });
-      if (list.isEmpty) {
+      list = groupChatPostMap[
+          groupChatId]; // Fetch posts only for the specific groupChatId
+      if (list != null && list.isEmpty) {
         list = null;
       }
     }
@@ -108,9 +104,11 @@ class PostState extends AppStates {
     groupChatPostMap[groupChatId] ??= [];
     if (!groupChatPostMap[groupChatId]!.any((x) => x.key == post.key)) {
       groupChatPostMap[groupChatId]!.add(post);
-      print("Post added to groupChatPostMap: $post");
+      print(
+          "Post added to groupChatPostMap for groupChatId $groupChatId: $post");
     } else {
-      print("Post already exists in groupChatPostMap: $post");
+      print(
+          "Post already exists in groupChatPostMap for groupChatId $groupChatId: $post");
     }
     hasPostedInGroup[groupChatId] =
         groupChatPostMap[groupChatId]?.isNotEmpty ?? false;

@@ -389,19 +389,32 @@ class _GroupScreenState extends State<GroupScreen>
                       for (var groupChat in groupChatsState.groupChats!)
                         Consumer<PostState>(
                           builder: (context, state, child) {
-                            final String groupChatId = groupChat.key!;
-                            final List<PostModel>? groupList =
-                                state.groupChatPostMap[groupChatId];
-
-                            // Add any additional logic here, if needed
-                            print("Debug: groupList is $groupList");
+                            final String currentGroupChatId =
+                                widget.groupChat.key!;
                             print(
-                                "Debug: groupList is null: ${groupList == null}");
-                            print(
-                                "Debug: groupList is empty: ${groupList?.isEmpty ?? false}");
+                                "Current Group Chat ID: ${widget.groupChat.key!}");
 
-                            return groupList == null || groupList.isEmpty
-                                ? empty(groupList)
+                            final List<PostModel>? allPosts =
+                                postState.getPostLists(
+                                    authState.userModel, widget.groupChat.key);
+
+                            // Filter posts by current group chat ID
+                            final List<PostModel>? filteredPosts = allPosts
+                                ?.where((post) =>
+                                    post.groupChat?.key == currentGroupChatId)
+                                .toList();
+
+                            // Debugging
+                            print("Debug: allPosts is $allPosts");
+                            print(
+                                "Debug: allPosts is null: ${allPosts == null}");
+                            print(
+                                "Debug: allPosts is empty: ${allPosts?.isEmpty ?? false}");
+                            print("Debug: filteredPosts is $filteredPosts");
+
+                            return filteredPosts == null ||
+                                    filteredPosts.isEmpty
+                                ? empty(filteredPosts)
                                 : RefreshIndicator(
                                     color: Colors.transparent,
                                     backgroundColor: Colors.transparent,
@@ -424,10 +437,10 @@ class _GroupScreenState extends State<GroupScreen>
                                             crossAxisSpacing: 10,
                                           ),
                                           controller: _scrollController,
-                                          itemCount: groupList.length,
+                                          itemCount: filteredPosts?.length,
                                           itemBuilder: (context, index) {
                                             return GridPostWidget(
-                                              postModel: groupList[index],
+                                              postModel: filteredPosts![index],
                                             );
                                           },
                                         ),
@@ -436,6 +449,7 @@ class _GroupScreenState extends State<GroupScreen>
                                   );
                           },
                         ),
+
                     if (groupChatsState.groupChats == null)
                       const Center(
                         child: Text(
@@ -450,8 +464,9 @@ class _GroupScreenState extends State<GroupScreen>
                     // Tab 2: All User's Posts (Assuming you need to show all user posts here)
                     Consumer<PostState>(
                       builder: (context, state, child) {
-                        final List<PostModel>? list =
-                            state.getPostLists(authState.userModel);
+                        final List<PostModel>? list = postState.getPostLists(
+                            authState.userModel, widget.groupChat.key);
+
                         return RefreshIndicator(
                           color: Colors.transparent,
                           backgroundColor: Colors.transparent,

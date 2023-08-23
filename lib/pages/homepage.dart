@@ -175,7 +175,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         ),
                       );
                     } else {
-                      final groupChats = groupChatState.groupChats!;
+                      final allGroupChats = groupChatState.groupChats!;
+                      // Filter the group chats to only include those that the user is a part of
+                      final groupChats = allGroupChats
+                          .where((groupChat) =>
+                              groupChat.participantIds.contains(auth.userId))
+                          .toList();
                       return ListView(
                         children: [
                           SizedBox(height: 16.0),
