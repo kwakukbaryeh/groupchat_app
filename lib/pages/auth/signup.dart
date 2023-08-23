@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:groupchat_firebase/animation/animation.dart';
@@ -47,7 +46,7 @@ class _SignupState extends State<Signup> {
       Container(
         height: 130,
       ),
-      Text(
+      const Text(
         "Create your account with your\ne-mail address",
         style: TextStyle(
             color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),
@@ -57,7 +56,7 @@ class _SignupState extends State<Signup> {
         height: 30,
       ),
       Padding(
-        padding: EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
           children: [
             _entryFeild('Enter email',
@@ -91,35 +90,35 @@ class _SignupState extends State<Signup> {
         ),
         obscureText: isPassword,
         decoration: InputDecoration(
-          contentPadding: EdgeInsets.all(0.0),
+          contentPadding: const EdgeInsets.all(0.0),
           labelText: hint,
           hintText: hint,
-          labelStyle: TextStyle(
+          labelStyle: const TextStyle(
             color: Colors.white,
             fontSize: 14.0,
             fontWeight: FontWeight.w400,
           ),
-          hintStyle: TextStyle(
+          hintStyle: const TextStyle(
             color: Colors.white,
             fontSize: 14.0,
           ),
-          prefixIcon: Icon(
+          prefixIcon: const Icon(
             Icons.supervised_user_circle,
             color: Colors.white,
             size: 18,
           ),
           enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(
+            borderSide: const BorderSide(
                 color: Color.fromARGB(255, 163, 163, 163), width: 1.5),
             borderRadius: BorderRadius.circular(10.0),
           ),
-          floatingLabelStyle: TextStyle(
+          floatingLabelStyle: const TextStyle(
             color: Colors.white,
             fontSize: 18.0,
           ),
           focusedBorder: OutlineInputBorder(
             borderSide:
-                BorderSide(color: Color.fromARGB(255, 61, 61, 61), width: 1.5),
+                const BorderSide(color: Color.fromARGB(255, 61, 61, 61), width: 1.5),
             borderRadius: BorderRadius.circular(10.0),
           ),
         ),
@@ -132,9 +131,9 @@ class _SignupState extends State<Signup> {
         height: 164,
         color: Colors.transparent,
         child: Padding(
-            padding: EdgeInsets.only(left: 20, right: 20, bottom: 40),
+            padding: const EdgeInsets.only(left: 20, right: 20, bottom: 40),
             child: Column(children: [
-              Text(
+              const Text(
                   "By continuing, you agree to our\nPrivacy Policy and Terms of Service.\n",
                   style: TextStyle(
                       color: Color.fromARGB(255, 61, 61, 61),
@@ -146,6 +145,7 @@ class _SignupState extends State<Signup> {
                 children: [
                   RippleButton(
                       splashColor: Colors.transparent,
+                      onPressed: _submitForm,
                       child: Container(
                           height: 60,
                           width: MediaQuery.of(context).size.width - 80,
@@ -153,10 +153,10 @@ class _SignupState extends State<Signup> {
                             color: _emailController.text.length < 30 &&
                                     _emailController.text.isNotEmpty
                                 ? Colors.white
-                                : Color.fromARGB(255, 61, 61, 61),
+                                : const Color.fromARGB(255, 61, 61, 61),
                             borderRadius: BorderRadius.circular(15),
                           ),
-                          child: Center(
+                          child: const Center(
                               child: Text(
                             "Continue",
                             style: TextStyle(
@@ -164,8 +164,7 @@ class _SignupState extends State<Signup> {
                                 color: Colors.black,
                                 fontSize: 18,
                                 fontWeight: FontWeight.w800),
-                          ))),
-                      onPressed: _submitForm),
+                          )))),
                 ],
               )
             ])));
@@ -208,9 +207,9 @@ class _SignupState extends State<Signup> {
           Navigator.push(
             context,
             AwesomePageRoute(
-              transitionDuration: Duration(milliseconds: 600),
+              transitionDuration: const Duration(milliseconds: 600),
               exitPage: widget,
-              enterPage: ContactPage(),
+              enterPage: const ContactPage(),
               transition: CubeTransition(),
             ),
           );

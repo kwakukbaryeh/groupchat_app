@@ -24,6 +24,7 @@ class _DirectMessagesState extends State<DirectMessages> {
     setState(() {});
   }
 
+  @override
   initState() {
     super.initState();
     getChatRooms();
@@ -35,15 +36,15 @@ class _DirectMessagesState extends State<DirectMessages> {
     final h = MediaQuery.of(context).size.height / 100;
     return Scaffold(
         appBar: AppBar(
-          title: Text("Direct Message"),
+          title: const Text("Direct Message"),
           actions: [
             InkWell(
                 onTap: () {
-                  Navigator.push(
-                      context, MaterialPageRoute(builder: (ctx) => Friends()));
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (ctx) => const Friends()));
                 },
-                child: Icon(Icons.person)),
-            SizedBox(
+                child: const Icon(Icons.person)),
+            const SizedBox(
               width: 15,
             )
           ],
@@ -51,45 +52,64 @@ class _DirectMessagesState extends State<DirectMessages> {
         body: StreamBuilder<QuerySnapshot>(
             stream: chatroomStream,
             builder: (ctx, snapshot) {
-              return snapshot.hasData
-                  ? snapshot.data!.docs.isNotEmpty
-                      ? ListView.builder(
-                          padding: EdgeInsets.all(0),
-                          itemCount: snapshot.data!.docs.length,
-                          itemBuilder: (cxt, index) {
-                            DocumentSnapshot ds = snapshot.data!.docs[index];
-                            if (!ds["expireAt"]
-                                .toDate()
-                                .isAfter(DateTime.now())) {
-                              ds.reference
-                                  .collection("chats")
-                                  .get()
-                                  .then((querysnap) => {
-                                        querysnap.docs.forEach((element) {
-                                          element.reference.delete();
-                                        })
-                                      })
-                                  .then((value) => ds.reference.delete());
-                            }
-                            return ds["expireAt"]
-                                    .toDate()
-                                    .isAfter(DateTime.now())
-                                ? ChatRoomListTile(
-                                    lastMessage: ds["lastMessage"],
-                                    type: ds['type'],
-                                    read: ds['read'],
-                                    chatId: ds.id,
-                                    sender: ds["sender"],
-                                    receiver: ds["receiver"],
-                                    dateString: ds["lastDirectMessagesendTs"],
-                                  )
-                                : Container();
-                          })
-                      : Center(child: Text("No direct messages yet"))
-                  : Center(
-                      child: CircularProgressIndicator(
-                      color: Colors.black,
-                    ));
+              if (snapshot.hasData) {
+                final docs = snapshot.data!.docs;
+                if (docs.isNotEmpty) {
+                  return ListView.builder(
+                    padding: const EdgeInsets.all(0),
+                    itemCount: docs.length,
+                    itemBuilder: (cxt, index) {
+                      final ds = docs[index];
+                      final data = ds.data() as Map<String, dynamic>?;
+
+                      if (data != null &&
+                          data.containsKey("expireAt") &&
+                          !data["expireAt"].toDate().isAfter(DateTime.now())) {
+                        ds.reference
+                            .collection("chats")
+                            .get()
+                            .then((querysnap) {
+                          querysnap.docs.forEach((element) {
+                            element.reference.delete();
+                          });
+                        }).then((value) => ds.reference.delete());
+                      }
+
+                      if (data != null &&
+                          data.containsKey("expireAt") &&
+                          data["expireAt"].toDate().isAfter(DateTime.now())) {
+                        return ChatRoomListTile(
+                          lastMessage: data.containsKey("lastMessage")
+                              ? data["lastMessage"]
+                              : "",
+                          type: data.containsKey('type') ? data['type'] : "",
+                          read: data.containsKey('read') ? data['read'] : false,
+                          chatId: ds.id,
+                          sender:
+                              data.containsKey("sender") ? data["sender"] : {},
+                          receiver: data.containsKey("receiver")
+                              ? data["receiver"]
+                              : {},
+                          dateString:
+                              data.containsKey("lastDirectMessagesendTs")
+                                  ? data["lastDirectMessagesendTs"]
+                                  : Timestamp.now(),
+                        );
+                      } else {
+                        return Container();
+                      }
+                    },
+                  );
+                } else {
+                  return const Center(child: Text("No direct messages yet"));
+                }
+              } else {
+                return const Center(
+                  child: CircularProgressIndicator(
+                    color: Colors.black,
+                  ),
+                );
+              }
             }));
   }
 }
@@ -101,7 +121,8 @@ class ChatRoomListTile extends StatefulWidget {
   Map<String, dynamic> receiver;
   final bool read;
   ChatRoomListTile(
-      {required this.lastMessage,
+      {super.key,
+      required this.lastMessage,
       required this.type,
       required this.sender,
       required this.receiver,
@@ -174,7 +195,7 @@ class _ChatRoomListTileState extends State<ChatRoomListTile> {
                     )));
       },
       child: Container(
-        margin: EdgeInsets.symmetric(vertical: 8, horizontal: 8.0),
+        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 8.0),
         child: Row(
           children: [
             Stack(
@@ -214,20 +235,20 @@ class _ChatRoomListTileState extends State<ChatRoomListTile> {
                                 style: TextStyle(color: Colors.white)))))*/
               ],
             ),
-            SizedBox(width: 15),
+            const SizedBox(width: 15),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   receiver.displayName!,
-                  style: TextStyle(
+                  style: const TextStyle(
                       fontSize: 16,
                       color: Colors.white,
                       fontWeight: FontWeight.bold),
                 ),
-                SizedBox(height: 5),
+                const SizedBox(height: 5),
                 widget.type == "text"
-                    ? Container(
+                    ? SizedBox(
                         width: 200,
                         child: Row(
                           children: [
@@ -245,7 +266,7 @@ class _ChatRoomListTileState extends State<ChatRoomListTile> {
                           ],
                         ),
                       )
-                    : Container(
+                    : SizedBox(
                         width: 200,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.start,
@@ -269,7 +290,7 @@ class _ChatRoomListTileState extends State<ChatRoomListTile> {
             Expanded(
                 child: Text(
               timesAgo,
-              style: TextStyle(color: Colors.white),
+              style: const TextStyle(color: Colors.white),
             ))
           ],
         ),

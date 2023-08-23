@@ -10,7 +10,7 @@ class ChatAppBar extends StatelessWidget {
   UserModel receiver;
 
   ChatAppBar(
-      {
+      {super.key, 
       //required this.recipient,
       required this.icon,
       required this.receiver});
@@ -24,12 +24,12 @@ class ChatAppBar extends StatelessWidget {
       child: Container(
         height: 70,
         width: double.infinity,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
             border: Border(bottom: BorderSide(color: Colors.grey))),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SizedBox(
+            const SizedBox(
               width: 25,
             ),
             /*Expanded(

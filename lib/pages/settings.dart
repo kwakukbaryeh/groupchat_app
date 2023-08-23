@@ -2,7 +2,6 @@ import 'package:animate_do/animate_do.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:groupchat_firebase/helper/utility.dart';
 import 'package:groupchat_firebase/state/auth_state.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -24,23 +23,23 @@ class _SettingsPageState extends State<SettingsPage> {
         backgroundColor: Colors.black,
         appBar: AppBar(
             leading: FadeIn(
-                duration: Duration(milliseconds: 1000),
+                duration: const Duration(milliseconds: 1000),
                 child: GestureDetector(
                     onTap: () {
                       Navigator.pop(context);
                     },
-                    child: Icon(Icons.arrow_back, color: Colors.white))),
+                    child: const Icon(Icons.arrow_back, color: Colors.white))),
             elevation: 0,
             backgroundColor: Colors.transparent,
             title: FadeInRight(
-                duration: Duration(milliseconds: 300),
-                child: Text(
+                duration: const Duration(milliseconds: 300),
+                child: const Text(
                   "Settings",
                   style: TextStyle(
                       color: Colors.white, fontWeight: FontWeight.w700),
                 ))),
         body: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 30),
+            padding: const EdgeInsets.symmetric(horizontal: 30),
             child: ListView(
               children: [
                 GestureDetector(
@@ -48,7 +47,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => EditProfilePage()));
+                              builder: (context) => const EditProfilePage()));
                     },
                     child: ClipRRect(
                         borderRadius: BorderRadius.circular(10),
@@ -65,7 +64,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                     ClipRRect(
                                         borderRadius:
                                             BorderRadius.circular(100),
-                                        child: Container(
+                                        child: SizedBox(
                                           height: 65,
                                           width: 65,
                                           child: CachedNetworkImage(
@@ -84,7 +83,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                           TextSpan(
                                             text:
                                                 '${state.profileUserModel!.displayName}\n',
-                                            style: TextStyle(
+                                            style: const TextStyle(
                                               color: Colors.white,
                                               fontSize: 20,
                                               fontWeight: FontWeight.w600,
@@ -93,7 +92,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                           TextSpan(
                                             text:
                                                 '${state.profileUserModel!.userName}',
-                                            style: TextStyle(
+                                            style: const TextStyle(
                                               color: Colors.white,
                                               fontSize: 14,
                                               fontWeight: FontWeight.w500,
@@ -117,7 +116,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 Container(
                   height: 30,
                 ),
-                Text(
+                const Text(
                   "About",
                   style: TextStyle(color: Color.fromARGB(255, 65, 65, 65)),
                 ),
@@ -129,7 +128,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       Share.share(
                         "rebe.al/${state.profileUserModel!.userName!.replaceAll("@", "").toLowerCase()}",
                         subject: "Add me on AppTitle.",
-                        sharePositionOrigin: Rect.fromLTWH(0, 0, 10, 10),
+                        sharePositionOrigin: const Rect.fromLTWH(0, 0, 10, 10),
                       );
                     },
                     child: ClipRRect(
@@ -145,8 +144,8 @@ class _SettingsPageState extends State<SettingsPage> {
                                 Container(
                                   width: 10,
                                 ),
-                                Icon(CupertinoIcons.share),
-                                Text(
+                                const Icon(CupertinoIcons.share),
+                                const Text(
                                   "Share App Title",
                                   style: TextStyle(
                                       color: Colors.white,
@@ -182,7 +181,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           width: MediaQuery.of(context).size.width,
                           color: Colors.grey[800],
                           alignment: Alignment.center,
-                          child: Text(
+                          child: const Text(
                             "Log out",
                             style: TextStyle(
                                 color: Colors.red,
@@ -193,7 +192,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 Container(
                   height: 20,
                 ),
-                Text(
+                const Text(
                   "Version 1.0.0 (1) - Clone Version",
                   textAlign: TextAlign.center,
                   style: TextStyle(

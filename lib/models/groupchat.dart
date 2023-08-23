@@ -10,6 +10,8 @@ class GroupChat extends Equatable {
   Duration? remainingTime;
   List<String> participantIds;
   List<String> participantFcmTokens;
+  String? firstPost;
+  String? imageBackPath;
 
   GroupChat(
       {this.key,
@@ -19,11 +21,15 @@ class GroupChat extends Equatable {
       required this.createdAt,
       required this.expiryDate,
       required this.participantIds,
-      required this.participantFcmTokens});
+      required this.participantFcmTokens,
+      this.firstPost,
+      this.imageBackPath});
 
   factory GroupChat.fromJson(Map<String, dynamic> json) {
     return GroupChat(
       key: json['key'],
+      firstPost: json['firstPost'],
+      imageBackPath: json['imageBackPath'],
       creatorId: json["creatorId"],
       groupName: json['groupName'],
       participantCount: json['participantCount'],
@@ -43,6 +49,8 @@ class GroupChat extends Equatable {
   Map<String, dynamic> toJson() {
     return {
       'key': key,
+      'firstPost': firstPost,
+      'imageBackPath': imageBackPath,
       'creatorId': creatorId,
       'groupName': groupName,
       'participantCount': participantCount,

@@ -16,7 +16,7 @@ void shareText(String text) {
   Share.share(
     text,
     subject: "Follow me on ReBeal.",
-    sharePositionOrigin: Rect.fromLTWH(0, 0, 10, 10),
+    sharePositionOrigin: const Rect.fromLTWH(0, 0, 10, 10),
   );
 }
 
@@ -27,7 +27,7 @@ class _ShareButtonState extends State<ShareButton> {
     return Column(
       children: [
         Padding(
-            padding: EdgeInsets.only(top: 30, left: 10, right: 10),
+            padding: const EdgeInsets.only(top: 30, left: 10, right: 10),
             child: GestureDetector(
                 onTap: () {
                   shareText(
@@ -47,7 +47,7 @@ class _ShareButtonState extends State<ShareButton> {
                             children: [
                               ClipRRect(
                                   borderRadius: BorderRadius.circular(100),
-                                  child: Container(
+                                  child: SizedBox(
                                     height: 40,
                                     width: 40,
                                     child: CachedNetworkImage(
@@ -63,7 +63,7 @@ class _ShareButtonState extends State<ShareButton> {
                               Text.rich(
                                 TextSpan(
                                   children: [
-                                    TextSpan(
+                                    const TextSpan(
                                       text:
                                           'Invite you\'re friends on ReBeal\n',
                                       style: TextStyle(
@@ -89,7 +89,7 @@ class _ShareButtonState extends State<ShareButton> {
                           Container(
                             width: 30,
                           ),
-                          Icon(
+                          const Icon(
                             CupertinoIcons.share,
                             color: Colors.white,
                             size: 22,

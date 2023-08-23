@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 
 class CountdownPage extends StatefulWidget {
+  const CountdownPage({super.key});
+
   @override
   _CountdownPageState createState() => _CountdownPageState();
 }
@@ -23,7 +25,7 @@ class _CountdownPageState extends State<CountdownPage> {
   }
 
   void _startCountdownTimer() {
-    const oneSec = const Duration(seconds: 1);
+    const oneSec = Duration(seconds: 1);
     _timer = Timer.periodic(oneSec, (timer) {
       if (_countdownSeconds == 0) {
         _timer?.cancel();
@@ -47,7 +49,7 @@ class _CountdownPageState extends State<CountdownPage> {
     return Center(
       child: Text(
         _formatTime(_countdownSeconds),
-        style: TextStyle(
+        style: const TextStyle(
             fontSize: 27, fontWeight: FontWeight.w700, color: Colors.white),
       ),
     );

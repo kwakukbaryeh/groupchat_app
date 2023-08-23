@@ -1,7 +1,6 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:groupchat_firebase/models/user.dart'; // Import the User model
-import 'package:groupchat_firebase/models/chat.dart'; // Import the Chat model
+// Import the Chat model
 
 class Friendship {
   final UserModel user;
@@ -11,6 +10,8 @@ class Friendship {
 }
 
 class DirectMessagePage extends StatefulWidget {
+  const DirectMessagePage({super.key});
+
   @override
   _DirectMessagePageState createState() => _DirectMessagePageState();
 }
@@ -18,7 +19,7 @@ class DirectMessagePage extends StatefulWidget {
 class _DirectMessagePageState extends State<DirectMessagePage> {
   List<Friendship> _friendsList = []; // List to store the user's friends
   List<Friendship> _searchResults = []; // List to store search results
-  TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -90,7 +91,7 @@ class _DirectMessagePageState extends State<DirectMessagePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Direct Messages'),
+        title: const Text('Direct Messages'),
         backgroundColor: Colors.grey[900],
       ),
       body: Column(
@@ -100,7 +101,7 @@ class _DirectMessagePageState extends State<DirectMessagePage> {
             child: TextField(
               controller: _searchController,
               onChanged: _handleSearch,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Search',
                 prefixIcon: Icon(Icons.search),
                 border: OutlineInputBorder(),

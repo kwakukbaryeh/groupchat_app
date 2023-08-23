@@ -1,7 +1,4 @@
-import 'dart:convert';
-import 'dart:developer';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:date_format/date_format.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +9,7 @@ import 'package:provider/provider.dart';
 
 class CommentScreen extends StatefulWidget {
   final PostModel postModel;
-  CommentScreen(this.postModel);
+  const CommentScreen(this.postModel, {super.key});
 
   @override
   _CommentScreenState createState() => _CommentScreenState();
@@ -105,12 +102,13 @@ class _CommentScreenState extends State<CommentScreen> {
                       height: 200,
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           GestureDetector(
                               onTap: switcherFunc,
                               child: ClipRRect(
                                   borderRadius: BorderRadius.circular(15),
-                                  child: Container(
+                                  child: SizedBox(
                                       height: 200,
                                       width: MediaQuery.of(context).size.width,
                                       child: Stack(
@@ -126,11 +124,11 @@ class _CommentScreenState extends State<CommentScreen> {
                                                       .postModel.imageBackPath
                                                       .toString()),
                                           Padding(
-                                              padding: EdgeInsets.all(15),
+                                              padding: const EdgeInsets.all(15),
                                               child: ClipRRect(
                                                   borderRadius:
                                                       BorderRadius.circular(10),
-                                                  child: Container(
+                                                  child: SizedBox(
                                                       height: 100,
                                                       width: 100,
                                                       child: CachedNetworkImage(
@@ -145,21 +143,21 @@ class _CommentScreenState extends State<CommentScreen> {
                                         ],
                                       )))),
                         ],
-                        crossAxisAlignment: CrossAxisAlignment.start,
                       )),
                 ),
                 Container(
-                    padding: EdgeInsets.all(15),
+                    padding: const EdgeInsets.all(15),
                     height: 200,
                     width: 200,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         GestureDetector(
                             onTap: switcherFunc,
                             child: ClipRRect(
                                 borderRadius: BorderRadius.circular(15),
-                                child: Container(
+                                child: SizedBox(
                                     height: 170,
                                     width: MediaQuery.of(context).size.width,
                                     child: Stack(
@@ -174,11 +172,11 @@ class _CommentScreenState extends State<CommentScreen> {
                                                 : widget.postModel.imageBackPath
                                                     .toString()),
                                         Padding(
-                                            padding: EdgeInsets.all(15),
+                                            padding: const EdgeInsets.all(15),
                                             child: ClipRRect(
                                                 borderRadius:
                                                     BorderRadius.circular(10),
-                                                child: Container(
+                                                child: SizedBox(
                                                     height: 50,
                                                     width: 50,
                                                     child: CachedNetworkImage(
@@ -193,7 +191,6 @@ class _CommentScreenState extends State<CommentScreen> {
                                       ],
                                     )))),
                       ],
-                      crossAxisAlignment: CrossAxisAlignment.start,
                     ))
               ],
             ),
@@ -222,8 +219,8 @@ class _CommentScreenState extends State<CommentScreen> {
                                   padding:
                                       const EdgeInsets.fromLTRB(0, 0, 0, 0),
                                   child: ListView.builder(
-                                      padding: EdgeInsets.only(top: 15),
-                                      physics: BouncingScrollPhysics(),
+                                      padding: const EdgeInsets.only(top: 15),
+                                      physics: const BouncingScrollPhysics(),
                                       itemCount: items.length,
                                       itemBuilder: (context, index) {
                                         items.sort((a, b) =>
@@ -258,7 +255,7 @@ class _CommentScreenState extends State<CommentScreen> {
                                                                   .profileUserModel
                                                                   ?.profilePic ??
                                                               "https://i.pinimg.com/originals/f1/0f/f7/f10ff70a7155e5ab666bcdd1b45b726d.jpg")),
-                                              SizedBox(
+                                              const SizedBox(
                                                 width: 10,
                                               ),
                                               Expanded(
@@ -268,28 +265,28 @@ class _CommentScreenState extends State<CommentScreen> {
                                                   children: [
                                                     Text(
                                                         "${items[index]["username"]}",
-                                                        style: TextStyle(
+                                                        style: const TextStyle(
                                                             color: Colors
                                                                 .white60)),
-                                                    SizedBox(
+                                                    const SizedBox(
                                                       height: 3,
                                                     ),
                                                     Text(
                                                         "${items[index]["comment"]}",
-                                                        style: TextStyle(
+                                                        style: const TextStyle(
                                                             fontSize: 16)),
-                                                    SizedBox(
+                                                    const SizedBox(
                                                       height: 3,
                                                     ),
                                                     Text(
                                                         "${items[index]["likes"]} likes",
-                                                        style: TextStyle(
+                                                        style: const TextStyle(
                                                             color:
                                                                 Colors.grey)),
                                                   ],
                                                 ),
                                               ),
-                                              SizedBox(
+                                              const SizedBox(
                                                 width: 10,
                                               ),
                                               items[index]["likedByMe"]
@@ -314,7 +311,7 @@ class _CommentScreenState extends State<CommentScreen> {
                                                             .set(false);
                                                       },
                                                       child:
-                                                          Icon(Icons.favorite))
+                                                          const Icon(Icons.favorite))
                                                   : InkWell(
                                                       onTap: () {
                                                         DatabaseReference ref =
@@ -335,21 +332,21 @@ class _CommentScreenState extends State<CommentScreen> {
                                                             .child("likedByMe")
                                                             .set(true);
                                                       },
-                                                      child: Icon(Icons
+                                                      child: const Icon(Icons
                                                           .favorite_outline))
                                             ],
                                           ),
                                         );
                                       }))
-                              : Container(
+                              : SizedBox(
                                   height: MediaQuery.of(context).size.height,
                                   width: MediaQuery.of(context).size.width,
-                                  child: Center(
+                                  child: const Center(
                                       child: Text("No user has commented yet")))
-                          : Container(
+                          : SizedBox(
                               height: MediaQuery.of(context).size.height,
                               width: MediaQuery.of(context).size.width,
-                              child: Center(
+                              child: const Center(
                                   child: CircularProgressIndicator(
                                 color: Colors.black,
                               )));
@@ -388,8 +385,8 @@ class _CommentScreenState extends State<CommentScreen> {
                 suffixIconColor: Colors.black,
                 border: InputBorder.none,
                 hintText: 'Write Your Comment',
-                hintStyle: TextStyle(color: Colors.black45),
-                prefix: Text("  "),
+                hintStyle: const TextStyle(color: Colors.black45),
+                prefix: const Text("  "),
                 suffixIcon: GestureDetector(
                     onTap: () async {
                       if (commentController.text.isNotEmpty) {
@@ -406,7 +403,7 @@ class _CommentScreenState extends State<CommentScreen> {
                         commentController.text = "";
                       }
                     },
-                    child: Icon(Icons.send)),
+                    child: const Icon(Icons.send)),
                 /*suffixIconConstraints: BoxConstraints(
                       maxHeight: 35, minHeight: 35, maxWidth: 35, minWidth: 35)*/
               ),

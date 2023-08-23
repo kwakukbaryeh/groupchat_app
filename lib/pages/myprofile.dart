@@ -29,28 +29,28 @@ class _ProfilePageState extends State<MyProfilePage> {
         appBar: AppBar(
             actions: [
               FadeIn(
-                  duration: Duration(milliseconds: 1000),
+                  duration: const Duration(milliseconds: 1000),
                   child: GestureDetector(
                       onTap: () {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => SettingsPage()));
+                                builder: (context) => const SettingsPage()));
                       },
-                      child: Icon(Icons.more_horiz, color: Colors.white)))
+                      child: const Icon(Icons.more_horiz, color: Colors.white)))
             ],
             leading: FadeIn(
-                duration: Duration(milliseconds: 1000),
+                duration: const Duration(milliseconds: 1000),
                 child: GestureDetector(
                     onTap: () {
                       Navigator.pop(context);
                     },
-                    child: Icon(Icons.arrow_back, color: Colors.white))),
+                    child: const Icon(Icons.arrow_back, color: Colors.white))),
             elevation: 0,
             backgroundColor: Colors.transparent,
             title: FadeInRight(
-                duration: Duration(milliseconds: 300),
-                child: Text(
+                duration: const Duration(milliseconds: 300),
+                child: const Text(
                   "Profile",
                   style: TextStyle(color: Colors.white),
                 ))),
@@ -59,7 +59,7 @@ class _ProfilePageState extends State<MyProfilePage> {
                 child: ListView(
           children: [
             Padding(
-                padding: EdgeInsets.symmetric(horizontal: 15),
+                padding: const EdgeInsets.symmetric(horizontal: 15),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -68,11 +68,11 @@ class _ProfilePageState extends State<MyProfilePage> {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => EditProfilePage()));
+                                  builder: (context) => const EditProfilePage()));
                         },
                         child: ClipRRect(
                             borderRadius: BorderRadius.circular(100),
-                            child: Container(
+                            child: SizedBox(
                               height: 120,
                               width: 120,
                               child: CachedNetworkImage(
@@ -88,11 +88,11 @@ class _ProfilePageState extends State<MyProfilePage> {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => EditProfilePage()));
+                                  builder: (context) => const EditProfilePage()));
                         },
                         child: Text(
                           state.profileUserModel?.displayName.toString() ?? "",
-                          style: TextStyle(
+                          style: const TextStyle(
                               color: Colors.white,
                               fontSize: 28,
                               fontWeight: FontWeight.w700),
@@ -102,11 +102,11 @@ class _ProfilePageState extends State<MyProfilePage> {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => EditProfilePage()));
+                                  builder: (context) => const EditProfilePage()));
                         },
                         child: Text(
                           state.profileUserModel?.userName.toString() ?? "",
-                          style: TextStyle(
+                          style: const TextStyle(
                               color: Colors.white,
                               fontSize: 15,
                               fontWeight: FontWeight.w400),
@@ -117,10 +117,10 @@ class _ProfilePageState extends State<MyProfilePage> {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => EditProfilePage()));
+                                  builder: (context) => const EditProfilePage()));
                         },
                         child: Text(
-                          "${state.profileUserModel?.bio ?? ""}",
+                          state.profileUserModel?.bio ?? "",
                           style: TextStyle(
                               color: Colors.grey[800],
                               fontSize: 15,
@@ -132,7 +132,7 @@ class _ProfilePageState extends State<MyProfilePage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
+                        const Text(
                           "Your Memories",
                           style: TextStyle(
                               color: Colors.white,
@@ -170,11 +170,11 @@ class _ProfilePageState extends State<MyProfilePage> {
                           height: 200,
                           width: MediaQuery.of(context).size.width,
                           child: Padding(
-                              padding: EdgeInsets.all(20),
+                              padding: const EdgeInsets.all(20),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
+                                  const Text(
                                     "last 14 days",
                                     style: TextStyle(
                                         color: Colors.white,
@@ -184,7 +184,7 @@ class _ProfilePageState extends State<MyProfilePage> {
                                   Expanded(
                                       child: GridView.builder(
                                           gridDelegate:
-                                              SliverGridDelegateWithFixedCrossAxisCount(
+                                              const SliverGridDelegateWithFixedCrossAxisCount(
                                                   crossAxisCount: 7,
                                                   mainAxisSpacing: 0,
                                                   crossAxisSpacing: 0),
@@ -192,7 +192,7 @@ class _ProfilePageState extends State<MyProfilePage> {
                                           itemBuilder: (context, index) {
                                             final day = reversedDays[index];
                                             return Padding(
-                                                padding: EdgeInsets.all(8),
+                                                padding: const EdgeInsets.all(8),
                                                 child: Container(
                                                   alignment: Alignment.center,
                                                   decoration: BoxDecoration(
@@ -220,7 +220,7 @@ class _ProfilePageState extends State<MyProfilePage> {
                                             context,
                                             MaterialPageRoute(
                                                 builder: (context) =>
-                                                    MemoriesPage()));
+                                                    const MemoriesPage()));
                                       },
                                       child: Center(
                                           child: Container(
@@ -234,7 +234,7 @@ class _ProfilePageState extends State<MyProfilePage> {
                                               color: Colors.white, width: 0.4),
                                         ),
                                         alignment: Alignment.center,
-                                        child: Text(
+                                        child: const Text(
                                           "See all Memories",
                                           style: TextStyle(
                                               color: Colors.white,
@@ -255,7 +255,7 @@ class _ProfilePageState extends State<MyProfilePage> {
                         },
                         child: Text(
                           "🔗 ReBe.al/${state.profileUserModel?.userName!.replaceAll("@", "").toLowerCase() ?? ""}",
-                          style: TextStyle(
+                          style: const TextStyle(
                               color: Colors.white,
                               fontSize: 17,
                               fontWeight: FontWeight.w400),

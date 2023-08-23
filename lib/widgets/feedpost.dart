@@ -4,18 +4,37 @@ import 'package:groupchat_firebase/models/post.dart';
 import 'package:groupchat_firebase/pages/comments.dart';
 import 'package:groupchat_firebase/state/auth_state.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/physics.dart';
 
 class FeedPostWidget extends StatefulWidget {
-  PostModel postModel;
+  final PostModel postModel;
 
-  FeedPostWidget({required this.postModel, super.key});
+  FeedPostWidget({required this.postModel, Key? key}) : super(key: key);
 
   @override
   State<FeedPostWidget> createState() => _FeedPostWidgetState();
 }
 
-class _FeedPostWidgetState extends State<FeedPostWidget> {
+class _FeedPostWidgetState extends State<FeedPostWidget>
+    with SingleTickerProviderStateMixin {
   bool switcher = false;
+  late AnimationController _animationController;
+  Offset _offset = Offset(20, 20); // Initialize to 20 pixels from top and left
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 500),
+    );
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
 
   void switcherFunc() {
     setState(() {
@@ -23,16 +42,71 @@ class _FeedPostWidgetState extends State<FeedPostWidget> {
     });
   }
 
+  void _runAnimation() {
+    final spring = SpringDescription(
+      mass: 30,
+      stiffness: 1,
+      damping: 1,
+    );
+
+    final simulation = SpringSimulation(
+      spring,
+      0,
+      1,
+      0,
+    );
+
+    _animationController.animateWith(simulation);
+
+    _animationController.addListener(() {
+      setState(() {
+        final endOffset = _getFinalOffset();
+        final double dx = _offset.dx +
+            (endOffset.dx - _offset.dx) * _animationController.value;
+        final double dy = _offset.dy +
+            (endOffset.dy - _offset.dy) * _animationController.value;
+        _offset = Offset(dx, dy);
+      });
+    });
+  }
+
+  Offset _getFinalOffset() {
+    double imageScreenWidth = MediaQuery.of(context)
+        .size
+        .width; // Replace with actual width of the image screen
+    double imageScreenHeight = MediaQuery.of(context).size.height /
+        1.63; // Replace with actual height of the image screen
+
+    double halfWidth = imageScreenWidth / 2;
+    double halfHeight = imageScreenHeight / 2;
+
+    double selfieBoxWidth = MediaQuery.of(context).size.width / 4;
+    double selfieBoxHeight = MediaQuery.of(context).size.height / 6;
+
+    double dx = _offset.dx < halfWidth
+        ? 20 // 20 pixels away from the left
+        : imageScreenWidth -
+            selfieBoxWidth -
+            20; // 20 pixels away from the right
+
+    double dy = _offset.dy < halfHeight
+        ? 20 // 20 pixels away from the top
+        : imageScreenHeight -
+            selfieBoxHeight -
+            20; // 20 pixels away from the bottom
+
+    return Offset(dx, dy);
+  }
+
   @override
   Widget build(BuildContext context) {
-    print("Rendering FeedPostWidget: ${widget.postModel.key}");
     var state = Provider.of<AuthState>(context);
     String localisation;
     if (widget.postModel.user?.localisation.toString().replaceAll("null", "") ==
         "") {
       localisation = "";
     } else {
-      localisation = widget.postModel.user!.localisation.toString() + " •";
+      localisation = "${widget.postModel.user!.localisation} •";
     }
 
     DateTime now = DateTime.now();
@@ -45,119 +119,124 @@ class _FeedPostWidgetState extends State<FeedPostWidget> {
       timeAgo = 'A few seconds ago';
     } else if (difference.inMinutes < 60) {
       int minutes = difference.inMinutes;
-      timeAgo = 'Few $minutes minute${minutes > 1 ? 's' : ''} ago';
+      timeAgo = '$minutes minute${minutes > 1 ? 's' : ''} ago';
     } else {
       int hours = difference.inHours;
-      timeAgo = 'Few $hours heure${hours > 1 ? 's' : ''} ago';
+      timeAgo = '$hours hour${hours > 1 ? 's' : ''} ago';
     }
+
     return Stack(
       children: [
         Container(
-            color: Colors.black,
-            height: MediaQuery.of(context).size.height / 1.3,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Container(
-                  height: 20,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+          color: Colors.black,
+          height: MediaQuery.of(context).size.height / 1.3,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                height: 20,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(100),
+                    child: SizedBox(
+                      height: 35,
+                      width: 35,
+                      child: CachedNetworkImage(
+                        imageUrl: widget.postModel.user?.profilePic ??
+                            "https://i.pinimg.com/originals/f1/0f/f7/f10ff70a7155e5ab666bcdd1b45b726d.jpg",
+                      ),
+                    ),
+                  ),
+                  Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: "${widget.postModel.user!.displayName}\n",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        TextSpan(
+                          text: "$localisation $timeAgo",
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    width: MediaQuery.of(context).size.width / 3,
+                  ),
+                  Icon(Icons.more_horiz, color: Colors.white),
+                ],
+              ),
+              Container(
+                height: 10,
+              ),
+              GestureDetector(
+                onTap: switcherFunc,
+                child: Stack(
                   children: [
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(100),
-                      child: Container(
-                        height: 35,
-                        width: 35,
+                      borderRadius: BorderRadius.circular(15),
+                      child: SizedBox(
+                        height: MediaQuery.of(context).size.height / 1.63,
+                        width: MediaQuery.of(context).size.width,
                         child: CachedNetworkImage(
-                          imageUrl: widget.postModel.user?.profilePic ??
-                              "https://i.pinimg.com/originals/f1/0f/f7/f10ff70a7155e5ab666bcdd1b45b726d.jpg",
+                          fit: BoxFit.cover,
+                          imageUrl: switcher
+                              ? widget.postModel.imageFrontPath.toString()
+                              : widget.postModel.imageBackPath.toString(),
                         ),
                       ),
                     ),
-                    Text.rich(
-                      TextSpan(
-                        children: [
-                          TextSpan(
-                            text:
-                                widget.postModel.user!.displayName.toString() +
-                                    "\n",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w500,
+                    AnimatedBuilder(
+                      animation: _animationController,
+                      builder: (context, child) {
+                        return Positioned(
+                          left: _offset.dx,
+                          top: _offset.dy,
+                          child: GestureDetector(
+                            onPanUpdate: (details) {
+                              setState(() {
+                                _offset += details.delta;
+                              });
+                            },
+                            onPanEnd: (details) {
+                              _runAnimation();
+                            },
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: SizedBox(
+                                height: MediaQuery.of(context).size.height / 6,
+                                width: MediaQuery.of(context).size.width / 4,
+                                child: CachedNetworkImage(
+                                  fit: BoxFit.cover,
+                                  imageUrl: !switcher
+                                      ? widget.postModel.imageFrontPath
+                                          .toString()
+                                      : widget.postModel.imageBackPath
+                                          .toString(),
+                                ),
+                              ),
                             ),
                           ),
-                          TextSpan(
-                            text: "$localisation $timeAgo",
-                            style: TextStyle(
-                              color: Colors.grey,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
+                        );
+                      },
                     ),
-                    Container(
-                      width: MediaQuery.of(context).size.width / 3,
-                    ),
-                    Icon(Icons.more_horiz, color: Colors.white)
                   ],
                 ),
-                Container(
-                  height: 10,
-                ),
-                GestureDetector(
-                    onTap: switcherFunc,
-                    child: ClipRRect(
-                        borderRadius: BorderRadius.circular(15),
-                        child: Container(
-                            height: MediaQuery.of(context).size.height / 1.63,
-                            width: MediaQuery.of(context).size.width,
-                            child: Stack(
-                              children: [
-                                FittedBox(
-                                    fit: BoxFit.cover,
-                                    child: SizedBox(
-                                        width:
-                                            MediaQuery.of(context).size.width,
-                                        height:
-                                            MediaQuery.of(context).size.height /
-                                                1.63,
-                                        child: CachedNetworkImage(
-                                            fit: BoxFit.cover,
-                                            imageUrl: switcher
-                                                ? widget
-                                                    .postModel.imageFrontPath
-                                                    .toString()
-                                                : widget.postModel.imageBackPath
-                                                    .toString()))),
-                                Padding(
-                                    padding: EdgeInsets.all(20),
-                                    child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(10),
-                                        child: Container(
-                                            height: MediaQuery.of(context)
-                                                    .size
-                                                    .height /
-                                                6,
-                                            width: MediaQuery.of(context)
-                                                    .size
-                                                    .width /
-                                                3.9,
-                                            child: CachedNetworkImage(
-                                                fit: BoxFit.cover,
-                                                imageUrl: !switcher
-                                                    ? widget.postModel
-                                                        .imageFrontPath
-                                                        .toString()
-                                                    : widget
-                                                        .postModel.imageBackPath
-                                                        .toString())))),
-                              ],
-                            )))),
-              ],
-              crossAxisAlignment: CrossAxisAlignment.start,
-            )),
+              ),
+            ],
+          ),
+        ),
         widget.postModel.taggedUsers == null
             ? Container()
             : Positioned(

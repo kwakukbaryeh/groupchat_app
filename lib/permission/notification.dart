@@ -6,7 +6,7 @@ import '../notification/notification.dart';
 
 class NotificationPage extends StatefulWidget {
   final VoidCallback? loginCallback;
-  NotificationPage({Key? key, this.loginCallback}) : super(key: key);
+  const NotificationPage({Key? key, this.loginCallback}) : super(key: key);
 
   @override
   _NotificationPageState createState() => _NotificationPageState();
@@ -29,7 +29,7 @@ class _NotificationPageState extends State<NotificationPage> {
             Container(
               height: 130,
             ),
-            Text(
+            const Text(
               "Quand poster ton\nReBeal ?\n",
               style: TextStyle(
                   color: Colors.white,
@@ -37,7 +37,7 @@ class _NotificationPageState extends State<NotificationPage> {
                   fontWeight: FontWeight.w700),
               textAlign: TextAlign.center,
             ),
-            Text(
+            const Text(
               "La seule façon de savoir quand poster ton\nReBeal est d'activer les notiifcations !",
               style: TextStyle(
                   color: Colors.white,
@@ -57,7 +57,7 @@ class _NotificationPageState extends State<NotificationPage> {
                   borderRadius: BorderRadius.circular(20)),
               child: Column(
                 children: [
-                  Text(
+                  const Text(
                     "\nMerci d'activer les\n notifications",
                     style: TextStyle(
                         color: Colors.white,
@@ -65,7 +65,7 @@ class _NotificationPageState extends State<NotificationPage> {
                         fontWeight: FontWeight.w500),
                     textAlign: TextAlign.center,
                   ),
-                  Text(
+                  const Text(
                     "\nToutes les notifications sur ReBeal\nsont silencieuse sauf celle qui\nt'indique quand poster ron BeReal\n une fois par jour.",
                     style: TextStyle(
                         color: Colors.white,
@@ -100,9 +100,9 @@ class _NotificationPageState extends State<NotificationPage> {
                         Navigator.push(
                           context,
                           AwesomePageRoute(
-                            transitionDuration: Duration(milliseconds: 600),
+                            transitionDuration: const Duration(milliseconds: 600),
                             exitPage: widget,
-                            enterPage: NotifcationTest(),
+                            enterPage: const NotifcationTest(),
                             transition: ZoomOutSlideTransition(),
                           ),
                         );
@@ -110,9 +110,9 @@ class _NotificationPageState extends State<NotificationPage> {
                       child: Container(
                         width: 260,
                         height: 40,
-                        color: Color.fromARGB(255, 0, 120, 232),
+                        color: const Color.fromARGB(255, 0, 120, 232),
                         alignment: Alignment.center,
-                        child: Text(
+                        child: const Text(
                           "Autoriser",
                           style: TextStyle(
                               color: Colors.white,
@@ -124,7 +124,7 @@ class _NotificationPageState extends State<NotificationPage> {
                   Container(
                     height: 10,
                   ),
-                  Text(
+                  const Text(
                     "Autoriser dans le\nRésumé programmé",
                     style: TextStyle(
                         color: Color.fromARGB(255, 89, 89, 89),
@@ -143,7 +143,7 @@ class _NotificationPageState extends State<NotificationPage> {
                   Container(
                     height: 10,
                   ),
-                  Text(
+                  const Text(
                     "Refuser",
                     style: TextStyle(
                         color: Color.fromARGB(255, 89, 89, 89),

@@ -58,7 +58,7 @@ class _BirthPageState extends State<BirthPage> {
                 ),
                 Text(
                   "Hello ${widget.name}, when is your birthday? ?",
-                  style: TextStyle(
+                  style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,
                       fontWeight: FontWeight.w500),
@@ -73,14 +73,14 @@ class _BirthPageState extends State<BirthPage> {
                             : empt = false;
                       });
                       if (_birthController.text.length == 2) {
-                        _birthController.text = _birthController.text + " ";
+                        _birthController.text = "${_birthController.text} ";
                         _birthController.selection = TextSelection.fromPosition(
                             TextPosition(
                                 offset: _birthController.text.length,
                                 affinity: TextAffinity.upstream));
                       }
                       if (_birthController.text.length == 5) {
-                        _birthController.text = _birthController.text + " ";
+                        _birthController.text = "${_birthController.text} ";
                         _birthController.selection = TextSelection.fromPosition(
                             TextPosition(
                                 offset: _birthController.text.length,
@@ -94,14 +94,14 @@ class _BirthPageState extends State<BirthPage> {
                     keyboardType: TextInputType.number,
                     keyboardAppearance: Brightness.dark,
                     controller: _birthController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                         hintText: 'MM DD YYYY',
                         border: InputBorder.none,
                         hintStyle: TextStyle(
                             color: Color.fromARGB(255, 60, 60, 60),
                             fontSize: 38,
                             fontWeight: FontWeight.w800)),
-                    style: TextStyle(
+                    style: const TextStyle(
                         color: Colors.white,
                         fontSize: 38,
                         fontWeight: FontWeight.w800)),
@@ -112,7 +112,7 @@ class _BirthPageState extends State<BirthPage> {
                 width: MediaQuery.of(context).size.width,
                 color: Colors.black,
                 child: Padding(
-                  padding: EdgeInsets.only(left: 20, right: 20, bottom: 40),
+                  padding: const EdgeInsets.only(left: 20, right: 20, bottom: 40),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -124,10 +124,10 @@ class _BirthPageState extends State<BirthPage> {
                             decoration: BoxDecoration(
                               color: empt || _birthController.text.isNotEmpty
                                   ? Colors.white
-                                  : Color.fromARGB(255, 61, 61, 61),
+                                  : const Color.fromARGB(255, 61, 61, 61),
                               borderRadius: BorderRadius.circular(15),
                             ),
-                            child: Center(
+                            child: const Center(
                                 child: Text(
                               "Continue",
                               style: TextStyle(
@@ -142,7 +142,7 @@ class _BirthPageState extends State<BirthPage> {
                             Navigator.push(
                               context,
                               AwesomePageRoute(
-                                transitionDuration: Duration(milliseconds: 600),
+                                transitionDuration: const Duration(milliseconds: 600),
                                 exitPage: widget,
                                 enterPage: Signup(
                                     name: widget.name,

@@ -9,7 +9,7 @@ import 'notification.dart';
 
 class ContactPage extends StatefulWidget {
   final VoidCallback? loginCallback;
-  ContactPage({Key? key, this.loginCallback}) : super(key: key);
+  const ContactPage({Key? key, this.loginCallback}) : super(key: key);
 
   @override
   _ContactPageState createState() => _ContactPageState();
@@ -44,21 +44,21 @@ class _ContactPageState extends State<ContactPage> {
             appBar: AppBar(
               actions: [
                 Padding(
-                    padding: EdgeInsets.only(top: 15, right: 10),
+                    padding: const EdgeInsets.only(top: 15, right: 10),
                     child: GestureDetector(
                         onTap: () {
                           HapticFeedback.heavyImpact();
                           Navigator.push(
                             context,
                             AwesomePageRoute(
-                              transitionDuration: Duration(milliseconds: 600),
+                              transitionDuration: const Duration(milliseconds: 600),
                               exitPage: widget,
-                              enterPage: NotificationPage(),
+                              enterPage: const NotificationPage(),
                               transition: ZoomOutSlideTransition(),
                             ),
                           );
                         },
-                        child: Text("Passer",
+                        child: const Text("Passer",
                             style: TextStyle(
                               fontSize: 16,
                               color: Color.fromARGB(255, 61, 61, 61),
@@ -79,7 +79,7 @@ class _ContactPageState extends State<ContactPage> {
                 Container(
                   height: 130,
                 ),
-                Text(
+                const Text(
                   "Find you're friends\n",
                   style: TextStyle(
                       color: Colors.white,
@@ -87,7 +87,7 @@ class _ContactPageState extends State<ContactPage> {
                       fontWeight: FontWeight.w700),
                   textAlign: TextAlign.center,
                 ),
-                Text(
+                const Text(
                   "Find you're friends that already\nuse Rebeal.",
                   style: TextStyle(
                       color: Colors.white,
@@ -101,8 +101,8 @@ class _ContactPageState extends State<ContactPage> {
                   itemBuilder: (context, index) {
                     return ListTile(
                         title: Text(contactEmails[index]),
-                        leading: Icon(CupertinoIcons.profile_circled),
-                        trailing: Container(
+                        leading: const Icon(CupertinoIcons.profile_circled),
+                        trailing: SizedBox(
                             width: 120,
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.end,
@@ -115,7 +115,7 @@ class _ContactPageState extends State<ContactPage> {
                                         color: Colors.grey[800],
                                         borderRadius:
                                             BorderRadius.circular(90)),
-                                    child: Text(
+                                    child: const Text(
                                       "AJOUTER",
                                       style: TextStyle(
                                           fontSize: 13,

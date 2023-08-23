@@ -47,12 +47,12 @@ class UserTilePage extends StatelessWidget {
                   const SizedBox(height: 3),
                   Text(
                     user.userName!,
-                    style: TextStyle(color: Colors.white),
+                    style: const TextStyle(color: Colors.white),
                   ),
                 ],
               ),
             ),
-            Container(
+            SizedBox(
               width: 120,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -64,10 +64,10 @@ class UserTilePage extends StatelessWidget {
                           width: 90,
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
-                            color: Color.fromARGB(221, 69, 69, 69),
+                            color: const Color.fromARGB(221, 69, 69, 69),
                             borderRadius: BorderRadius.circular(90),
                           ),
-                          child: Text(
+                          child: const Text(
                             "ADD",
                             style: TextStyle(
                               fontSize: 13,

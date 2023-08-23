@@ -30,7 +30,7 @@ class _NotificationState extends State<NotifcationTest> {
             Container(
               height: 130,
             ),
-            Icon(
+            const Icon(
               Icons.arrow_upward_rounded,
               size: 60,
               color: Colors.white,
@@ -40,7 +40,7 @@ class _NotificationState extends State<NotifcationTest> {
             ),
             Text(
               "\n${state.profileUserModel?.displayName}, we know you can do it!\nTap the\nnotification to get your first ReBeal.",
-              style: TextStyle(
+              style: const TextStyle(
                   color: Colors.white,
                   fontSize: 40,
                   fontWeight: FontWeight.w700),
@@ -53,10 +53,10 @@ class _NotificationState extends State<NotifcationTest> {
             width: MediaQuery.of(context).size.width,
             color: Colors.black,
             child: Padding(
-                padding: EdgeInsets.only(left: 20, right: 20, bottom: 60),
+                padding: const EdgeInsets.only(left: 20, right: 20, bottom: 60),
                 child: Column(
                   children: [
-                    Row(
+                    const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -83,7 +83,7 @@ class _NotificationState extends State<NotifcationTest> {
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(15),
                               ),
-                              child: Center(
+                              child: const Center(
                                   child: Text(
                                 "Resend notification",
                                 style: TextStyle(
@@ -95,7 +95,7 @@ class _NotificationState extends State<NotifcationTest> {
                           onPressed: () {
                             Navigator.push(context, MaterialPageRoute(
                               builder: (context) {
-                                return SplashPage();
+                                return const SplashPage();
                               },
                             ));
                           },

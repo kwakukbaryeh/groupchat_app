@@ -16,14 +16,16 @@ import 'package:provider/provider.dart'; // Import the Chat model
 }*/
 
 class Friends extends StatefulWidget {
+  const Friends({super.key});
+
   @override
   _FriendsState createState() => _FriendsState();
 }
 
 class _FriendsState extends State<Friends> {
-  List<UserModel> _friendsList = []; // List to store the user's friends
+  final List<UserModel> _friendsList = []; // List to store the user's friends
   List<UserModel> _searchResults = []; // List to store search results
-  TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
 
   getfriends() async {
     User? user = FirebaseAuth.instance.currentUser;
@@ -113,9 +115,9 @@ class _FriendsState extends State<Friends> {
     late String chatRoomId;
     getChatRoomIdByUsernames(String a, String b) {
       if (a.substring(0, 1).codeUnitAt(0) > b.substring(0, 1).codeUnitAt(0)) {
-        return "$b\_$a";
+        return "${b}_$a";
       } else {
-        return "$a\_$b";
+        return "${a}_$b";
       }
     }
 
@@ -149,7 +151,7 @@ class _FriendsState extends State<Friends> {
     var state = Provider.of<AuthState>(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text('Friends'),
+        title: const Text('Friends'),
         backgroundColor: Colors.grey[900],
       ),
       body: Column(
@@ -159,7 +161,7 @@ class _FriendsState extends State<Friends> {
             child: TextField(
               controller: _searchController,
               onChanged: _handleSearch,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Search',
                 prefixIcon: Icon(Icons.search),
                 border: OutlineInputBorder(),
@@ -167,7 +169,7 @@ class _FriendsState extends State<Friends> {
             ),
           ),
           Expanded(
-            child: _friendsList.length != 0 && _searchResults.length != 0
+            child: _friendsList.isNotEmpty && _searchResults.isNotEmpty
                 ? ListView.builder(
                     itemCount: _searchController.text == ""
                         ? _friendsList.length
@@ -177,7 +179,7 @@ class _FriendsState extends State<Friends> {
                           ? _friendsList[index]
                           : _searchResults[index];
                       return ListTile(
-                        contentPadding: EdgeInsets.all(8),
+                        contentPadding: const EdgeInsets.all(8),
                         leading: friendship.profilePic == null
                             ? ClipRRect(
                                 borderRadius: BorderRadius.circular(100),
@@ -198,7 +200,7 @@ class _FriendsState extends State<Friends> {
                       );
                     },
                   )
-                : Center(child: Text("No friends to show")),
+                : const Center(child: Text("No friends to show")),
           ),
         ],
       ),

@@ -54,7 +54,7 @@ class _NamePageState extends State<NamePage> {
             Container(
               height: 130,
             ),
-            Text(
+            const Text(
               "Let's begin, what's your name ?",
               style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),
             ),
@@ -67,8 +67,8 @@ class _NamePageState extends State<NamePage> {
                 },
                 keyboardAppearance: Brightness.dark,
                 controller: _nameController,
-                decoration: InputDecoration(hintText: 'Your Name', border: InputBorder.none, hintStyle: TextStyle(color: Color.fromARGB(255, 60, 60, 60), fontSize: 45, fontWeight: FontWeight.w800)),
-                style: TextStyle(color: Colors.white, fontSize: 45, fontWeight: FontWeight.w800)),
+                decoration: const InputDecoration(hintText: 'Your Name', border: InputBorder.none, hintStyle: TextStyle(color: Color.fromARGB(255, 60, 60, 60), fontSize: 45, fontWeight: FontWeight.w800)),
+                style: const TextStyle(color: Colors.white, fontSize: 45, fontWeight: FontWeight.w800)),
           ],
         ),
         bottomSheet: Container(
@@ -76,7 +76,7 @@ class _NamePageState extends State<NamePage> {
           width: MediaQuery.of(context).size.width,
           color: Colors.black,
           child: Padding(
-            padding: EdgeInsets.only(left: 20, right: 20, bottom: 40),
+            padding: const EdgeInsets.only(left: 20, right: 20, bottom: 40),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -86,10 +86,10 @@ class _NamePageState extends State<NamePage> {
                       height: 70,
                       width: MediaQuery.of(context).size.width - 40,
                       decoration: BoxDecoration(
-                        color: empt || _nameController.text.isNotEmpty ? Colors.white : Color.fromARGB(255, 61, 61, 61),
+                        color: empt || _nameController.text.isNotEmpty ? Colors.white : const Color.fromARGB(255, 61, 61, 61),
                         borderRadius: BorderRadius.circular(15),
                       ),
-                      child: Center(
+                      child: const Center(
                           child: Text(
                         "Continue",
                         style: TextStyle(fontFamily: "icons.ttf", color: Colors.black, fontSize: 18, fontWeight: FontWeight.w800),
@@ -100,7 +100,7 @@ class _NamePageState extends State<NamePage> {
                       Navigator.push(
                         context,
                         AwesomePageRoute(
-                          transitionDuration: Duration(milliseconds: 600),
+                          transitionDuration: const Duration(milliseconds: 600),
                           exitPage: widget,
                           enterPage: BirthPage(name: _nameController.text),
                           transition: ZoomOutSlideTransition(),

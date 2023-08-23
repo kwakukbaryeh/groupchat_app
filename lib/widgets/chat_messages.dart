@@ -1,13 +1,10 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:developer';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
 import 'package:groupchat_firebase/models/user.dart';
 import 'package:groupchat_firebase/services/database.dart';
-import 'package:provider/provider.dart';
 
 class ChatMessages extends StatefulWidget {
   UserModel sender;
@@ -15,7 +12,7 @@ class ChatMessages extends StatefulWidget {
   String chatRoomId;
 
   ChatMessages(
-      {required this.sender, required this.receiver, required this.chatRoomId});
+      {super.key, required this.sender, required this.receiver, required this.chatRoomId});
 
   @override
   _ChatMessagesState createState() => _ChatMessagesState();
@@ -60,7 +57,7 @@ class _ChatMessagesState extends State<ChatMessages> {
                                           child: CircularProgressIndicator(
                                               value: progress.progress),
                                         ))),
-                    SizedBox(
+                    const SizedBox(
                       width: 8,
                     ),
                     Flexible(
@@ -70,8 +67,8 @@ class _ChatMessagesState extends State<ChatMessages> {
                         children: [
                           Container(
                             padding: const EdgeInsets.all(10.0),
-                            constraints: BoxConstraints(maxWidth: 200),
-                            decoration: BoxDecoration(
+                            constraints: const BoxConstraints(maxWidth: 200),
+                            decoration: const BoxDecoration(
                               color: Color(0xff4B0973),
                               borderRadius: BorderRadius.only(
                                 bottomRight: Radius.circular(20),
@@ -86,8 +83,8 @@ class _ChatMessagesState extends State<ChatMessages> {
                                     ? reply.contains("uploads/images/")
                                         ? Flexible(
                                             child: Container(
-                                                padding: EdgeInsets.all(8),
-                                                decoration: BoxDecoration(
+                                                padding: const EdgeInsets.all(8),
+                                                decoration: const BoxDecoration(
                                                     color: Color.fromARGB(
                                                         255, 197, 207, 243),
                                                     borderRadius:
@@ -102,8 +99,8 @@ class _ChatMessagesState extends State<ChatMessages> {
                                           )
                                         : Flexible(
                                             child: Container(
-                                                padding: EdgeInsets.all(8),
-                                                decoration: BoxDecoration(
+                                                padding: const EdgeInsets.all(8),
+                                                decoration: const BoxDecoration(
                                                     color: Color.fromARGB(
                                                         255, 197, 207, 243),
                                                     borderRadius:
@@ -112,7 +109,7 @@ class _ChatMessagesState extends State<ChatMessages> {
                                                                 8))),
                                                 child: Text(
                                                   reply,
-                                                  style: TextStyle(
+                                                  style: const TextStyle(
                                                       fontSize: 16.0,
                                                       fontFamily: "Nunito"),
                                                 )),
@@ -120,33 +117,33 @@ class _ChatMessagesState extends State<ChatMessages> {
                                     : Container(
                                         width: 3,
                                       ),
-                                SizedBox(
+                                const SizedBox(
                                   height: 8,
                                 ),
                                 Text(
                                   message,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 16.0,
                                       fontFamily: "Helvetica"),
                                 ),
-                                SizedBox(
+                                const SizedBox(
                                   height: 8,
                                 ),
                                 Text(
                                   formatDate(
                                       time.toDate(), [M, ' ', dd, ', ', yyyy]),
-                                  style: TextStyle(color: Colors.white),
+                                  style: const TextStyle(color: Colors.white),
                                 )
                               ],
                             ),
                           ),
-                          SizedBox(
+                          const SizedBox(
                             height: 8,
                           ),
                           Text(
                             senderName,
-                            style: TextStyle(fontSize: 16),
+                            style: const TextStyle(fontSize: 16),
                           )
                         ],
                       ),
@@ -170,9 +167,9 @@ class _ChatMessagesState extends State<ChatMessages> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Container(
-                            constraints: BoxConstraints(maxWidth: 200),
+                            constraints: const BoxConstraints(maxWidth: 200),
                             padding: const EdgeInsets.all(10.0),
-                            decoration: BoxDecoration(
+                            decoration: const BoxDecoration(
                               color: Color.fromARGB(255, 197, 207, 243),
                               borderRadius: BorderRadius.only(
                                 bottomLeft: Radius.circular(20),
@@ -187,8 +184,8 @@ class _ChatMessagesState extends State<ChatMessages> {
                                   child: reply != ""
                                       ? reply.contains("uploads/images/")
                                           ? Container(
-                                              padding: EdgeInsets.all(8),
-                                              decoration: BoxDecoration(
+                                              padding: const EdgeInsets.all(8),
+                                              decoration: const BoxDecoration(
                                                   color: Color(0xff4B0973),
                                                   borderRadius:
                                                       BorderRadius.all(
@@ -200,15 +197,15 @@ class _ChatMessagesState extends State<ChatMessages> {
                                               ),
                                             )
                                           : Container(
-                                              padding: EdgeInsets.all(8),
-                                              decoration: BoxDecoration(
+                                              padding: const EdgeInsets.all(8),
+                                              decoration: const BoxDecoration(
                                                   color: Color(0xff4B0973),
                                                   borderRadius:
                                                       BorderRadius.all(
                                                           Radius.circular(8))),
                                               child: Text(
                                                 reply,
-                                                style: TextStyle(
+                                                style: const TextStyle(
                                                   color: Colors.white,
                                                   fontFamily: "Nunito",
                                                   fontSize: 16.0,
@@ -219,15 +216,15 @@ class _ChatMessagesState extends State<ChatMessages> {
                                           width: 3,
                                         ),
                                 ),
-                                SizedBox(
+                                const SizedBox(
                                   height: 8,
                                 ),
                                 Text(
                                   message,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                       fontSize: 16.0, fontFamily: "Helvetica"),
                                 ),
-                                SizedBox(
+                                const SizedBox(
                                   height: 8,
                                 ),
                                 Text(
@@ -237,17 +234,17 @@ class _ChatMessagesState extends State<ChatMessages> {
                               ],
                             ),
                           ),
-                          SizedBox(
+                          const SizedBox(
                             height: 8,
                           ),
                           Text(
                             senderName,
-                            style: TextStyle(fontSize: 16),
+                            style: const TextStyle(fontSize: 16),
                           )
                         ],
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       width: 8,
                     ),
                     senderPics == null
@@ -295,7 +292,7 @@ class _ChatMessagesState extends State<ChatMessages> {
                         Container(
                           //height: 180,
                           width: MediaQuery.of(context).size.width * 0.5,
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: Color.fromARGB(255, 197, 207, 243),
                             borderRadius: BorderRadius.only(
                               bottomRight: Radius.circular(20),
@@ -303,17 +300,17 @@ class _ChatMessagesState extends State<ChatMessages> {
                               topRight: Radius.circular(20),
                             ),
                           ),
-                          margin: EdgeInsets.only(
+                          margin: const EdgeInsets.only(
                             top: 10,
                           ),
-                          padding: EdgeInsets.all(15),
+                          padding: const EdgeInsets.all(15),
                           child: Column(
                             children: [
                               reply != ""
                                   ? reply.contains("uploads/images/")
                                       ? Container(
-                                          padding: EdgeInsets.all(8),
-                                          decoration: BoxDecoration(
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: const BoxDecoration(
                                               color: Color(0xff4B0973),
                                               borderRadius: BorderRadius.all(
                                                   Radius.circular(8))),
@@ -324,14 +321,14 @@ class _ChatMessagesState extends State<ChatMessages> {
                                           ),
                                         )
                                       : Container(
-                                          padding: EdgeInsets.all(8),
-                                          decoration: BoxDecoration(
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: const BoxDecoration(
                                               color: Color(0xff4B0973),
                                               borderRadius: BorderRadius.all(
                                                   Radius.circular(8))),
                                           child: Text(
                                             reply,
-                                            style: TextStyle(
+                                            style: const TextStyle(
                                               color: Colors.white,
                                               fontFamily: "Nunito",
                                               fontSize: 16.0,
@@ -339,18 +336,18 @@ class _ChatMessagesState extends State<ChatMessages> {
                                           ),
                                         )
                                   : Container(),
-                              SizedBox(
+                              const SizedBox(
                                 height: 8,
                               ),
                               ClipRRect(
                                 borderRadius:
-                                    BorderRadius.all(Radius.circular(8)),
+                                    const BorderRadius.all(Radius.circular(8)),
                                 child: Image.network(
-                                  "https://pboforum.com/office/${url}",
+                                  "https://pboforum.com/office/$url",
                                   height: 90,
                                 ),
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 height: 8,
                               ),
                               Text(
@@ -359,7 +356,7 @@ class _ChatMessagesState extends State<ChatMessages> {
                             ],
                           ),
                         ),
-                        SizedBox(
+                        const SizedBox(
                           height: 8,
                         ),
                         Text(
@@ -367,7 +364,7 @@ class _ChatMessagesState extends State<ChatMessages> {
                         )
                       ],
                     ),
-                    SizedBox(
+                    const SizedBox(
                       width: 8,
                     ),
                     senderPics == null
@@ -412,7 +409,7 @@ class _ChatMessagesState extends State<ChatMessages> {
                                           child: CircularProgressIndicator(
                                               value: progress.progress),
                                         ))),
-                    SizedBox(
+                    const SizedBox(
                       width: 8,
                     ),
                     Column(
@@ -421,7 +418,7 @@ class _ChatMessagesState extends State<ChatMessages> {
                         Container(
                           //height: 180,
                           width: MediaQuery.of(context).size.width * 0.5,
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: Color(0xff4B0973),
                             borderRadius: BorderRadius.only(
                               bottomRight: Radius.circular(20),
@@ -429,17 +426,17 @@ class _ChatMessagesState extends State<ChatMessages> {
                               topRight: Radius.circular(20),
                             ),
                           ),
-                          margin: EdgeInsets.only(
+                          margin: const EdgeInsets.only(
                             top: 10,
                           ),
-                          padding: EdgeInsets.all(15),
+                          padding: const EdgeInsets.all(15),
                           child: Column(
                             children: [
                               reply != ""
                                   ? reply.contains("uploads/images/")
                                       ? Container(
-                                          padding: EdgeInsets.all(8),
-                                          decoration: BoxDecoration(
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: const BoxDecoration(
                                               color: Color.fromARGB(
                                                   255, 197, 207, 243),
                                               borderRadius: BorderRadius.all(
@@ -450,46 +447,46 @@ class _ChatMessagesState extends State<ChatMessages> {
                                             width: 40,
                                           ))
                                       : Container(
-                                          padding: EdgeInsets.all(8),
-                                          decoration: BoxDecoration(
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: const BoxDecoration(
                                               color: Color.fromARGB(
                                                   255, 197, 207, 243),
                                               borderRadius: BorderRadius.all(
                                                   Radius.circular(8))),
                                           child: Text(
                                             reply,
-                                            style: TextStyle(
+                                            style: const TextStyle(
                                                 fontSize: 16.0,
                                                 fontFamily: "Nunito"),
                                           ))
                                   : Container(),
-                              SizedBox(
+                              const SizedBox(
                                 height: 8,
                               ),
                               ClipRRect(
                                 borderRadius:
-                                    BorderRadius.all(Radius.circular(8)),
+                                    const BorderRadius.all(Radius.circular(8)),
                                 child: Image.network(
-                                  "https://pboforum.com/office/${url}",
+                                  "https://pboforum.com/office/$url",
                                   height: 90,
                                 ),
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 height: 8,
                               ),
                               Text(
                                 time,
-                                style: TextStyle(color: Colors.white),
+                                style: const TextStyle(color: Colors.white),
                               )
                             ],
                           ),
                         ),
-                        SizedBox(
+                        const SizedBox(
                           height: 8,
                         ),
                         Text(
                           senderName,
-                          style: TextStyle(fontSize: 16),
+                          style: const TextStyle(fontSize: 16),
                         )
                       ],
                     ),
@@ -507,7 +504,7 @@ class _ChatMessagesState extends State<ChatMessages> {
             snapshot.data != null ? snapshot.data as QuerySnapshot : null;
         return snapshot.hasData
             ? ListView.builder(
-                padding: EdgeInsets.only(bottom: 70, top: 16),
+                padding: const EdgeInsets.only(bottom: 70, top: 16),
                 itemCount: q!.docs.length,
                 reverse: true,
                 itemBuilder: (context, index) {
@@ -534,7 +531,7 @@ class _ChatMessagesState extends State<ChatMessages> {
                           ds["ts"],
                         );
                 })
-            : Center(child: CircularProgressIndicator());
+            : const Center(child: CircularProgressIndicator());
       },
     );
   }
@@ -566,7 +563,7 @@ class _ChatMessagesState extends State<ChatMessages> {
         Expanded(
           child: chatMessages(h, w, context),
         ),
-        SizedBox(
+        const SizedBox(
           height: 88.2,
         )
       ],

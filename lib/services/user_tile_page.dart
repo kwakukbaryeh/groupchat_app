@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:groupchat_firebase/models/user.dart';
 import 'package:groupchat_firebase/pages/profile_page.dart';
@@ -53,14 +52,14 @@ class UserTilePage extends StatelessWidget {
                   const SizedBox(height: 3),
                   Text(
                     user.userName!,
-                    style: TextStyle(color: Colors.white),
+                    style: const TextStyle(color: Colors.white),
                   ),
                 ],
               ),
             ),
             isadded!
                 ? Container()
-                : Container(
+                : SizedBox(
                     width: 120,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.end,
@@ -97,10 +96,10 @@ class UserTilePage extends StatelessWidget {
                             width: 90,
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
-                              color: Color.fromARGB(221, 69, 69, 69),
+                              color: const Color.fromARGB(221, 69, 69, 69),
                               borderRadius: BorderRadius.circular(90),
                             ),
-                            child: Text(
+                            child: const Text(
                               "ADD",
                               style: TextStyle(
                                 fontSize: 13,

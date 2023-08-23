@@ -13,10 +13,10 @@ class MemoriesPage extends StatelessWidget {
             onTap: () {
               Navigator.pop(context);
             },
-            child: Icon(Icons.arrow_back)),
+            child: const Icon(Icons.arrow_back)),
         title: FadeInRight(
-            duration: Duration(milliseconds: 300),
-            child: Text(
+            duration: const Duration(milliseconds: 300),
+            child: const Text(
               "Memories",
               style: TextStyle(color: Colors.white),
             )),

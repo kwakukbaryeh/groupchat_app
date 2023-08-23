@@ -143,9 +143,9 @@ class UserModel extends Equatable {
           .where('followingList', arrayContains: userId)
           .get();
       List<String> followersList = [];
-      snapshot.docs.forEach((doc) {
+      for (var doc in snapshot.docs) {
         followersList.add(doc.id);
-      });
+      }
       return followersList;
     } catch (e) {
       print("Error fetching followers list: $e");
@@ -159,11 +159,11 @@ class UserModel extends Equatable {
       QuerySnapshot snapshot =
           await FirebaseFirestore.instance.collection('users').get();
       List<UserModel> users = [];
-      snapshot.docs.forEach((doc) {
+      for (var doc in snapshot.docs) {
         Map<String, dynamic> userData = doc.data() as Map<String, dynamic>;
         UserModel user = UserModel.fromJson(userData);
         users.add(user);
-      });
+      }
       return users;
     } catch (e) {
       print("Error fetching all users: $e");

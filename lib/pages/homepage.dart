@@ -200,153 +200,164 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.grey[700],
-        onPressed: () {
-          showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            builder: (BuildContext context) {
-              return FractionallySizedBox(
-                heightFactor: 0.9,
-                child: Container(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: <Widget>[
-                      TextFormField(
-                        controller: _groupNameController,
-                        decoration: const InputDecoration(
-                          hintText: 'Enter group chat name',
-                        ),
-                      ),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          primary: Colors.grey[700],
-                        ),
-                        onPressed: () async {
-                          //print(auth.userId);
-                          var groupName = _groupNameController.text;
-                          if (groupName.isNotEmpty) {
-                            var groupChatState = Provider.of<GroupChatState>(
-                                context,
-                                listen: false);
-                            var groupChat = GroupChat(
-                              creatorId: auth.userId,
-                              groupName: groupName,
-                              participantCount: 1,
-                              participantIds: [auth.userId],
-                              participantFcmTokens: [auth.userModel!.fcmToken!],
-                              createdAt: DateTime.now(),
-                              expiryDate:
-                                  DateTime.now().add(const Duration(hours: 12)),
-                            );
-                            await groupChatState.saveGroupChatToDatabase(
-                              groupChat,
-                              (groupKey) {
-                                groupChat.key = groupKey;
-                              },
-                            );
-
-                            // Pass the groupChats variable to the GroupScreen widget
-                            // print(groupChat);
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => GroupScreen(
-                                  groupChat: groupChat,
-                                ),
-                              ),
-                            );
-                          }
-                        },
-                        child: const Text('Create GroupChat Now'),
-                      ),
-                      SizedBox(height: 16),
-                      // Center the QR code and set its size to 250x250
-                      Consumer<GroupChatState>(
-                          builder: (context, groupChatState, _) {
-                        if (groupChatState.isBusy) {
-                          return Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        } else if (groupChatState.groupChats == null) {
-                          //print("${auth.userId} ${auth.userModel!.fcmToken}");
-                          return Center(
-                            child: SizedBox(
-                              width: 250,
-                              height: 250,
-                              child: QrImageView(
-                                data:
-                                    "${auth.userId} ${auth.userModel!.fcmToken}",
-                                version: QrVersions.auto,
-                              ),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(
+            right: 20.0), // Add 20 pixels of space to the right
+        child: Align(
+          alignment: Alignment.bottomRight,
+          child: FloatingActionButton(
+            backgroundColor: Colors.grey[700],
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                builder: (BuildContext context) {
+                  return FractionallySizedBox(
+                    heightFactor: 0.9,
+                    child: Container(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: <Widget>[
+                          TextFormField(
+                            controller: _groupNameController,
+                            decoration: const InputDecoration(
+                              hintText: 'Enter group chat name',
                             ),
-                          );
-                        } else {
-                          final groupChats = groupChatState.groupChats!;
-                          String data =
-                              "${auth.userId} ${auth.userModel!.fcmToken}";
-                          for (GroupChat groupChat in groupChats) {
-                            if (groupChat.creatorId == auth.userId) {
-                              data =
-                                  "${auth.userId} ${auth.userModel!.fcmToken} ${groupChat.key}";
+                          ),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              primary: Colors.grey[700],
+                            ),
+                            onPressed: () async {
+                              //print(auth.userId);
+                              var groupName = _groupNameController.text;
+                              if (groupName.isNotEmpty) {
+                                var groupChatState =
+                                    Provider.of<GroupChatState>(context,
+                                        listen: false);
+                                var groupChat = GroupChat(
+                                  creatorId: auth.userId,
+                                  groupName: groupName,
+                                  participantCount: 1,
+                                  participantIds: [auth.userId],
+                                  participantFcmTokens: [
+                                    auth.userModel!.fcmToken!
+                                  ],
+                                  createdAt: DateTime.now(),
+                                  expiryDate: DateTime.now()
+                                      .add(const Duration(hours: 12)),
+                                );
+                                await groupChatState.saveGroupChatToDatabase(
+                                  groupChat,
+                                  (groupKey) {
+                                    groupChat.key = groupKey;
+                                  },
+                                );
+
+                                // Pass the groupChats variable to the GroupScreen widget
+                                // print(groupChat);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => GroupScreen(
+                                      groupChat: groupChat,
+                                    ),
+                                  ),
+                                );
+                              }
+                            },
+                            child: const Text('Create GroupChat Now'),
+                          ),
+                          SizedBox(height: 16),
+                          // Center the QR code and set its size to 250x250
+                          Consumer<GroupChatState>(
+                              builder: (context, groupChatState, _) {
+                            if (groupChatState.isBusy) {
+                              return Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            } else if (groupChatState.groupChats == null) {
+                              //print("${auth.userId} ${auth.userModel!.fcmToken}");
+                              return Center(
+                                child: SizedBox(
+                                  width: 250,
+                                  height: 250,
+                                  child: QrImageView(
+                                    data:
+                                        "${auth.userId} ${auth.userModel!.fcmToken}",
+                                    version: QrVersions.auto,
+                                  ),
+                                ),
+                              );
+                            } else {
+                              final groupChats = groupChatState.groupChats!;
+                              String data =
+                                  "${auth.userId} ${auth.userModel!.fcmToken}";
+                              for (GroupChat groupChat in groupChats) {
+                                if (groupChat.creatorId == auth.userId) {
+                                  data =
+                                      "${auth.userId} ${auth.userModel!.fcmToken} ${groupChat.key}";
+                                }
+                              }
+                              //print(data);
+                              return Center(
+                                child: SizedBox(
+                                  width: 250,
+                                  height: 250,
+                                  child: QrImageView(
+                                    data: data,
+                                    version: QrVersions.auto,
+                                  ),
+                                ),
+                              );
                             }
-                          }
-                          //print(data);
-                          return Center(
-                            child: SizedBox(
-                              width: 250,
-                              height: 250,
-                              child: QrImageView(
-                                data: data,
-                                version: QrVersions.auto,
-                              ),
-                            ),
-                          );
-                        }
-                      }),
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => MobileScanner(
-                                controller: MobileScannerController(
-                                  detectionSpeed: DetectionSpeed.noDuplicates,
+                          }),
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => MobileScanner(
+                                    controller: MobileScannerController(
+                                      detectionSpeed:
+                                          DetectionSpeed.noDuplicates,
+                                    ),
+                                    onDetect: (capture) {
+                                      final List<Barcode> barcodes =
+                                          capture.barcodes;
+                                      final Uint8List? image = capture.image;
+
+                                      for (final barcode in barcodes) {
+                                        String scannedData =
+                                            barcode.rawValue as String;
+                                        // Use the scannedData variable to navigate to the GroupScreen
+                                        navigateToGroupChatPage(
+                                            context, scannedData);
+
+                                        debugPrint(
+                                            'Barcode found! $scannedData');
+                                      }
+                                    },
+                                  ),
                                 ),
-                                onDetect: (capture) {
-                                  final List<Barcode> barcodes =
-                                      capture.barcodes;
-                                  final Uint8List? image = capture.image;
-
-                                  for (final barcode in barcodes) {
-                                    String scannedData =
-                                        barcode.rawValue as String;
-                                    // Use the scannedData variable to navigate to the GroupScreen
-                                    navigateToGroupChatPage(
-                                        context, scannedData);
-
-                                    debugPrint('Barcode found! $scannedData');
-                                  }
-                                },
-                              ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              primary: Colors.grey[700],
                             ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          primary: Colors.grey[700],
-                        ),
-                        child: Text('Scan'),
+                            child: Text('Scan'),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
+                    ),
+                  );
+                },
               );
             },
-          );
-        },
-        child: Icon(Icons.add),
+            child: Icon(Icons.group),
+          ),
+        ),
       ),
     );
   }
@@ -396,7 +407,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               width: MediaQuery.of(context).size.width - 36.0,
               height: buttonHeight,
               decoration: BoxDecoration(
-                color: Colors.white,
+                image: DecorationImage(
+                  image: (groupChat.imageBackPath != null
+                          ? NetworkImage(groupChat.imageBackPath!)
+                          : AssetImage('assets/images/button_background.png'))
+                      as ImageProvider<Object>,
+                  fit: BoxFit.cover,
+                ),
                 borderRadius: BorderRadius.circular(10.0),
               ),
               child: Padding(

@@ -20,7 +20,7 @@ import '../models/groupchat.dart';
 class CameraPage extends StatefulWidget {
   final GroupChat groupChat;
 
-  CameraPage(
+  const CameraPage(
       {Key? key,
       this.text,
       this.initialDirection = CameraLensDirection.back,
@@ -47,7 +47,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
   bool isFrontImageTaken = false;
   bool isBackImageTaken = false;
   AnimationController? rotationController;
-  final Duration animationDuration = Duration(milliseconds: 1000);
+  final Duration animationDuration = const Duration(milliseconds: 1000);
 
   @override
   void initState() {
@@ -103,12 +103,12 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
     return Scaffold(
       appBar: AppBar(
         leading: Padding(
-          padding: EdgeInsets.only(bottom: 50),
+          padding: const EdgeInsets.only(bottom: 50),
           child: GestureDetector(
             onTap: () {
               Navigator.pop(context);
             },
-            child: Icon(
+            child: const Icon(
               Icons.keyboard_arrow_down_rounded,
               size: 35,
             ),
@@ -121,7 +121,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
           alignment: Alignment.center,
           children: [
             Padding(
-              padding: EdgeInsets.only(bottom: 50),
+              padding: const EdgeInsets.only(bottom: 50),
               child: Image.asset(
                 "assets/logo/logo.png",
                 height: 35,
@@ -198,14 +198,14 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
                                         child: Container(
                                           height: 65,
                                           width: 65,
-                                          decoration: BoxDecoration(
+                                          decoration: const BoxDecoration(
                                             color: Colors.black,
                                             shape: BoxShape.circle,
                                           ),
                                           alignment: Alignment.center,
                                           child: Text(
                                             _cameraIndex == 2 ? "0.5x" : "1x",
-                                            style: TextStyle(
+                                            style: const TextStyle(
                                               color: Colors.white,
                                               fontSize: 25,
                                             ),
@@ -269,7 +269,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
                   child: Transform(
                     transform: Matrix4.identity()..scale(-1.0, 1.0, -1.0),
                     alignment: Alignment.center,
-                    child: Icon(
+                    child: const Icon(
                       Icons.loop_rounded,
                       color: Colors.white,
                       size: 37,
@@ -336,7 +336,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
 
     // Show a black screen for a brief duration to turn the camera around
     await Future.delayed(
-        Duration(milliseconds: 500)); // Adjust the duration as needed
+        const Duration(milliseconds: 500)); // Adjust the duration as needed
 
     // Take the second picture (back image)
     await _controller!.takePicture().then((bpath) async {

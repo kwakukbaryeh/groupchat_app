@@ -51,7 +51,7 @@ class MyApp extends StatelessWidget {
           theme: ThemeData(brightness: Brightness.dark),
           title: 'ReBeal.',
           debugShowCheckedModeBanner: false,
-          home: SplashPage()),
+          home: const SplashPage()),
     );
   }
 }

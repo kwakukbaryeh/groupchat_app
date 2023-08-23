@@ -54,13 +54,16 @@ class GroupChatState extends ChangeNotifier {
           var map = snapshot.value as Map<dynamic, dynamic>?;
 
           if (map != null) {
-            map.forEach((key, value) {
+            map.forEach((key, value) async {
               var dynamicMap = value as Map<dynamic, dynamic>?;
 
               if (dynamicMap != null) {
                 var stringMap = Map<String, dynamic>.from(dynamicMap);
                 var model = GroupChat.fromJson(stringMap);
                 model.key = key;
+
+                // Fetch the first post's imageBackPath for this group chat
+                model.imageBackPath = await fetchFirstPostImageBackPath(key);
 
                 // Check if the group chat has expired
                 if (model.expiryDate?.isAfter(DateTime.now()) ?? false) {
@@ -160,6 +163,58 @@ class GroupChatState extends ChangeNotifier {
       }
     }
     return null;
+  }
+
+  Future<String?> fetchFirstPost(String groupChatKey) async {
+    String? firstPostContent;
+    await kDatabase
+        .child('posts')
+        .child(groupChatKey)
+        .orderByKey()
+        .limitToFirst(1)
+        .once()
+        .then((DatabaseEvent event) {
+      DataSnapshot snapshot = event.snapshot;
+      if (snapshot.value != null) {
+        var map = snapshot.value as Map<dynamic, dynamic>?;
+
+        if (map != null) {
+          map.forEach((key, value) {
+            var dynamicMap = value as Map<dynamic, dynamic>?;
+            if (dynamicMap != null) {
+              firstPostContent = dynamicMap['createdAt'] as String?;
+            }
+          });
+        }
+      }
+    });
+    return firstPostContent;
+  }
+
+  Future<String?> fetchFirstPostImageBackPath(String groupChatKey) async {
+    String? imageBackPath;
+    await kDatabase
+        .child('posts')
+        .child(groupChatKey)
+        .orderByKey()
+        .limitToFirst(1)
+        .once()
+        .then((DatabaseEvent event) {
+      DataSnapshot snapshot = event.snapshot;
+      if (snapshot.value != null) {
+        var map = snapshot.value as Map<dynamic, dynamic>?;
+
+        if (map != null) {
+          map.forEach((key, value) {
+            var dynamicMap = value as Map<dynamic, dynamic>?;
+            if (dynamicMap != null) {
+              imageBackPath = dynamicMap['imageBackPath'] as String?;
+            }
+          });
+        }
+      }
+    });
+    return imageBackPath;
   }
 
   /*getAllUsersInGroup(String groupId) {

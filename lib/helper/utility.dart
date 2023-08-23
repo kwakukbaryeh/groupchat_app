@@ -32,37 +32,37 @@ class Utility {
   }
 
   static bool validateCredentials(BuildContext context,
-      GlobalKey<ScaffoldState> _scaffoldKey, String? email, String? password) {
+      GlobalKey<ScaffoldState> scaffoldKey, String? email, String? password) {
     if (email == null || email.isEmpty) {
-      customSnackBar(_scaffoldKey, 'Please enter email id', context);
+      customSnackBar(scaffoldKey, 'Please enter email id', context);
       return false;
     } else if (password == null || password.isEmpty) {
-      customSnackBar(_scaffoldKey, 'Please enter password', context);
+      customSnackBar(scaffoldKey, 'Please enter password', context);
       return false;
     } else if (password.length < 8) {
       customSnackBar(
-          _scaffoldKey, 'Password must me 8 character long', context);
+          scaffoldKey, 'Password must me 8 character long', context);
       return false;
     }
 
     var status = validateEmal(email);
     if (!status) {
-      customSnackBar(_scaffoldKey, 'Please enter valid email id', context);
+      customSnackBar(scaffoldKey, 'Please enter valid email id', context);
       return false;
     }
     return true;
   }
 
   static customSnackBar(
-      GlobalKey<ScaffoldState>? _scaffoldKey, String msg, BuildContext context,
+      GlobalKey<ScaffoldState>? scaffoldKey, String msg, BuildContext context,
       {double height = 30, Color backgroundColor = Colors.black}) {
-    if (_scaffoldKey == null || _scaffoldKey.currentState == null) {
+    if (scaffoldKey == null || scaffoldKey.currentState == null) {
       return;
     }
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     final snackBar = SnackBar(
       backgroundColor: backgroundColor,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(30),
           topRight: Radius.circular(30),

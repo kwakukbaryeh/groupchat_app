@@ -1,7 +1,6 @@
 import 'dart:developer';
 
 import 'package:animate_do/animate_do.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -19,7 +18,7 @@ import 'package:groupchat_firebase/pages/shareqr.dart';
 import 'package:groupchat_firebase/services/user_tile_page.dart';
 import 'package:groupchat_firebase/state/auth_state.dart';
 import 'package:groupchat_firebase/state/groupchatState.dart';
-import 'package:groupchat_firebase/state/post_state.dart';
+import 'package:groupchat_firebase/state/post_state.dart'; // Make sure to import PostState
 import 'package:groupchat_firebase/state/search_state.dart';
 import 'package:groupchat_firebase/widgets/custom/rippleButton.dart';
 import 'package:groupchat_firebase/widgets/feedpost.dart';
@@ -38,7 +37,7 @@ class GroupScreen extends StatefulWidget {
 class _GroupScreenState extends State<GroupScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
-  ScrollController _scrollController = ScrollController();
+  final ScrollController _scrollController = ScrollController();
   bool _isScrolledDown = false;
   bool _isGrid = false;
 
@@ -56,22 +55,13 @@ class _GroupScreenState extends State<GroupScreen>
     var authState = Provider.of<AuthState>(context, listen: false);
     var postState = Provider.of<PostState>(context, listen: false);
     var searchState = Provider.of<SearchState>(context, listen: false);
-    //var groupChatState = Provider.of<GroupChatState>(context, listen: false);
 
-    // Get the current user ID from the auth state
-    //String userId = authState.userId;
-
-    // Fetch user data from the database
     authState.getCurrentUser();
     authState.databaseInit();
 
-    // Fetch user posts from the database for the specific group chat
-    await postState
-        .databaseInit([widget.groupChat]); // Pass the group chat as a list
-
+    await postState.databaseInit([widget.groupChat]);
     await postState.getDataFromDatabaseForGroupChat(widget.groupChat.key!);
 
-    // Fetch search data from the database
     searchState.getDataFromDatabase();
   }
 
@@ -128,8 +118,7 @@ class _GroupScreenState extends State<GroupScreen>
               );
             },
             style: ElevatedButton.styleFrom(
-              primary:
-                  Colors.grey[700], // Set the background color to grey[700]
+              backgroundColor: Colors.grey[700],
             ),
             child: const Text("Take your BeReal"),
           ),
@@ -143,6 +132,8 @@ class _GroupScreenState extends State<GroupScreen>
     var authState = Provider.of<AuthState>(context, listen: false);
     final state = Provider.of<SearchState>(context);
     final groupChatsState = Provider.of<GroupChatState>(context);
+    final postState =
+        Provider.of<PostState>(context); // Add this line to access PostState
 
     return Scaffold(
       extendBody: true,
@@ -155,26 +146,29 @@ class _GroupScreenState extends State<GroupScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => CameraPage(
-                        groupChat: widget.groupChat,
+              // Conditionally show or hide the circle button
+              if (!(postState.hasPostedInGroup[widget.groupChat.key] ??
+                  false)) // Add this line
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => CameraPage(
+                          groupChat: widget.groupChat,
+                        ),
                       ),
+                    );
+                  },
+                  child: Container(
+                    height: 80,
+                    width: 80,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.white, width: 6),
+                      shape: BoxShape.circle,
                     ),
-                  );
-                },
-                child: Container(
-                  height: 80,
-                  width: 80,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.white, width: 6),
-                    shape: BoxShape.circle,
                   ),
                 ),
-              ),
               Container(
                 height: 40,
               ),
@@ -189,7 +183,7 @@ class _GroupScreenState extends State<GroupScreen>
           onPressed: () {
             Navigator.pop(context);
           },
-          icon: Icon(
+          icon: const Icon(
             Icons.arrow_back,
             size: 30,
           ),
@@ -233,17 +227,19 @@ class _GroupScreenState extends State<GroupScreen>
                                 .child("groupchats")
                                 .child(widget.groupChat.key!)
                                 .remove();
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                backgroundColor: Colors.blue,
-                                content: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      "Group deleted successfully",
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                  ],
-                                )));
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(const SnackBar(
+                                    backgroundColor: Colors.blue,
+                                    content: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          "Group deleted successfully",
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                      ],
+                                    )));
                             Navigator.pushAndRemoveUntil(
                                 context,
                                 MaterialPageRoute(builder: (ctx) => HomePage()),
@@ -265,7 +261,7 @@ class _GroupScreenState extends State<GroupScreen>
                             child: Text('Delete Group'),
                           ),
                         ],
-                        child: IconButton(
+                        child: const IconButton(
                           icon: Icon(Icons.menu),
                           onPressed:
                               null, // null onPressed to disable the IconButton
@@ -283,25 +279,27 @@ class _GroupScreenState extends State<GroupScreen>
                                 .once();
                             List list = event.snapshot.value as List;
                             List newlist = [];
-                            list.forEach((id) {
+                            for (var id in list) {
                               if (id != authState.userId) {
                                 newlist.add(authState.userId);
                               }
-                            });
+                            }
                             event.snapshot.ref.set(newlist);
                             groupChatsState.getDataFromDatabase();
                             log(event.snapshot.value.toString());
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                backgroundColor: Colors.blue,
-                                content: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      "You left group successfully",
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                  ],
-                                )));
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(const SnackBar(
+                                    backgroundColor: Colors.blue,
+                                    content: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          "You left group successfully",
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                      ],
+                                    )));
                             Navigator.pushAndRemoveUntil(
                                 context,
                                 MaterialPageRoute(builder: (ctx) => HomePage()),
@@ -315,7 +313,7 @@ class _GroupScreenState extends State<GroupScreen>
                             child: Text('Leave Group'),
                           ),
                         ],
-                        child: IconButton(
+                        child: const IconButton(
                           icon: Icon(Icons.menu),
                           onPressed:
                               null, // null onPressed to disable the IconButton
@@ -345,7 +343,7 @@ class _GroupScreenState extends State<GroupScreen>
                       child: Tab(
                         child: Text(
                           widget.groupChat.groupName,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
                           ),
@@ -354,8 +352,8 @@ class _GroupScreenState extends State<GroupScreen>
                     ),
                   ),
                   FadeInUp(
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 0),
+                    child: const Padding(
+                      padding: EdgeInsets.only(right: 0),
                       child: Tab(
                         child: Text(
                           'Who\'s Who',
@@ -396,7 +394,7 @@ class _GroupScreenState extends State<GroupScreen>
                                 state.groupChatPostMap[groupChatId];
 
                             // Add any additional logic here, if needed
-                            print("Debug: groupList is ${groupList}");
+                            print("Debug: groupList is $groupList");
                             print(
                                 "Debug: groupList is null: ${groupList == null}");
                             print(
@@ -439,7 +437,7 @@ class _GroupScreenState extends State<GroupScreen>
                           },
                         ),
                     if (groupChatsState.groupChats == null)
-                      Center(
+                      const Center(
                         child: Text(
                             'Loading...'), // Placeholder or any other widget
                       ),
@@ -517,12 +515,12 @@ class _GroupScreenState extends State<GroupScreen>
                                   ),
                                 ),
                               ),
-                              Padding(
-                                padding: const EdgeInsets.only(
+                              const Padding(
+                                padding: EdgeInsets.only(
                                   top: 10,
                                   left: 10,
                                 ),
-                                child: const Text(
+                                child: Text(
                                   "DISCOVER YOUR\nFRIENDS OF FRIENDS",
                                   style: TextStyle(
                                     fontSize: 28,
@@ -542,15 +540,16 @@ class _GroupScreenState extends State<GroupScreen>
                                           .snapshots(),
                                       builder: (context, snapshot) {
                                         return snapshot.data == null
-                                            ? Center(
+                                            ? const Center(
                                                 child:
                                                     CircularProgressIndicator(
                                                 color: Colors.black,
                                               ))
-                                            : Container(
+                                            : SizedBox(
                                                 height: 300,
                                                 child: ListView.builder(
-                                                  physics: ScrollPhysics(),
+                                                  physics:
+                                                      const ScrollPhysics(),
                                                   itemBuilder:
                                                       (context, index) {
                                                     bool isadded = false;
@@ -570,7 +569,7 @@ class _GroupScreenState extends State<GroupScreen>
                                                                 .userlist![
                                                                     index]
                                                                 .userId)
-                                                        ? Container(
+                                                        ? SizedBox(
                                                             height: 60,
                                                             child: UserTilePage(
                                                               user: state
@@ -602,7 +601,7 @@ class _GroupScreenState extends State<GroupScreen>
                                       color: Colors.white,
                                       borderRadius: BorderRadius.circular(15),
                                     ),
-                                    child: Center(
+                                    child: const Center(
                                       child: Text(
                                         "Share your BeReal",
                                         style: TextStyle(

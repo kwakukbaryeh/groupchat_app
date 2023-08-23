@@ -18,8 +18,8 @@ class TagFriends extends StatefulWidget {
 }
 
 class _TagFriendsState extends State<TagFriends> {
-  List<UserModel> _friendsList = [];
-  List<UserModel> _taggedUsers = [];
+  final List<UserModel> _friendsList = [];
+  final List<UserModel> _taggedUsers = [];
   final DatabaseReference _databaseRef = FirebaseDatabase.instance.reference();
   Future<void> addPostToDatabase(PostModel post) async {
     var newPostRef = _databaseRef.child('posts').child(post.key!).push();
@@ -67,7 +67,7 @@ class _TagFriendsState extends State<TagFriends> {
     var state = Provider.of<AuthState>(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text("Share moment"),
+        title: const Text("Share moment"),
       ),
       body: Stack(
         children: [
@@ -76,6 +76,7 @@ class _TagFriendsState extends State<TagFriends> {
               height: MediaQuery.of(context).size.height,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
                     height: 20,
@@ -84,7 +85,7 @@ class _TagFriendsState extends State<TagFriends> {
                       onTap: switcherFunc,
                       child: ClipRRect(
                           borderRadius: BorderRadius.circular(15),
-                          child: Container(
+                          child: SizedBox(
                               height: MediaQuery.of(context).size.height / 1.63,
                               width: MediaQuery.of(context).size.width,
                               child: Stack(
@@ -108,11 +109,11 @@ class _TagFriendsState extends State<TagFriends> {
                                                       .postModel.imageBackPath
                                                       .toString()))),
                                   Padding(
-                                      padding: EdgeInsets.all(20),
+                                      padding: const EdgeInsets.all(20),
                                       child: ClipRRect(
                                           borderRadius:
                                               BorderRadius.circular(10),
-                                          child: Container(
+                                          child: SizedBox(
                                               height: MediaQuery.of(context)
                                                       .size
                                                       .height /
@@ -134,7 +135,6 @@ class _TagFriendsState extends State<TagFriends> {
                                 ],
                               )))),
                 ],
-                crossAxisAlignment: CrossAxisAlignment.start,
               )),
           Positioned(
               top: MediaQuery.of(context).size.height / 1.73,
@@ -143,27 +143,27 @@ class _TagFriendsState extends State<TagFriends> {
                 onTap: () {
                   showModalBottomSheet(
                       context: context,
-                      shape: RoundedRectangleBorder(
+                      shape: const RoundedRectangleBorder(
                           borderRadius: BorderRadius.only(
                               topLeft: Radius.circular(30),
                               topRight: Radius.circular(30))),
                       builder: (BuildContext ctx) {
                         return Column(
                           children: [
-                            SizedBox(
+                            const SizedBox(
                               height: 15,
                             ),
-                            Text(
+                            const Text(
                               "Tag Your Friends",
                               style: TextStyle(fontSize: 16),
                             ),
                             Expanded(
                               child: GridView.builder(
-                                  padding: EdgeInsets.symmetric(
+                                  padding: const EdgeInsets.symmetric(
                                       horizontal: 30, vertical: 30),
                                   itemCount: _friendsList.length,
                                   gridDelegate:
-                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                      const SliverGridDelegateWithFixedCrossAxisCount(
                                     crossAxisCount: 3,
                                     crossAxisSpacing: 30,
                                   ),
@@ -209,7 +209,7 @@ class _TagFriendsState extends State<TagFriends> {
                 },
                 child: Container(
                     width: 50,
-                    padding: EdgeInsets.all(5),
+                    padding: const EdgeInsets.all(5),
                     decoration: BoxDecoration(
                       border: Border.all(),
                       borderRadius: BorderRadius.circular(8),
@@ -217,13 +217,13 @@ class _TagFriendsState extends State<TagFriends> {
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.person),
-                        SizedBox(
+                        const Icon(Icons.person),
+                        const SizedBox(
                           width: 3,
                         ),
                         Text(
                           _taggedUsers.length.toString(),
-                          style: TextStyle(color: Colors.white),
+                          style: const TextStyle(color: Colors.white),
                         )
                       ],
                     )),
@@ -238,7 +238,7 @@ class _TagFriendsState extends State<TagFriends> {
                   addPostToDatabase(widget.postModel);
                   Navigator.pop(context);
                 },
-                child: Container(
+                child: const SizedBox(
                   width: 100,
                   child: Row(
                     children: [

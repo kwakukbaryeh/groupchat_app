@@ -1,18 +1,13 @@
-import 'dart:async';
-import 'dart:convert';
-import 'dart:developer';
 import 'package:groupchat_firebase/models/user.dart';
-import 'package:groupchat_firebase/services/database.dart';
 import 'package:groupchat_firebase/widgets/chat_appbar.dart';
 import 'package:groupchat_firebase/widgets/chat_bottombar.dart';
 import 'package:groupchat_firebase/widgets/chat_messages.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class ChatScreen extends StatefulWidget {
   UserModel sender;
   UserModel receiver;
-  ChatScreen({
+  ChatScreen({super.key, 
     required this.sender,
     required this.receiver,
   });
@@ -24,9 +19,9 @@ class _ChatScreenState extends State<ChatScreen> {
   late String chatRoomId = "";
   getChatRoomIdByUsernames(String a, String b) {
     if (a.substring(0, 1).codeUnitAt(0) > b.substring(0, 1).codeUnitAt(0)) {
-      return "$b\_$a";
+      return "${b}_$a";
     } else {
-      return "$a\_$b";
+      return "${a}_$b";
     }
   }
 

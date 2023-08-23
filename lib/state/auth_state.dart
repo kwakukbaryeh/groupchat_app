@@ -114,7 +114,15 @@ class AuthState extends AppStates {
             Utility.getUserName(id: user.userId!, name: user.displayName!);
         kAnalytics.logEvent(name: 'create_newUser');
       }
-      kDatabase.child('profile').child(user.userId!).set(user.toJson());
+      kDatabase
+          .child('profile')
+          .child(user.userId!)
+          .set(user.toJson())
+          .then((_) {
+        print('User created in database');
+      }).catchError((error) {
+        print('Error writing to database: $error');
+      });
       _userModel = user;
     } catch (error) {
       print('Error creating user: $error');
@@ -131,7 +139,7 @@ class AuthState extends AppStates {
       if (user != null) {
         userId = user!.uid;
         print('User ID: $userId'); // Add this line for debugging
-        log("$userId");
+        log(userId);
         await getProfileUser(); // Fetch profile user data
         authStatus = AuthStatus.LOGGED_IN;
       } else {

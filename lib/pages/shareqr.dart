@@ -18,7 +18,7 @@ class _ShareQrState extends State<ShareQr> {
     AuthState auth = Provider.of<AuthState>(context, listen: false);
     return Scaffold(
       appBar: AppBar(
-        title: Text("Share Qr code"),
+        title: const Text("Share Qr code"),
       ),
       body: Center(
         child: SizedBox(

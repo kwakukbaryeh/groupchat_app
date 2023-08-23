@@ -11,7 +11,7 @@ class ChatBottomBar extends StatefulWidget {
   UserModel receiver;
   String chatRoomId;
   ChatBottomBar(
-      {required this.sender, required this.receiver, required this.chatRoomId});
+      {super.key, required this.sender, required this.receiver, required this.chatRoomId});
 
   @override
   _ChatBottomBarState createState() => _ChatBottomBarState();
@@ -117,9 +117,9 @@ class _ChatBottomBarState extends State<ChatBottomBar> {
     var h = MediaQuery.of(context).size.height / 100;
     return SafeArea(
       child: Container(
-        padding: EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.only(bottom: 8),
         width: double.infinity,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
             /*boxShadow: [
           BoxShadow(
               blurRadius: 10.0,
@@ -128,7 +128,7 @@ class _ChatBottomBarState extends State<ChatBottomBar> {
         ]*/
             ),
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 8),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -270,7 +270,7 @@ class _ChatBottomBarState extends State<ChatBottomBar> {
                       controller: messageTextEdittingController,
                       decoration: InputDecoration(
                         filled: true,
-                        focusedBorder: OutlineInputBorder(
+                        focusedBorder: const OutlineInputBorder(
                           borderSide:
                               BorderSide(color: Colors.black45, width: 2.0),
                           borderRadius: BorderRadius.all(
@@ -278,7 +278,7 @@ class _ChatBottomBarState extends State<ChatBottomBar> {
                           ),
                         ),
                         fillColor: Colors.white60,
-                        border: OutlineInputBorder(
+                        border: const OutlineInputBorder(
                           borderRadius: BorderRadius.all(
                             Radius.circular(15),
                           ),
@@ -288,7 +288,7 @@ class _ChatBottomBarState extends State<ChatBottomBar> {
                           onPressed: () {
                             addMessage(true);
                           },
-                          icon: Icon(
+                          icon: const Icon(
                             Icons.send_rounded,
                             color: Colors.purple,
                           ),
@@ -301,7 +301,7 @@ class _ChatBottomBarState extends State<ChatBottomBar> {
                       /*widget.forum ? addFileToGroup() : addFile();
                       appProvider.updateVal("", "", false, "", "");*/
                     },
-                    icon: Icon(
+                    icon: const Icon(
                       Icons.attachment_rounded,
                       color: Colors.white,
                     ),

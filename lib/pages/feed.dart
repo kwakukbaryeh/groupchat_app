@@ -48,9 +48,9 @@ class _FeedPageState extends State<FeedPage> with TickerProviderStateMixin {
     final state = Provider.of<SearchState>(context);
     final list = state.userlist;
     final Map<int, Widget> children = {
-      0: Text('Suggest'),
-      1: Text('Friends'),
-      2: Text('Ask'),
+      0: const Text('Suggest'),
+      1: const Text('Friends'),
+      2: const Text('Ask'),
     };
     List<UserModel>? following;
     List<UserModel>? follower;
@@ -69,14 +69,14 @@ class _FeedPageState extends State<FeedPage> with TickerProviderStateMixin {
     return Scaffold(
         extendBody: true,
         bottomNavigationBar: Padding(
-            padding: EdgeInsets.only(bottom: 50, left: 20, right: 20),
+            padding: const EdgeInsets.only(bottom: 50, left: 20, right: 20),
             child: ClipRRect(
                 borderRadius: BorderRadius.circular(100),
                 child: CupertinoSlidingSegmentedControl(
                   backgroundColor: Colors.grey,
-                  thumbColor: Color.fromARGB(255, 60, 60, 60),
+                  thumbColor: const Color.fromARGB(255, 60, 60, 60),
                   padding:
-                      EdgeInsets.only(bottom: 10, top: 10, right: 10, left: 10),
+                      const EdgeInsets.only(bottom: 10, top: 10, right: 10, left: 10),
                   children: children,
                   groupValue: currentIndex,
                   onValueChanged: (newValue) {
@@ -93,23 +93,23 @@ class _FeedPageState extends State<FeedPage> with TickerProviderStateMixin {
           leading: Container(),
           actions: [
             Padding(
-                padding: EdgeInsets.only(right: 10, bottom: 60),
+                padding: const EdgeInsets.only(right: 10, bottom: 60),
                 child: GestureDetector(
                     onTap: () {
                       Navigator.pop(context);
                     },
-                    child: Icon(Icons.arrow_forward, color: Colors.white))),
+                    child: const Icon(Icons.arrow_forward, color: Colors.white))),
           ],
           titleSpacing: 0,
           flexibleSpace: Padding(
-              padding: EdgeInsets.only(top: 105, left: 10, right: 10),
+              padding: const EdgeInsets.only(top: 105, left: 10, right: 10),
               child: Container(
                   color: Colors.black,
                   height: 100,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      Container(
+                      SizedBox(
                           width: _textController.text.isNotEmpty
                               ? MediaQuery.of(context).size.width / 1 - 100
                               : MediaQuery.of(context).size.width / 1 - 20,
@@ -145,12 +145,12 @@ class _FeedPageState extends State<FeedPage> with TickerProviderStateMixin {
                                 fillColor: Colors.grey[500],
                                 filled: true,
                                 suffixIcon: !_textController.text.isNotEmpty
-                                    ? SizedBox.shrink()
+                                    ? const SizedBox.shrink()
                                     : GestureDetector(
                                         onTap: () {
                                           _textController.clear();
                                         },
-                                        child: Icon(
+                                        child: const Icon(
                                           CupertinoIcons.clear_circled_solid,
                                           color: Colors.grey,
                                           size: 18,
@@ -175,8 +175,8 @@ class _FeedPageState extends State<FeedPage> with TickerProviderStateMixin {
                               child: Container(
                                   width: 80,
                                   alignment: Alignment.center,
-                                  padding: EdgeInsets.only(top: 10),
-                                  child: Text(
+                                  padding: const EdgeInsets.only(top: 10),
+                                  child: const Text(
                                     "Cancel\n",
                                     style: TextStyle(
                                         color: Colors.white,
@@ -185,11 +185,11 @@ class _FeedPageState extends State<FeedPage> with TickerProviderStateMixin {
                                         fontWeight: FontWeight.w500),
                                     textAlign: TextAlign.center,
                                   )))
-                          : SizedBox.shrink()
+                          : const SizedBox.shrink()
                     ],
                   ))),
           title: Padding(
-              padding: EdgeInsets.only(bottom: 60),
+              padding: const EdgeInsets.only(bottom: 60),
               child: Image.asset(
                 "assets/logo/logo.png",
                 height: 100,
@@ -201,7 +201,7 @@ class _FeedPageState extends State<FeedPage> with TickerProviderStateMixin {
                 children: [
                   Expanded(
                     child: ListView.builder(
-                      physics: NeverScrollableScrollPhysics(),
+                      physics: const NeverScrollableScrollPhysics(),
                       addAutomaticKeepAlives: false,
                       itemBuilder: (context, index) {
                         return UserTilePage(
@@ -218,21 +218,22 @@ class _FeedPageState extends State<FeedPage> with TickerProviderStateMixin {
                 controller: _tabController,
                 children: [
                   Stack(
+                    alignment: Alignment.bottomCenter,
                     children: [
                       ListView(
                         children: [
-                          Container(
+                          SizedBox(
                               width: 100,
                               height: MediaQuery.of(context).size.height / 1.2,
                               child: Column(
                                 children: [
-                                  ShareButton(),
+                                  const ShareButton(),
                                   Row(
                                     children: [
                                       Container(
                                         width: 10,
                                       ),
-                                      Text(
+                                      const Text(
                                         "ADD YOU'RE CONTACTS",
                                         style: TextStyle(
                                             color: Colors.white,
@@ -246,16 +247,16 @@ class _FeedPageState extends State<FeedPage> with TickerProviderStateMixin {
                                   ),
                                   Expanded(
                                       child: ListView.builder(
-                                    physics: NeverScrollableScrollPhysics(),
+                                    physics: const NeverScrollableScrollPhysics(),
                                     itemCount: 4,
                                     itemBuilder: (context, index) {
                                       return ListTile(
                                           title: Text(contactEmails[index]),
-                                          leading: Icon(
+                                          leading: const Icon(
                                             CupertinoIcons.profile_circled,
                                             size: 50,
                                           ),
-                                          trailing: Container(
+                                          trailing: SizedBox(
                                               width: 120,
                                               child: Row(
                                                 mainAxisAlignment:
@@ -267,13 +268,13 @@ class _FeedPageState extends State<FeedPage> with TickerProviderStateMixin {
                                                       alignment:
                                                           Alignment.center,
                                                       decoration: BoxDecoration(
-                                                          color: Color.fromARGB(
+                                                          color: const Color.fromARGB(
                                                               221, 69, 69, 69),
                                                           borderRadius:
                                                               BorderRadius
                                                                   .circular(
                                                                       90)),
-                                                      child: Text(
+                                                      child: const Text(
                                                         "ADD",
                                                         style: TextStyle(
                                                             fontSize: 13,
@@ -299,7 +300,7 @@ class _FeedPageState extends State<FeedPage> with TickerProviderStateMixin {
                                       Container(
                                         width: 10,
                                       ),
-                                      Text(
+                                      const Text(
                                         "PERSON THAT YOU MAY KNOW",
                                         style: TextStyle(
                                             color: Color.fromARGB(
@@ -314,7 +315,7 @@ class _FeedPageState extends State<FeedPage> with TickerProviderStateMixin {
                                   ),
                                   Expanded(
                                     child: ListView.builder(
-                                      physics: NeverScrollableScrollPhysics(),
+                                      physics: const NeverScrollableScrollPhysics(),
                                       addAutomaticKeepAlives: false,
                                       itemBuilder: (context, index) {
                                         return UserTilePage(
@@ -342,11 +343,10 @@ class _FeedPageState extends State<FeedPage> with TickerProviderStateMixin {
                                       Colors.black.withOpacity(i),
                                   ]))))
                     ],
-                    alignment: Alignment.bottomCenter,
                   ),
                   Column(
                     children: [
-                      ShareButton(),
+                      const ShareButton(),
                       Row(
                         children: [
                           Container(
@@ -354,7 +354,7 @@ class _FeedPageState extends State<FeedPage> with TickerProviderStateMixin {
                           ),
                           Text(
                             "MY FRIENDS (${following?.length ?? 0})",
-                            style: TextStyle(
+                            style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w600,
                                 fontSize: 13),
@@ -375,15 +375,15 @@ class _FeedPageState extends State<FeedPage> with TickerProviderStateMixin {
                   ),
                   ListView(
                     children: [
-                      ShareButton(),
+                      const ShareButton(),
                       Padding(
-                          padding: EdgeInsets.only(left: 15, right: 16),
+                          padding: const EdgeInsets.only(left: 15, right: 16),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
                                 "FRIENDS REQUEST (${follower?.length ?? 0})",
-                                style: TextStyle(
+                                style: const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w600,
                                     fontSize: 13),
@@ -409,7 +409,7 @@ class _FeedPageState extends State<FeedPage> with TickerProviderStateMixin {
                         height: 10,
                       ),
                       Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
                           child: Text(
                             "Make sure to only accept friend request from those you know.",
                             style: TextStyle(
@@ -417,10 +417,10 @@ class _FeedPageState extends State<FeedPage> with TickerProviderStateMixin {
                                 fontWeight: FontWeight.w600,
                                 fontSize: 15),
                           )),
-                      Container(
+                      SizedBox(
                         height: 2000,
                         child: ListView.builder(
-                            physics: NeverScrollableScrollPhysics(),
+                            physics: const NeverScrollableScrollPhysics(),
                             itemBuilder: (context, index) {
                               return UserTilePage(
                                 user: follower![index],

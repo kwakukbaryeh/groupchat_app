@@ -9,10 +9,11 @@ import 'appState.dart';
 
 class PostState extends AppStates {
   bool isBusy = false;
-  Map<String, List<PostModel>?> groupChatPostMap =
-      {}; // Use a map to store posts for each group chat
-  Map<String, dabase.Query?> groupChatQueryMap =
-      {}; // Use a map to store queries for each group chat
+  Map<String, List<PostModel>?> groupChatPostMap = {}; // Existing code
+  Map<String, dabase.Query?> groupChatQueryMap = {}; // Existing code
+  Map<String, bool> hasPostedInGroup =
+      {}; // New field to track if user has posted in each group chat
+
   PostModel? _postToReplyModel;
 
   PostModel? get postToReplyModel => _postToReplyModel;
@@ -20,37 +21,6 @@ class PostState extends AppStates {
   set setPostToReply(PostModel model) {
     _postToReplyModel = model;
   }
-
-  /*List<PostModel>? getPostList(UserModel? userModel) {
-    final now = DateTime.now();
-
-    if (userModel == null) {
-      return null;
-    }
-
-    List<PostModel>? list;
-    if (!isBusy && groupChatPostMap.isNotEmpty) {
-      list = [];
-      groupChatPostMap.forEach((groupChatId, postList) {
-        if (postList != null) {
-          list!.addAll(postList.where((x) {
-            if ((x.user!.userId == userModel.userId ||
-                    (userModel.followingList != null &&
-                        userModel.followingList!.contains(x.user!.userId))) &&
-                now.difference(DateTime.parse(x.createdAt)).inHours < 24) {
-              return true;
-            } else {
-              return false;
-            }
-          }));
-        }
-      });
-      if (list.isEmpty) {
-        list = null;
-      }
-    }
-    return list;
-  }*/
 
   List<PostModel>? getPostLists(UserModel? userModel) {
     if (userModel == null) {
@@ -73,17 +43,8 @@ class PostState extends AppStates {
     return list;
   }
 
-  /*void setFeedModel(PostModel model) {
-    String groupChatId = model.groupChat!.key ??
-        'default'; // Use 'default' as a fallback if groupChatId is null or empty
-    groupChatPostMap[groupChatId] ??= [];
-    groupChatPostMap[groupChatId]!.add(model);
-    notifyListeners();
-  }*/
-
   Future<bool> databaseInit(List<GroupChat> groupChats) {
     try {
-      // Initialize queries for each group chat
       if (groupChatQueryMap.isEmpty) {
         for (var groupChat in groupChats) {
           groupChatQueryMap[groupChat.key!] =
@@ -101,49 +62,9 @@ class PostState extends AppStates {
     }
   }
 
-  /*void getDataFromDatabase() {
-    try {
-      isBusy = true;
-      groupChatPostMap.clear();
-      notifyListeners();
-      kDatabase.child('posts').once().then((DatabaseEvent event) {
-        final snapshot = event.snapshot;
-        if (snapshot.value != null) {
-          var map = snapshot.value as Map<dynamic, dynamic>?;
-          if (map != null) {
-            print("Looping through group chats...");
-            map.forEach((groupChatId, value) {
-              var postMap = value as Map<dynamic, dynamic>;
-              if (postMap != null) {
-                List<PostModel> postList = [];
-                postMap.forEach((key, value) {
-                  var model = PostModel.fromJson(value);
-                  model.key = key;
-                  postList.add(model);
-                });
-                postList.sort((x, y) => DateTime.parse(x.createdAt)
-                    .compareTo(DateTime.parse(y.createdAt)));
-                groupChatPostMap[groupChatId] = postList;
-                print("Data fetched for group chat: $groupChatId");
-              }
-            });
-          }
-          print("Looping through group chats completed.");
-        }
-        isBusy = false;
-        notifyListeners();
-        print("Data fetching completed successfully.");
-      });
-    } catch (error) {
-      isBusy = false;
-      print("Error fetching data: $error");
-    }
-  }*/
-
   Future<void> getDataFromDatabaseForGroupChat(String groupChatId) async {
     try {
       isBusy = true;
-      //groupChatPostMap[groupChatId] = null;
       notifyListeners();
       await kDatabase
           .child('posts')
@@ -168,6 +89,8 @@ class PostState extends AppStates {
         } else {
           print("No data found for group chat: $groupChatId");
         }
+        hasPostedInGroup[groupChatId] =
+            groupChatPostMap[groupChatId]?.isNotEmpty ?? false;
         isBusy = false;
         notifyListeners();
         print("Data fetching completed for group chat: $groupChatId");
@@ -189,7 +112,16 @@ class PostState extends AppStates {
     } else {
       print("Post already exists in groupChatPostMap: $post");
     }
+    hasPostedInGroup[groupChatId] =
+        groupChatPostMap[groupChatId]?.isNotEmpty ?? false;
     isBusy = false;
+    notifyListeners();
+  }
+
+  // Add a new method to handle when posts are deleted
+  void onPostsDeleted(String groupChatId) {
+    hasPostedInGroup[groupChatId] =
+        groupChatPostMap[groupChatId]?.isEmpty ?? true;
     notifyListeners();
   }
 }

@@ -81,19 +81,19 @@ class _EditProfilePageState extends State<EditProfilePage> {
               onTap: () {
                 Navigator.pop(context);
               },
-              child: Icon(Icons.arrow_back_ios, color: Colors.white, size: 18)),
+              child: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 18)),
           flexibleSpace: Padding(
-              padding: EdgeInsets.only(left: 15, right: 15, top: 78),
+              padding: const EdgeInsets.only(left: 15, right: 15, top: 78),
               child: Column(
                 children: [
                   FadeIn(
-                      duration: Duration(milliseconds: 1000),
+                      duration: const Duration(milliseconds: 1000),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           GestureDetector(
                               onTap: _submitButton,
-                              child: Text("Save",
+                              child: const Text("Save",
                                   style: TextStyle(
                                       color: Colors.white, fontSize: 16)))
                         ],
@@ -111,8 +111,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
           elevation: 0,
           backgroundColor: Colors.transparent,
           title: FadeInRight(
-              duration: Duration(milliseconds: 300),
-              child: Text(
+              duration: const Duration(milliseconds: 300),
+              child: const Text(
                 "Modify your profile",
                 style: TextStyle(color: Colors.white, fontSize: 18),
               ))),
@@ -128,17 +128,17 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 showCupertinoModalPopup(
                     context: context,
                     builder: (BuildContext context) => CupertinoTheme(
-                          data: CupertinoThemeData(
+                          data: const CupertinoThemeData(
                             brightness:
                                 Brightness.dark, // Définir le mode sombre
                           ),
                           child: CupertinoActionSheet(
-                            title: Text('Change your profile picture'),
-                            message: Text(
+                            title: const Text('Change your profile picture'),
+                            message: const Text(
                                 'Your profile picture is visible to everyone and will make it easier for your friends to add you'),
                             actions: <Widget>[
                               CupertinoActionSheetAction(
-                                child: Text('Photo library'),
+                                child: const Text('Photo library'),
                                 onPressed: () {
                                   getImage(context, ImageSource.gallery,
                                       (file) {
@@ -151,7 +151,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                 },
                               ),
                               CupertinoActionSheetAction(
-                                child: Text('Camera'),
+                                child: const Text('Camera'),
                                 onPressed: () {
                                   getImage(context, ImageSource.camera, (file) {
                                     setState(() {
@@ -162,7 +162,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                 },
                               ),
                               CupertinoActionSheetAction(
-                                child: Text(
+                                child: const Text(
                                   'Delete you\'re profile picture',
                                   style: TextStyle(color: Colors.red),
                                 ),
@@ -172,7 +172,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                               ),
                             ],
                             cancelButton: CupertinoActionSheetAction(
-                              child: Text('Cancel'),
+                              child: const Text('Cancel'),
                               onPressed: () {
                                 Navigator.pop(context);
                               },
@@ -194,10 +194,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                       "https://i.pinimg.com/originals/f1/0f/f7/f10ff70a7155e5ab666bcdd1b45b726d.jpg")
                               as ImageProvider)),
                   Padding(
-                      padding: EdgeInsets.only(bottom: 5),
+                      padding: const EdgeInsets.only(bottom: 5),
                       child: ClipRRect(
                           borderRadius: BorderRadius.circular(100),
-                          child: Container(
+                          child: SizedBox(
                               height: 30,
                               width: 30,
                               child: Transform.scale(
@@ -212,7 +212,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
             height: 30,
           ),
           Padding(
-              padding: EdgeInsets.only(left: 20),
+              padding: const EdgeInsets.only(left: 20),
               child: Column(
                 children: [
                   Container(
@@ -222,7 +222,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   ),
                   Row(
                     children: [
-                      Text(
+                      const Text(
                         'Full Name  ',
                         style: TextStyle(color: Colors.white),
                       ),
@@ -230,8 +230,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           child: TextField(
                         cursorColor: Colors.white,
                         controller: _displayName,
-                        style: TextStyle(color: Colors.white),
-                        decoration: InputDecoration(
+                        style: const TextStyle(color: Colors.white),
+                        decoration: const InputDecoration(
                             border: InputBorder.none,
                             hintText: 'Full Name',
                             hintStyle: TextStyle(
@@ -246,7 +246,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   ),
                   Row(
                     children: [
-                      Text(
+                      const Text(
                         'User name  ',
                         style: TextStyle(color: Colors.white),
                       ),
@@ -254,8 +254,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           child: TextField(
                         controller: _userName,
                         cursorColor: Colors.white,
-                        style: TextStyle(color: Colors.white),
-                        decoration: InputDecoration(
+                        style: const TextStyle(color: Colors.white),
+                        decoration: const InputDecoration(
                             border: InputBorder.none,
                             hintText: 'User name',
                             hintStyle: TextStyle(
@@ -269,10 +269,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     color: Colors.grey,
                   ),
                   Padding(
-                    padding: EdgeInsets.only(bottom: 50),
+                    padding: const EdgeInsets.only(bottom: 50),
                     child: Row(
                       children: [
-                        Text(
+                        const Text(
                           'Bio  ',
                           style: TextStyle(color: Colors.white),
                         ),
@@ -280,8 +280,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                             child: TextField(
                           cursorColor: Colors.white,
                           controller: _bio,
-                          style: TextStyle(color: Colors.white),
-                          decoration: InputDecoration(
+                          style: const TextStyle(color: Colors.white),
+                          decoration: const InputDecoration(
                               border: InputBorder.none,
                               hintText: 'Bio',
                               hintStyle: TextStyle(
@@ -297,7 +297,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   ),
                   Row(
                     children: [
-                      Text(
+                      const Text(
                         'Location  ',
                         style: TextStyle(color: Colors.white),
                       ),
@@ -305,8 +305,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           child: TextField(
                         cursorColor: Colors.white,
                         controller: _localisation,
-                        style: TextStyle(color: Colors.white),
-                        decoration: InputDecoration(
+                        style: const TextStyle(color: Colors.white),
+                        decoration: const InputDecoration(
                             border: InputBorder.none,
                             hintText: 'Location',
                             hintStyle: TextStyle(
@@ -329,14 +329,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
   void _submitButton() {
     if (_displayName.text.length > 100) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        shape: RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(40), topRight: Radius.circular(40))),
         backgroundColor: Colors.white,
         content: Container(
             alignment: Alignment.center,
             height: 30,
-            child: Text(
+            child: const Text(
               'Max Len: 100 char',
               style: TextStyle(
                   fontFamily: "icons.ttf",
@@ -349,14 +349,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
     }
     if (_bio.text.length > 100) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        shape: RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(40), topRight: Radius.circular(40))),
         backgroundColor: Colors.white,
         content: Container(
             alignment: Alignment.center,
             height: 30,
-            child: Text(
+            child: const Text(
               'Max Len: 100 char',
               style: TextStyle(
                   fontFamily: "icons.ttf",

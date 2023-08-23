@@ -67,16 +67,15 @@ class _GridPostWidgetState extends State<GridPostWidget> {
                     TextSpan(
                       children: [
                         TextSpan(
-                          text: widget.postModel.user!.displayName.toString() +
-                              "\n",
-                          style: TextStyle(
+                          text: "${widget.postModel.user!.displayName}\n",
+                          style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
                         TextSpan(
                           text: timeAgo,
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Colors.grey,
                             fontSize: 10,
                             fontWeight: FontWeight.w500,

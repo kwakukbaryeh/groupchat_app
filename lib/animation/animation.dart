@@ -62,7 +62,7 @@ class CubeTransition extends Transition {
     this.enterPageAlignment = Alignment.centerLeft,
     this.exitPageAlignment = Alignment.centerRight,
     this.backgroundColor = Colors.black,
-  }) : this.angle = math.pi / 180 * angle;
+  }) : angle = math.pi / 180 * angle;
 
   @override
   Widget build(BuildContext context, Widget enterPage, Widget exitPage,
@@ -110,9 +110,9 @@ class AccordionTransition extends Transition {
     this.direction = AxisDirection.left,
     AlignmentGeometry? enterPageAlignment,
     AlignmentGeometry? exitPageAlignment,
-  })  : this._enterPageAlignment =
+  })  : _enterPageAlignment =
             _getEnterPageAlignment(direction, enterPageAlignment!),
-        this._exitPageAlignment =
+        _exitPageAlignment =
             _getExitPageAlignment(direction, exitPageAlignment!);
 
   @override
@@ -233,7 +233,7 @@ class RotateUpTransition extends Transition {
     this.curve = Curves.easeOutSine,
     this.backgroundColor = Colors.black,
     double angle = 45,
-  }) : this.angle = math.pi / 180 * angle;
+  }) : angle = math.pi / 180 * angle;
 
   @override
   Widget build(BuildContext context, Widget enterPage, Widget exitPage,
@@ -271,7 +271,7 @@ class RotateDownTransition extends Transition {
     this.curve = Curves.easeOutSine,
     this.backgroundColor = Colors.black,
     double angle = 45,
-  }) : this.angle = math.pi / 180 * angle;
+  }) : angle = math.pi / 180 * angle;
 
   @override
   Widget build(BuildContext context, Widget enterPage, Widget exitPage,
@@ -310,7 +310,7 @@ class TabletTransition extends Transition {
     this.curve = Curves.easeOutSine,
     this.backgroundColor = Colors.black,
     double angle = 45,
-  }) : this.angle = math.pi / 180 * angle;
+  }) : angle = math.pi / 180 * angle;
 
   @override
   Widget build(BuildContext context, Widget enterPage, Widget exitPage,

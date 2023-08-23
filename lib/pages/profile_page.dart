@@ -46,7 +46,7 @@ class ProfilePage extends StatefulWidget {
         );
       },
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        var begin = Offset(0.0, 1.0);
+        var begin = const Offset(0.0, 1.0);
         var end = Offset.zero;
         var curve = Curves.ease;
         var tween =
@@ -106,7 +106,7 @@ class _ProfilePageState extends State<ProfilePage> {
     Share.share(
       "https://rebe.al/$name",
       subject: "Discover $name on App Title.",
-      sharePositionOrigin: Rect.fromLTWH(0, 0, 10, 10),
+      sharePositionOrigin: const Rect.fromLTWH(0, 0, 10, 10),
     );
   }
 
@@ -117,14 +117,14 @@ class _ProfilePageState extends State<ProfilePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Padding(
-                padding: EdgeInsets.only(left: 35),
+                padding: const EdgeInsets.only(left: 35),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(50),
                   child: GestureDetector(
                     onTap: () {
                       setState(() {
                         controller.animateTo(0,
-                            duration: Duration(seconds: 2),
+                            duration: const Duration(seconds: 2),
                             curve: Curves.easeInOut);
                       });
                     },
@@ -132,7 +132,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         color: Colors.white,
                         height: 50,
                         width: 50,
-                        child: Icon(
+                        child: const Icon(
                           FontAwesomeIcons.angleUp,
                         )),
                   ),
@@ -159,10 +159,8 @@ class _ProfilePageState extends State<ProfilePage> {
               (x) => now.difference(DateTime.parse(x.createdAt)).inHours < 104)
           .toList();
     }
-    if (list == null) {
-      list = [];
-    }
-    list!.insert(
+    list ??= [];
+    list.insert(
         0,
         PostModel(
           imageFrontPath:
@@ -213,13 +211,13 @@ class _ProfilePageState extends State<ProfilePage> {
                               onTap: () {
                                 Navigator.pop(context);
                               },
-                              child: Icon(
+                              child: const Icon(
                                 Icons.keyboard_arrow_down_outlined,
                                 color: Colors.white,
                                 size: 30,
                               )),
                           actions: [
-                            Icon(
+                            const Icon(
                               Icons.more_horiz,
                               color: Colors.white,
                               size: 30,
@@ -247,7 +245,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             ],
                             centerTitle: true,
                             expandedTitleScale: 3,
-                            titlePadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                            titlePadding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
                             background: Stack(
                               fit: StackFit.expand,
                               children: <Widget>[
@@ -263,7 +261,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsets.only(top: 150),
+                                  padding: const EdgeInsets.only(top: 150),
                                   child: Container(
                                       height: 50,
                                       decoration: BoxDecoration(
@@ -288,7 +286,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                         Text(
                                           authstate
                                               .profileUserModel.displayName!,
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                             fontFamily: 'Outfit',
                                             fontSize: 38,
                                             fontWeight: FontWeight.w500,
@@ -309,11 +307,11 @@ class _ProfilePageState extends State<ProfilePage> {
                                             child: Container(
                                                 height: 35,
                                                 width: 35,
-                                                decoration: BoxDecoration(
+                                                decoration: const BoxDecoration(
                                                     shape: BoxShape.circle,
                                                     color: Colors.white),
                                                 alignment: Alignment.center,
-                                                child: Icon(
+                                                child: const Icon(
                                                   CupertinoIcons.share,
                                                   color: Colors.black,
                                                   size: 18,
@@ -321,7 +319,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                       ],
                                     )),
                                 Padding(
-                                    padding: EdgeInsets.only(bottom: 300),
+                                    padding: const EdgeInsets.only(bottom: 300),
                                     child: Container(
                                         height: 50,
                                         decoration: BoxDecoration(
@@ -342,10 +340,10 @@ class _ProfilePageState extends State<ProfilePage> {
                           delegate: SliverChildListDelegate(
                             <Widget>[
                               Padding(
-                                  padding: EdgeInsets.only(left: 20),
+                                  padding: const EdgeInsets.only(left: 20),
                                   child: Text(
                                     authstate.profileUserModel.bio ?? "",
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontFamily: 'Outfit',
                                       fontSize: 18,
                                       fontWeight: FontWeight.w300,
@@ -360,7 +358,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                       ? Container()
                                       : Center(
                                           child: Padding(
-                                            padding: EdgeInsets.fromLTRB(
+                                            padding: const EdgeInsets.fromLTRB(
                                                 0, 20, 0, 0),
                                             child: GestureDetector(
                                                 onTap: () async {
@@ -422,7 +420,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                                             MainAxisAlignment
                                                                 .center,
                                                         children: [
-                                                          Icon(
+                                                          const Icon(
                                                             CupertinoIcons
                                                                 .person_crop_circle_badge_plus,
                                                             color: Colors.black,
@@ -431,7 +429,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                                           Container(
                                                             width: 9,
                                                           ),
-                                                          Text(
+                                                          const Text(
                                                             'Add',
                                                             style: TextStyle(
                                                               color:
@@ -474,7 +472,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
-                                            Padding(
+                                            const Padding(
                                               padding: EdgeInsets.only(
                                                   top: 20, left: 20),
                                               child: Text(
@@ -488,7 +486,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                                 textAlign: TextAlign.center,
                                               ),
                                             ),
-                                            Container(
+                                            SizedBox(
                                                 width: MediaQuery.of(context)
                                                     .size
                                                     .width,
@@ -496,7 +494,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                                 child: ListView(
                                                   scrollDirection:
                                                       Axis.horizontal,
-                                                  children: [],
+                                                  children: const [],
                                                 ))
                                           ],
                                         )
@@ -518,7 +516,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                         sigmaX: 20, sigmaY: 20),
                                     child: ClipRRect(
                                         borderRadius: BorderRadius.circular(20),
-                                        child: Container(
+                                        child: SizedBox(
                                           height: 150,
                                           width: MediaQuery.of(context)
                                                   .size
@@ -549,7 +547,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   children: [
                                     ClipRRect(
                                         borderRadius: BorderRadius.circular(10),
-                                        child: Container(
+                                        child: SizedBox(
                                             height: 125,
                                             width: 90,
                                             child: CachedNetworkImage(
@@ -578,14 +576,14 @@ class _ProfilePageState extends State<ProfilePage> {
                                       timeAgo == null
                                           ? ""
                                           : "   BeReal of The Day",
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                           color: Colors.white,
                                           fontSize: 13,
                                           fontWeight: FontWeight.w600),
                                     ),
                                     Text(
                                       timeAgo == null ? "" : "   $timeAgo",
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                           color: Colors.grey, fontSize: 12),
                                       textAlign: TextAlign.left,
                                     ),
@@ -593,8 +591,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                       height: 80,
                                     ),
                                     Text(
-                                      "   ${list.last.bio == null ? "" : list.last.bio}",
-                                      style: TextStyle(
+                                      "   ${list.last.bio ?? ""}",
+                                      style: const TextStyle(
                                           color: Colors.grey, fontSize: 12),
                                       textAlign: TextAlign.left,
                                     )
