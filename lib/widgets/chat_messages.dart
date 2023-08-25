@@ -12,7 +12,10 @@ class ChatMessages extends StatefulWidget {
   String chatRoomId;
 
   ChatMessages(
-      {super.key, required this.sender, required this.receiver, required this.chatRoomId});
+      {super.key,
+      required this.sender,
+      required this.receiver,
+      required this.chatRoomId});
 
   @override
   _ChatMessagesState createState() => _ChatMessagesState();
@@ -33,6 +36,7 @@ class _ChatMessagesState extends State<ChatMessages> {
     String reply,
     Timestamp time,
   ) {
+    String displayName = sendByMe ? senderName : receiverName;
     return !sendByMe
         ? message != ""
             ? Padding(
@@ -83,7 +87,8 @@ class _ChatMessagesState extends State<ChatMessages> {
                                     ? reply.contains("uploads/images/")
                                         ? Flexible(
                                             child: Container(
-                                                padding: const EdgeInsets.all(8),
+                                                padding:
+                                                    const EdgeInsets.all(8),
                                                 decoration: const BoxDecoration(
                                                     color: Color.fromARGB(
                                                         255, 197, 207, 243),
@@ -99,7 +104,8 @@ class _ChatMessagesState extends State<ChatMessages> {
                                           )
                                         : Flexible(
                                             child: Container(
-                                                padding: const EdgeInsets.all(8),
+                                                padding:
+                                                    const EdgeInsets.all(8),
                                                 decoration: const BoxDecoration(
                                                     color: Color.fromARGB(
                                                         255, 197, 207, 243),
@@ -142,7 +148,7 @@ class _ChatMessagesState extends State<ChatMessages> {
                             height: 8,
                           ),
                           Text(
-                            senderName,
+                            displayName,
                             style: const TextStyle(fontSize: 16),
                           )
                         ],
@@ -238,7 +244,7 @@ class _ChatMessagesState extends State<ChatMessages> {
                             height: 8,
                           ),
                           Text(
-                            senderName,
+                            displayName,
                             style: const TextStyle(fontSize: 16),
                           )
                         ],
@@ -276,6 +282,7 @@ class _ChatMessagesState extends State<ChatMessages> {
       String? receiverPics,
       String reply,
       String time) {
+    String displayName = sendByMe ? senderName : receiverName;
     return sendByMe
         ? url != null
             ? Padding(
@@ -360,7 +367,8 @@ class _ChatMessagesState extends State<ChatMessages> {
                           height: 8,
                         ),
                         Text(
-                          senderName,
+                          displayName,
+                          style: const TextStyle(fontSize: 16),
                         )
                       ],
                     ),
@@ -485,7 +493,7 @@ class _ChatMessagesState extends State<ChatMessages> {
                           height: 8,
                         ),
                         Text(
-                          senderName,
+                          displayName,
                           style: const TextStyle(fontSize: 16),
                         )
                       ],

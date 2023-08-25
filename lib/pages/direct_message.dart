@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:date_format/date_format.dart';
@@ -90,10 +91,10 @@ class _DirectMessagesState extends State<DirectMessages> {
                           receiver: data.containsKey("receiver")
                               ? data["receiver"]
                               : {},
-                          dateString:
-                              data.containsKey("lastDirectMessagesendTs")
-                                  ? data["lastDirectMessagesendTs"]
-                                  : Timestamp.now(),
+                          dateString: data.containsKey("lastMessageSendTs")
+                              ? data["lastMessageSendTs"]
+                              : Timestamp
+                                  .now(), // set to Timestamp.now() if it doesn't exist
                         );
                       } else {
                         return Container();
@@ -137,6 +138,7 @@ class _ChatRoomListTileState extends State<ChatRoomListTile> {
   String timesAgo = "";
   late UserModel sender;
   late UserModel receiver;
+  late Timer _timer;
 
   String calcTimesAgo(DateTime dt) {
     Duration dur = DateTime.now().difference(dt);
@@ -173,25 +175,48 @@ class _ChatRoomListTileState extends State<ChatRoomListTile> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    timesAgo = calcTimesAgo(widget.dateString.toDate());
+    timesAgo = calcTimesAgo(widget.dateString
+        .toDate()); // This should now correctly reflect the 'ts' field from Firestore
     sender = UserModel.fromJson(widget.sender);
     receiver = UserModel.fromJson(widget.receiver);
-    setState(() {});
+
+    // Initialize the Timer to update every minute
+    _timer = Timer.periodic(Duration(minutes: 1), (timer) {
+      setState(() {
+        timesAgo = calcTimesAgo(widget.dateString.toDate());
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel(); // Cancel the Timer when the widget is disposed
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     var state = Provider.of<AuthState>(context);
+    UserModel currentUser =
+        state.profileUserModel!; // Assuming this gives the current user
+
+    // Determine who the other user is
+    UserModel otherUser;
+    if (sender.userName == currentUser.userName) {
+      otherUser = receiver;
+    } else {
+      otherUser = sender;
+    }
+
     return GestureDetector(
       onTap: () async {
         Navigator.push(
             context,
             MaterialPageRoute(
                 builder: (ctx) => ChatScreen(
-                      sender: receiver,
-                      receiver: sender,
+                      sender: currentUser,
+                      receiver: otherUser,
                     )));
       },
       child: Container(
@@ -240,7 +265,7 @@ class _ChatRoomListTileState extends State<ChatRoomListTile> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  receiver.displayName!,
+                  otherUser.displayName!, // Display the other user's name
                   style: const TextStyle(
                       fontSize: 16,
                       color: Colors.white,

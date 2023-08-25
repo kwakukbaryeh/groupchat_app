@@ -7,7 +7,8 @@ import 'package:flutter/material.dart';
 class ChatScreen extends StatefulWidget {
   UserModel sender;
   UserModel receiver;
-  ChatScreen({super.key, 
+  ChatScreen({
+    super.key,
     required this.sender,
     required this.receiver,
   });
@@ -18,16 +19,15 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   late String chatRoomId = "";
   getChatRoomIdByUsernames(String a, String b) {
-    if (a.substring(0, 1).codeUnitAt(0) > b.substring(0, 1).codeUnitAt(0)) {
-      return "${b}_$a";
-    } else {
-      return "${a}_$b";
-    }
+    List<String> usernames = [a, b];
+    usernames.sort(); // Sorts the usernames alphabetically
+    return "${usernames[0]}_${usernames[1]}";
   }
 
-  getChatRoomId() async {
+  void getChatRoomId() {
     chatRoomId = getChatRoomIdByUsernames(
         widget.receiver.userName!, widget.sender.userName!);
+    setState(() {});
   }
 
   @override

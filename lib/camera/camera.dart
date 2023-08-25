@@ -278,25 +278,9 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
         ],
       );
     } else {
-      // Return a black screen with the desired text
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              "Making ya look pretty",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-              ),
-            ),
-            SizedBox(height: 20),
-            CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-            ),
-          ],
-        ),
-      );
+      return Container(
+          // You can show a loading indicator or any other UI here while the second picture is being taken and uploaded
+          );
     }
   }
 
@@ -337,48 +321,45 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
 
     // Take the first picture (front image)
     await _controller!.takePicture().then((fpath) async {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        await _switchFrontCamera();
+      });
+
       // Upload the front image to Firebase Storage
       await uploadImageToStorage(File(fpath.path)).then((path) {
         setState(() {
           frontImagePath = path;
           isFrontImageTaken =
-              true; // Set the flag to true immediately after the first image is taken
+              true; // Set the flag to true after the first image is taken
         });
       });
+    });
 
-      // Show a black screen for a brief duration to turn the camera around
-      await Future.delayed(
-          const Duration(milliseconds: 500)); // Adjust the duration as needed
+    // Take the second picture (back image)
+    await _controller!.takePicture().then((bpath) async {
+      // Upload the back image to Firebase Storage
+      await uploadImageToStorage(File(bpath.path)).then((path) {
+        UserModel user = UserModel(
+          displayName: state.profileUserModel!.displayName ?? "",
+          profilePic: state.profileUserModel!.profilePic,
+          userId: state.profileUserModel!.userId,
+          fcmToken: state.profileUserModel!.fcmToken,
+          localisation: state.profileUserModel!.localisation,
+        );
 
-      // Switch the camera
-      await _switchFrontCamera();
-
-      // Take the second picture (back image)
-      await _controller!.takePicture().then((bpath) async {
-        // Upload the back image to Firebase Storage
-        await uploadImageToStorage(File(bpath.path)).then((path) {
-          UserModel user = UserModel(
-            displayName: state.profileUserModel!.displayName ?? "",
-            profilePic: state.profileUserModel!.profilePic,
-            userId: state.profileUserModel!.userId,
-            fcmToken: state.profileUserModel!.fcmToken,
-            localisation: state.profileUserModel!.localisation,
-          );
-
-          // Create and add the post to the database
-          PostModel post = PostModel(
-            user: user,
-            imageFrontPath: frontImagePath,
-            imageBackPath: path,
-            createdAt: DateTime.now().toUtc().toString(),
-            key: widget.groupChat.key,
-            groupChat: widget.groupChat,
-          );
-          // Navigate back to the previous page after both images are taken and uploaded
-          Navigator.pop(context);
-          Navigator.push(context,
-              MaterialPageRoute(builder: (ctx) => TagFriends(postModel: post)));
-        });
+        // Create and add the post to the database
+        PostModel post = PostModel(
+          user: user,
+          imageFrontPath: frontImagePath,
+          imageBackPath: path,
+          createdAt: DateTime.now().toUtc().toString(),
+          key: widget.groupChat.key,
+          groupChat: widget.groupChat,
+        );
+        // Navigate back to the previous page after both images are taken and uploaded
+        Navigator.pop(context);
+        Navigator.push(context,
+            MaterialPageRoute(builder: (ctx) => TagFriends(postModel: post)));
       });
     });
   }

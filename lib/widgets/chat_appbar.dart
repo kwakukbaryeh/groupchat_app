@@ -10,7 +10,7 @@ class ChatAppBar extends StatelessWidget {
   UserModel receiver;
 
   ChatAppBar(
-      {super.key, 
+      {super.key,
       //required this.recipient,
       required this.icon,
       required this.receiver});
@@ -32,7 +32,7 @@ class ChatAppBar extends StatelessWidget {
             const SizedBox(
               width: 25,
             ),
-            /*Expanded(
+            Expanded(
               child: GestureDetector(
                 child: Align(
                   alignment: Alignment.centerLeft,
@@ -46,7 +46,7 @@ class ChatAppBar extends StatelessWidget {
                   Navigator.of(context).pop();
                 },
               ),
-            ),*/
+            ),
             Expanded(
               flex: 5,
               child: Align(
