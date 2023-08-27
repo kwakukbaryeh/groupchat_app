@@ -6,6 +6,111 @@ import 'package:groupchat_firebase/helper/utility.dart';
 import 'package:groupchat_firebase/models/post.dart';
 import 'package:groupchat_firebase/state/auth_state.dart';
 import 'package:provider/provider.dart';
+import 'dart:convert';
+
+class CommentWidget extends StatelessWidget {
+  final Map comment;
+  final int level;
+
+  final Function(String) onReplyTap;
+
+  CommentWidget(
+      {required this.comment, this.level = 0, required this.onReplyTap});
+
+  @override
+  Widget build(BuildContext context) {
+    List replies;
+    if (comment['replies'] is Map) {
+      replies = (comment['replies'] as Map).values.toList();
+    } else {
+      replies = comment['replies'] ?? [];
+    }
+
+    String username = comment['username'] ?? 'Unknown';
+    String commentText = comment['comment'] ?? '';
+    int likes = comment['likes'] ?? 0;
+    bool likedByMe = comment['likedByMe'] ?? false;
+    String profilePic = comment['profilePic'] ?? '';
+
+    return Padding(
+      padding: EdgeInsets.only(left: 20.0 * level),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Displaying a single comment
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                profilePic.isNotEmpty
+                    ? CircleAvatar(
+                        radius: 30,
+                        backgroundColor: Colors.white,
+                        child: Image.network(profilePic),
+                      )
+                    : CircleAvatar(
+                        radius: 30,
+                        backgroundColor: Colors.grey,
+                        child: Icon(Icons.person),
+                      ),
+                const SizedBox(
+                  width: 10,
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(username,
+                          style: const TextStyle(color: Colors.white60)),
+                      const SizedBox(
+                        height: 3,
+                      ),
+                      Text(commentText, style: const TextStyle(fontSize: 16)),
+                      const SizedBox(
+                        height: 3,
+                      ),
+                      Row(
+                        children: [
+                          Text("$likes likes",
+                              style: const TextStyle(color: Colors.grey)),
+                          SizedBox(width: 10),
+                          GestureDetector(
+                            onTap: () {
+                              onReplyTap(comment['key'] ??
+                                  ''); // Pass the unique comment ID
+                            },
+                            child: Text(
+                              "Reply",
+                              style: TextStyle(color: Colors.blue),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(
+                  width: 10,
+                ),
+                likedByMe
+                    ? Icon(Icons.favorite, color: Colors.red)
+                    : Icon(Icons.favorite_outline, color: Colors.grey),
+              ],
+            ),
+          ),
+          // Recursively display replies
+          for (var reply in replies)
+            CommentWidget(
+                comment: reply,
+                level: level + 1,
+                onReplyTap: onReplyTap // Pass the same callback function
+                ),
+        ],
+      ),
+    );
+  }
+}
 
 class CommentScreen extends StatefulWidget {
   final PostModel postModel;
@@ -21,6 +126,9 @@ class _CommentScreenState extends State<CommentScreen> {
   Stream<DatabaseEvent>? commentStream;
   String? username;
   late AuthState auth;
+  String? replyToUsername;
+  String? replyToCommentID;
+
   getComments() async {
     commentStream =
         kDatabase.child("Comments").child(widget.postModel.key!).onValue;
@@ -197,160 +305,58 @@ class _CommentScreenState extends State<CommentScreen> {
             Expanded(
               child: Stack(children: [
                 StreamBuilder<DatabaseEvent>(
-                    stream: commentStream!,
-                    builder: (context, snapshot) {
-                      List items = [];
-                      if (snapshot.hasData) {
-                        if (snapshot.data!.snapshot.value != null) {
-                          Map itemss = snapshot.data!.snapshot.value as Map;
-                          itemss.forEach((key, value) {
-                            Map item = value as Map;
-                            item["key"] = key;
-                            items.add(item);
-                          });
-                        }
+                  stream: commentStream!,
+                  builder: (context, snapshot) {
+                    List items = [];
+                    if (snapshot.hasData) {
+                      if (snapshot.data!.snapshot.value != null) {
+                        Map itemss = snapshot.data!.snapshot.value as Map;
+                        itemss.forEach((key, value) {
+                          Map item = value as Map;
+                          item["key"] = key;
+                          items.add(item);
+                        });
                       }
+                    }
 
-                      return snapshot.hasData
-                          ? items.isNotEmpty
-                              ? Container(
-                                  height: MediaQuery.of(context).size.height,
-                                  width: MediaQuery.of(context).size.width,
-                                  padding:
-                                      const EdgeInsets.fromLTRB(0, 0, 0, 0),
-                                  child: ListView.builder(
-                                      padding: const EdgeInsets.only(top: 15),
-                                      physics: const BouncingScrollPhysics(),
-                                      itemCount: items.length,
-                                      itemBuilder: (context, index) {
-                                        items.sort((a, b) =>
-                                            DateTime.parse(a["date"]).isBefore(
-                                                    DateTime.parse(b["date"]))
-                                                ? 0
-                                                : 1);
-                                        return Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 15, vertical: 8),
-                                          child: Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
-                                            children: [
-                                              items[index]["profilePic"] != null
-                                                  ? CircleAvatar(
-                                                      radius: 30,
-                                                      backgroundColor:
-                                                          Colors.white,
-                                                      child: Image.network(
-                                                          items[index]
-                                                              ["profilePic"]),
-                                                    )
-                                                  : ClipRRect(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              100),
-                                                      child: CachedNetworkImage(
-                                                          fit: BoxFit.cover,
-                                                          height: 50,
-                                                          imageUrl: state
-                                                                  .profileUserModel
-                                                                  ?.profilePic ??
-                                                              "https://i.pinimg.com/originals/f1/0f/f7/f10ff70a7155e5ab666bcdd1b45b726d.jpg")),
-                                              const SizedBox(
-                                                width: 10,
-                                              ),
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                        "${items[index]["username"]}",
-                                                        style: const TextStyle(
-                                                            color: Colors
-                                                                .white60)),
-                                                    const SizedBox(
-                                                      height: 3,
-                                                    ),
-                                                    Text(
-                                                        "${items[index]["comment"]}",
-                                                        style: const TextStyle(
-                                                            fontSize: 16)),
-                                                    const SizedBox(
-                                                      height: 3,
-                                                    ),
-                                                    Text(
-                                                        "${items[index]["likes"]} likes",
-                                                        style: const TextStyle(
-                                                            color:
-                                                                Colors.grey)),
-                                                  ],
-                                                ),
-                                              ),
-                                              const SizedBox(
-                                                width: 10,
-                                              ),
-                                              items[index]["likedByMe"]
-                                                  ? InkWell(
-                                                      onTap: () {
-                                                        DatabaseReference ref =
-                                                            kDatabase
-                                                                .child(
-                                                                    "Comments")
-                                                                .child(widget
-                                                                    .postModel
-                                                                    .key!)
-                                                                .child(items[
-                                                                        index]
-                                                                    ["key"]);
-                                                        ref.child("likes").set(
-                                                            items[index]
-                                                                    ["likes"] -
-                                                                1);
-                                                        ref
-                                                            .child("likedByMe")
-                                                            .set(false);
-                                                      },
-                                                      child:
-                                                          const Icon(Icons.favorite))
-                                                  : InkWell(
-                                                      onTap: () {
-                                                        DatabaseReference ref =
-                                                            kDatabase
-                                                                .child(
-                                                                    "Comments")
-                                                                .child(widget
-                                                                    .postModel
-                                                                    .key!)
-                                                                .child(items[
-                                                                        index]
-                                                                    ["key"]);
-                                                        ref.child("likes").set(
-                                                            items[index]
-                                                                    ["likes"] +
-                                                                1);
-                                                        ref
-                                                            .child("likedByMe")
-                                                            .set(true);
-                                                      },
-                                                      child: const Icon(Icons
-                                                          .favorite_outline))
-                                            ],
-                                          ),
-                                        );
-                                      }))
-                              : SizedBox(
-                                  height: MediaQuery.of(context).size.height,
-                                  width: MediaQuery.of(context).size.width,
-                                  child: const Center(
-                                      child: Text("No user has commented yet")))
-                          : SizedBox(
-                              height: MediaQuery.of(context).size.height,
-                              width: MediaQuery.of(context).size.width,
-                              child: const Center(
-                                  child: CircularProgressIndicator(
-                                color: Colors.black,
-                              )));
-                    }),
+                    return snapshot.hasData
+                        ? (items.isNotEmpty
+                            ? Container(
+                                height: MediaQuery.of(context).size.height,
+                                width: MediaQuery.of(context).size.width,
+                                padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+                                child: ListView.builder(
+                                    padding: const EdgeInsets.only(top: 15),
+                                    physics: const BouncingScrollPhysics(),
+                                    itemCount: items.length,
+                                    itemBuilder: (context, index) {
+                                      return CommentWidget(
+                                          comment: items[index],
+                                          onReplyTap: (String commentID) {
+                                            print(
+                                                "Replying to comment with ID: $commentID");
+                                            setState(() {
+                                              replyToCommentID = commentID;
+                                              replyToUsername = items[index][
+                                                  'username']; // Assuming 'username' is available in items[index]
+                                            });
+                                          });
+                                    }))
+                            : SizedBox(
+                                height: MediaQuery.of(context).size.height,
+                                width: MediaQuery.of(context).size.width,
+                                child: const Center(
+                                    child: Text("No user has commented yet"))))
+                        : SizedBox(
+                            height: MediaQuery.of(context).size.height,
+                            width: MediaQuery.of(context).size.width,
+                            child: const Center(
+                                child: CircularProgressIndicator(
+                              color: Colors.black,
+                            )),
+                          );
+                  },
+                ),
                 Positioned(
                   bottom: 15,
                   left: 8,
@@ -363,6 +369,25 @@ class _CommentScreenState extends State<CommentScreen> {
         ),
       ),
     );
+  }
+
+  void addReplyToComment(String postID, String commentID, String reply) {
+    print(
+        "Adding reply to comment with ID: $commentID"); // Debugging print statement
+    DatabaseReference ref = kDatabase
+        .child("Comments")
+        .child(postID)
+        .child(commentID)
+        .child("replies")
+        .push();
+    ref.set({
+      "username": auth.userModel!.userName,
+      "comment": reply,
+      "date": DateTime.now().toUtc().toString(),
+      "likes": 0,
+      "likedByMe": false,
+      "profilePic": auth.userModel!.profilePic,
+    });
   }
 
   Widget _commentRow(String postID) {
@@ -380,32 +405,43 @@ class _CommentScreenState extends State<CommentScreen> {
               cursorColor: Colors.white,
               controller: commentController,
               decoration: InputDecoration(
-                //filled: true,
-                //fillColor: Colors.white60,
                 suffixIconColor: Colors.black,
                 border: InputBorder.none,
-                hintText: 'Write Your Comment',
+                hintText: replyToUsername != null
+                    ? 'Replying to $replyToUsername'
+                    : 'Write Your Comment',
                 hintStyle: const TextStyle(color: Colors.black45),
                 prefix: const Text("  "),
                 suffixIcon: GestureDetector(
-                    onTap: () async {
-                      if (commentController.text.isNotEmpty) {
-                        DatabaseReference ref =
-                            kDatabase.child("Comments").child(postID).push();
+                  onTap: () async {
+                    if (commentController.text.isNotEmpty) {
+                      if (replyToCommentID != null) {
+                        // Handle the reply here
+                        addReplyToComment(widget.postModel.key!,
+                            replyToCommentID!, commentController.text);
+                        replyToCommentID = null; // Reset the replyToCommentID
+                        replyToUsername = null; // Reset the replyToUsername
+                      } else {
+                        // Handle the normal comment here
+                        DatabaseReference ref = kDatabase
+                            .child("Comments")
+                            .child(widget.postModel.key!)
+                            .push();
                         await ref.set({
                           "username": auth.userModel!.userName,
                           "date": DateTime.now().toUtc().toString(),
                           "profilePic": auth.userModel!.profilePic,
                           "comment": commentController.text,
                           "likes": 0,
-                          "likedByMe": false
+                          "likedByMe": false,
+                          "replies": [] // Initialize an empty replies list
                         });
-                        commentController.text = "";
                       }
-                    },
-                    child: const Icon(Icons.send)),
-                /*suffixIconConstraints: BoxConstraints(
-                      maxHeight: 35, minHeight: 35, maxWidth: 35, minWidth: 35)*/
+                      commentController.text = "";
+                    }
+                  },
+                  child: const Icon(Icons.send),
+                ),
               ),
             ),
           ),

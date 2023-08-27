@@ -5,6 +5,31 @@ import 'package:groupchat_firebase/models/groupchat.dart';
 
 import 'user.dart';
 
+class Comment {
+  String username;
+  String comment;
+  List<Comment>? replies;
+
+  Comment({required this.username, required this.comment, this.replies});
+
+  Map<String, dynamic> toJson() {
+    return {
+      'username': username,
+      'comment': comment,
+      'replies': replies?.map((e) => e.toJson()).toList(),
+    };
+  }
+
+  Comment.fromJson(Map<String, dynamic> json)
+      : username = json['username'],
+        comment = json['comment'],
+        replies = json['replies'] != null
+            ? (json['replies'] as List)
+                .map((e) => Comment.fromJson(e as Map<String, dynamic>))
+                .toList()
+            : null;
+}
+
 class PostModel {
   String? key;
   String? imageFrontPath;
@@ -12,7 +37,7 @@ class PostModel {
   String? bio;
   late String createdAt;
   UserModel? user;
-  List<String?>? comment;
+  List<Comment>? comments;
   List<UserModel>? taggedUsers;
   GroupChat? groupChat;
   String? caption;
@@ -39,7 +64,8 @@ class PostModel {
       "groupChat": groupChat == null ? null : groupChat!.toJson(),
       "taggedUsers": taggedUsers != null
           ? taggedUsers!.map((e) => e.toJson()).toList()
-          : null
+          : null,
+      "comments": comments?.map((e) => e.toJson()).toList(),
     };
   }
 
@@ -59,8 +85,12 @@ class PostModel {
     groupChat = map.containsKey('groupChat') && map['groupChat'] != null
         ? GroupChat.fromJson(map['groupChat'].cast<String, dynamic>())
         : null;
+    if (map['comments'] != null) {
+      comments = (map['comments'] as List)
+          .map((e) => Comment.fromJson(e as Map<String, dynamic>))
+          .toList();
+    }
   }
 
-  // ... Your existing code ...
   map(Stack Function(dynamic model) param0) {}
 }
