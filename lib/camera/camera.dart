@@ -48,6 +48,8 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
   bool isBackImageTaken = false;
   AnimationController? rotationController;
   final Duration animationDuration = const Duration(milliseconds: 1000);
+  String firstImagePath = "";
+  bool isFirstImageTaken = false;
 
   @override
   void initState() {
@@ -138,15 +140,34 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
   }
 
   Widget _body() {
-    if (!isFrontImageTaken) {
-      if (_controller?.value.isInitialized == false) {
-        return Container();
-      }
-      final size = MediaQuery.of(context).size;
-      var scale = size.aspectRatio * _controller!.value.aspectRatio;
-
-      if (scale < 1) scale = 1 / scale;
-
+    double aspectRatio;
+    try {
+      aspectRatio = _controller?.value.aspectRatio ?? 1.0;
+    } catch (e) {
+      aspectRatio = 1.0;
+    }
+    if (isFirstImageTaken) {
+      // Display the first image while the second image is being taken or uploaded
+      return Column(
+        children: [
+          Container(
+            height: MediaQuery.of(context).size.height / 1.63,
+            width: MediaQuery.of(context).size.width / 1,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: AspectRatio(
+                aspectRatio: aspectRatio, // Null check here
+                child: Image.file(
+                  File(firstImagePath),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    } else if (_controller != null && _controller!.value.isInitialized) {
+      // Null check here
       return Column(
         children: [
           ClipRRect(
@@ -155,69 +176,14 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
               color: Colors.black,
               height: MediaQuery.of(context).size.height / 1.63,
               width: MediaQuery.of(context).size.width / 1,
-              child: _changingCameraLens
-                  ? Container()
-                  : GestureDetector(
-                      onScaleUpdate: (ScaleUpdateDetails details) {
-                        if (details.scale != 1.0) {
-                          double newZoomLevel = zoomLevel * details.scale;
-                          if (newZoomLevel < minZoomLevel) {
-                            newZoomLevel = minZoomLevel;
-                          } else if (newZoomLevel > maxZoomLevel) {
-                            newZoomLevel = maxZoomLevel;
-                          }
-                          if (newZoomLevel < minZoomLevel) {
-                            newZoomLevel = minZoomLevel;
-                          }
-                          setState(() {
-                            zoomLevel = newZoomLevel;
-                            _controller!.setZoomLevel(zoomLevel);
-                          });
-                        }
-                      },
-                      child: FittedBox(
-                        fit: BoxFit.cover,
-                        child: SizedBox(
-                          width: _controller!.value.previewSize!.height,
-                          height: _controller!.value.previewSize!.width,
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              CameraPreview(_controller!),
-                              GestureDetector(
-                                onTap: _switchGiantAngle,
-                                child: _cameraIndex == 1
-                                    ? Container()
-                                    : Padding(
-                                        padding: EdgeInsets.only(
-                                          top: MediaQuery.of(context)
-                                                  .size
-                                                  .height /
-                                              0.95,
-                                        ),
-                                        child: Container(
-                                          height: 65,
-                                          width: 65,
-                                          decoration: const BoxDecoration(
-                                            color: Colors.black,
-                                            shape: BoxShape.circle,
-                                          ),
-                                          alignment: Alignment.center,
-                                          child: Text(
-                                            _cameraIndex == 2 ? "0.5x" : "1x",
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
+              child: FittedBox(
+                fit: BoxFit.cover,
+                child: SizedBox(
+                  width: _controller!.value.previewSize!.height,
+                  height: _controller!.value.previewSize!.width,
+                  child: CameraPreview(_controller!),
+                ),
+              ),
             ),
           ),
           Container(
@@ -278,9 +244,8 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
         ],
       );
     } else {
-      return Container(
-          // You can show a loading indicator or any other UI here while the second picture is being taken and uploaded
-          );
+      // Handle the case where the camera is not initialized
+      return Center(child: CircularProgressIndicator());
     }
   }
 
@@ -319,50 +284,56 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
     HapticFeedback.heavyImpact();
     var state = Provider.of<AuthState>(context, listen: false);
 
-    // Take the first picture (front image)
-    await _controller!.takePicture().then((fpath) async {
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        await _switchFrontCamera();
-      });
+    // Take the first picture
+    XFile fpath = await _controller!.takePicture();
 
-      // Upload the front image to Firebase Storage
-      await uploadImageToStorage(File(fpath.path)).then((path) {
-        setState(() {
-          frontImagePath = path;
-          isFrontImageTaken =
-              true; // Set the flag to true after the first image is taken
-        });
-      });
+    // Upload the image to Firebase Storage
+    String frontPath = await uploadImageToStorage(File(fpath.path));
+
+    await Future.delayed(Duration(milliseconds: 1000));
+
+    setState(() {
+      firstImagePath = fpath.path;
+      isFirstImageTaken =
+          true; // Set the flag to true after the first image is taken
     });
+
+    // Switch the camera lens
+    await _switchFrontCamera();
+
+    // Wait for a moment before taking the second picture
+    await Future.delayed(Duration(milliseconds: 1000));
 
     // Take the second picture (back image)
-    await _controller!.takePicture().then((bpath) async {
-      // Upload the back image to Firebase Storage
-      await uploadImageToStorage(File(bpath.path)).then((path) {
-        UserModel user = UserModel(
-          displayName: state.profileUserModel!.displayName ?? "",
-          profilePic: state.profileUserModel!.profilePic,
-          userId: state.profileUserModel!.userId,
-          userName: state.profileUserModel!.userName,
-          fcmToken: state.profileUserModel!.fcmToken,
-          localisation: state.profileUserModel!.localisation,
-        );
+    XFile bpath = await _controller!.takePicture();
+    // Upload the back image to Firebase Storage
+    String backPath = await uploadImageToStorage(File(bpath.path));
 
-        // Create and add the post to the database
-        PostModel post = PostModel(
-          user: user,
-          imageFrontPath: frontImagePath,
-          imageBackPath: path,
-          createdAt: DateTime.now().toUtc().toString(),
-          key: widget.groupChat.key,
-          groupChat: widget.groupChat,
-        );
-        // Navigate back to the previous page after both images are taken and uploaded
-        Navigator.pop(context);
-        Navigator.push(context,
-            MaterialPageRoute(builder: (ctx) => TagFriends(postModel: post)));
-      });
-    });
+    UserModel user = UserModel(
+      displayName: state.profileUserModel!.displayName ?? "",
+      profilePic: state.profileUserModel!.profilePic,
+      userId: state.profileUserModel!.userId,
+      userName: state.profileUserModel!.userName,
+      fcmToken: state.profileUserModel!.fcmToken,
+      localisation: state.profileUserModel!.localisation,
+    );
+
+    // Create and add the post to the database
+    PostModel post = PostModel(
+      user: user,
+      imageFrontPath: frontPath,
+      imageBackPath: backPath,
+      createdAt: DateTime.now().toUtc().toString(),
+      key: widget.groupChat.key,
+      groupChat: widget.groupChat,
+    );
+
+    // Navigate back to the previous page after both images are taken and uploaded
+    Navigator.pop(context);
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (ctx) => TagFriends(postModel: post)),
+    );
   }
 
   Future _stopLiveFeed() async {

@@ -234,7 +234,45 @@ class _FeedPostWidgetState extends State<FeedPostWidget>
                       Container(
                         width: MediaQuery.of(context).size.width / 3,
                       ),
-                      Icon(Icons.more_horiz, color: Colors.white),
+                      PopupMenuButton<String>(
+                        icon: Icon(Icons.more_horiz, color: Colors.white),
+                        onSelected: (String result) {
+                          switch (result) {
+                            case 'View profile':
+                              Navigator.push(
+                                context,
+                                ProfilePage.getRoute(
+                                  profileId: widget.postModel.user!.userId ??
+                                      'default_value',
+                                  isadded: isadded,
+                                  user: widget.postModel.user!,
+                                ),
+                              );
+                              break;
+                            case 'Block this user':
+                              // TODO: Block user logic here
+                              break;
+                            case 'Report this user':
+                              // TODO: Report user logic here
+                              break;
+                          }
+                        },
+                        itemBuilder: (BuildContext context) =>
+                            <PopupMenuEntry<String>>[
+                          const PopupMenuItem<String>(
+                            value: 'View profile',
+                            child: Text('View profile'),
+                          ),
+                          const PopupMenuItem<String>(
+                            value: 'Block this user',
+                            child: Text('Block this user'),
+                          ),
+                          const PopupMenuItem<String>(
+                            value: 'Report this user',
+                            child: Text('Report this user'),
+                          ),
+                        ],
+                      )
                     ],
                   ),
                   Container(
