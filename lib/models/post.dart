@@ -15,6 +15,7 @@ class PostModel {
   List<String?>? comment;
   List<UserModel>? taggedUsers;
   GroupChat? groupChat;
+  String? caption;
 
   PostModel(
       {this.key,
@@ -33,6 +34,7 @@ class PostModel {
       "bio": bio,
       "imageBackPath": imageBackPath,
       "imageFrontPath": imageFrontPath,
+      'caption': caption,
       "user": user == null ? null : user!.toJson(),
       "groupChat": groupChat == null ? null : groupChat!.toJson(),
       "taggedUsers": taggedUsers != null
@@ -44,6 +46,7 @@ class PostModel {
   PostModel.fromJson(Map<dynamic, dynamic> map) {
     key = map['key'];
     bio = map['bio'];
+    caption = map['caption'];
     imageBackPath = map['imageBackPath'];
     createdAt = map['createdAt'];
     imageFrontPath = map['imageFrontPath'];

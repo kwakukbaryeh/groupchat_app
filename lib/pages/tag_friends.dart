@@ -21,7 +21,10 @@ class _TagFriendsState extends State<TagFriends> {
   final List<UserModel> _friendsList = [];
   final List<UserModel> _taggedUsers = [];
   final DatabaseReference _databaseRef = FirebaseDatabase.instance.reference();
+  String caption = ""; // Add this line to store the caption
+
   Future<void> addPostToDatabase(PostModel post) async {
+    post.caption = caption; // Add this line to set the caption
     var newPostRef = _databaseRef.child('posts').child(post.key!).push();
     newPostRef.set(post.toJson());
   }
@@ -228,6 +231,23 @@ class _TagFriendsState extends State<TagFriends> {
                       ],
                     )),
               )),
+          Positioned(
+            bottom: 50, // Adjust the position as needed
+            left: 20,
+            right: 20,
+            child: TextField(
+              onChanged: (value) {
+                setState(() {
+                  caption =
+                      value; // Update the caption whenever the text changes
+                });
+              },
+              decoration: InputDecoration(
+                hintText: "Add A Caption...",
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
           Positioned(
               bottom: 100,
               left: 150,

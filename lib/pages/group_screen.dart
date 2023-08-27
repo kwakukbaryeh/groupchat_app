@@ -59,8 +59,11 @@ class _GroupScreenState extends State<GroupScreen>
     authState.getCurrentUser();
     authState.databaseInit();
 
-    await postState.databaseInit([widget.groupChat]);
-    await postState.getDataFromDatabaseForGroupChat(widget.groupChat.key!);
+    await postState.databaseInit([widget.groupChat], authState.userModel);
+    await postState.getDataFromDatabaseForGroupChat(
+        widget.groupChat.key!,
+        widget.groupChat.participantIds ??
+            []); // Assuming GroupChat has a participantIds field
 
     searchState.getDataFromDatabase();
   }
@@ -147,8 +150,10 @@ class _GroupScreenState extends State<GroupScreen>
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               // Conditionally show or hide the circle button
-              if (!(postState.hasPostedInGroup[widget.groupChat.key] ??
-                  false)) // Add this line
+              // Conditionally show or hide the circle button
+              if (!(postState.hasPostedInGroup[
+                      '${widget.groupChat.key}_${authState.userId}'] ??
+                  false))
                 GestureDetector(
                   onTap: () {
                     Navigator.push(

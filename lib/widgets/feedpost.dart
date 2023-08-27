@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:groupchat_firebase/models/post.dart';
 import 'package:groupchat_firebase/pages/comments.dart';
@@ -9,7 +10,6 @@ import 'package:provider/provider.dart';
 import 'package:flutter/physics.dart';
 
 import '../pages/profile_page.dart';
-import '../services/user_tile_page.dart';
 
 class FeedPostWidget extends StatefulWidget {
   final PostModel postModel;
@@ -24,6 +24,7 @@ class _FeedPostWidgetState extends State<FeedPostWidget>
     with SingleTickerProviderStateMixin {
   bool switcher = false;
   late AnimationController _animationController;
+  TextEditingController captionController = TextEditingController();
   Offset _offset = Offset(20, 20); // Initialize to 20 pixels from top and left
 
   @override
@@ -33,6 +34,37 @@ class _FeedPostWidgetState extends State<FeedPostWidget>
       vsync: this,
       duration: Duration(milliseconds: 500),
     );
+    fetchLatestPostData(); // Fetch the latest post data when the widget initializes
+  }
+
+  final DatabaseReference _databaseRef = FirebaseDatabase.instance.reference();
+
+  Future<void> updateCaptionInDatabase(String newCaption) async {
+    await _databaseRef
+        .child('posts')
+        .child(widget.postModel.groupChat!.key!)
+        .child(widget.postModel.key!) // Replace with the actual post ID
+        .update({'caption': newCaption});
+  }
+
+  Future<void> fetchLatestPostData() async {
+    // Fetch the latest post data from the database
+    // Replace with your actual fetching logic
+    DatabaseEvent event = await _databaseRef
+        .child('posts')
+        .child(widget.postModel.groupChat!.key!)
+        .child(widget.postModel.key!) // Replace with the actual post ID
+        .once();
+
+    DataSnapshot snapshot = event.snapshot;
+
+    if (snapshot.value != null) {
+      Map<dynamic, dynamic> data = snapshot.value as Map<dynamic, dynamic>;
+      setState(() {
+        widget.postModel.caption = data['caption'];
+        captionController.text = data['caption'] ?? "Add A Caption...";
+      });
+    }
   }
 
   @override
@@ -147,6 +179,8 @@ class _FeedPostWidgetState extends State<FeedPostWidget>
           ids.add(doc["userId"]);
         }
         bool isadded = ids.contains(widget.postModel.user?.userId);
+        bool isCurrentUserCreator = FirebaseAuth.instance.currentUser!.uid ==
+            widget.postModel.user?.userId;
 
         print("username in StreamBuilder: ${widget.postModel.user?.userName}");
 
@@ -441,7 +475,42 @@ class _FeedPostWidgetState extends State<FeedPostWidget>
                               builder: (ctx) =>
                                   CommentScreen(widget.postModel)));
                     },
-                    child: Text("View Comments")))
+                    child: Text("View Comments"))),
+            Positioned(
+              top: MediaQuery.of(context).size.height / 1.5, // Adjust as needed
+              left: 20,
+              child: Container(
+                width: MediaQuery.of(context).size.width - 40, // Set width here
+                child: isCurrentUserCreator
+                    ? TextFormField(
+                        controller: captionController,
+                        style: TextStyle(color: Colors.grey),
+                        onTap: () {
+                          captionController.selection =
+                              TextSelection.fromPosition(TextPosition(
+                                  offset: captionController.text.length));
+                        },
+                        onFieldSubmitted: (String newCaption) async {
+                          // Update the caption in Realtime Database
+                          await updateCaptionInDatabase(newCaption);
+
+                          // Re-fetch the post data here to get the updated caption
+                          await fetchLatestPostData();
+                        },
+                        decoration: InputDecoration(
+                          hintText: "Add A Caption...", // Add this line
+                          hintStyle:
+                              TextStyle(color: Colors.grey), // Add this line
+                          border: InputBorder.none,
+                        ),
+                      )
+                    : Text(
+                        widget.postModel.caption ??
+                            "", // Show the caption text if it exists
+                        style: TextStyle(color: Colors.grey),
+                      ),
+              ),
+            ),
           ],
         );
       },

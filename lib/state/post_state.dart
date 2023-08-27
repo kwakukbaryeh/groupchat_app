@@ -39,15 +39,21 @@ class PostState extends AppStates {
     return list;
   }
 
-  Future<bool> databaseInit(List<GroupChat> groupChats) {
+  Future<bool> databaseInit(List<GroupChat> groupChats, UserModel? user) {
     try {
       if (groupChatQueryMap.isEmpty) {
+        String? userId = user?.userId; // Assuming UserModel has a userId field
+        if (userId == null) {
+          print("Error: userId is null");
+          return Future.value(false);
+        }
         for (var groupChat in groupChats) {
           groupChatQueryMap[groupChat.key!] =
               kDatabase.child("posts").child(groupChat.key!);
-          groupChatQueryMap[groupChat.key!]!
-              .onChildAdded
-              .listen((event) => onPostAdded(groupChat.key!, event));
+          List<String> participantIds = groupChat.participantIds ??
+              []; // Assuming GroupChat has a participantIds field
+          groupChatQueryMap[groupChat.key!]!.onChildAdded.listen(
+              (event) => onPostAdded(groupChat.key!, participantIds, event));
         }
       }
       print("Queries initialized successfully.");
@@ -58,7 +64,8 @@ class PostState extends AppStates {
     }
   }
 
-  Future<void> getDataFromDatabaseForGroupChat(String groupChatId) async {
+  Future<void> getDataFromDatabaseForGroupChat(
+      String groupChatId, List<String> participantIds) async {
     try {
       isBusy = true;
       notifyListeners();
@@ -80,16 +87,18 @@ class PostState extends AppStates {
             postList.sort((x, y) => DateTime.parse(x.createdAt)
                 .compareTo(DateTime.parse(y.createdAt)));
             groupChatPostMap[groupChatId] = postList;
-            print("Data fetched for group chat: $groupChatId");
           }
-        } else {
-          print("No data found for group chat: $groupChatId");
         }
-        hasPostedInGroup[groupChatId] =
-            groupChatPostMap[groupChatId]?.isNotEmpty ?? false;
+
+        for (String participantId in participantIds) {
+          String newKey = '${groupChatId}_$participantId';
+          hasPostedInGroup[newKey] = groupChatPostMap[groupChatId]
+                  ?.any((post) => post.user?.userId == participantId) ??
+              false;
+        }
+
         isBusy = false;
         notifyListeners();
-        print("Data fetching completed for group chat: $groupChatId");
       });
     } catch (error) {
       isBusy = false;
@@ -97,29 +106,32 @@ class PostState extends AppStates {
     }
   }
 
-  void onPostAdded(String groupChatId, DatabaseEvent event) {
+  void onPostAdded(
+      String groupChatId, List<String> participantIds, DatabaseEvent event) {
     PostModel post = PostModel.fromJson(event.snapshot.value as Map);
     post.key = event.snapshot.key!;
     post.groupChat!.key = groupChatId;
     groupChatPostMap[groupChatId] ??= [];
     if (!groupChatPostMap[groupChatId]!.any((x) => x.key == post.key)) {
       groupChatPostMap[groupChatId]!.add(post);
-      print(
-          "Post added to groupChatPostMap for groupChatId $groupChatId: $post");
-    } else {
-      print(
-          "Post already exists in groupChatPostMap for groupChatId $groupChatId: $post");
     }
-    hasPostedInGroup[groupChatId] =
-        groupChatPostMap[groupChatId]?.isNotEmpty ?? false;
-    isBusy = false;
-    notifyListeners();
-  }
 
-  // Add a new method to handle when posts are deleted
-  void onPostsDeleted(String groupChatId) {
-    hasPostedInGroup[groupChatId] =
-        groupChatPostMap[groupChatId]?.isEmpty ?? true;
-    notifyListeners();
+    for (String participantId in participantIds) {
+      String newKey = '${groupChatId}_$participantId';
+      hasPostedInGroup[newKey] = groupChatPostMap[groupChatId]
+              ?.any((post) => post.user?.userId == participantId) ??
+          false;
+    }
+
+    // Add a new method to handle when posts are deleted
+    void onPostsDeleted(String groupChatId, List<String> participantIds) {
+      for (String participantId in participantIds) {
+        String newKey = '${groupChatId}_$participantId';
+        hasPostedInGroup[newKey] = groupChatPostMap[groupChatId]
+                ?.any((post) => post.user?.userId == participantId) ??
+            false;
+      }
+      notifyListeners();
+    }
   }
 }
