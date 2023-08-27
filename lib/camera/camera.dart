@@ -343,6 +343,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
           displayName: state.profileUserModel!.displayName ?? "",
           profilePic: state.profileUserModel!.profilePic,
           userId: state.profileUserModel!.userId,
+          userName: state.profileUserModel!.userName,
           fcmToken: state.profileUserModel!.fcmToken,
           localisation: state.profileUserModel!.localisation,
         );

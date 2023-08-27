@@ -10,7 +10,10 @@ import 'package:groupchat_firebase/widgets/custom/title_text.dart';
 
 class UserTilePage extends StatelessWidget {
   UserTilePage({Key? key, required this.user, required this.isadded})
-      : super(key: key);
+      : super(key: key) {
+    print("isadded in UserTilePage: $isadded"); // Debugging print
+    print("userId in UserTilePage: ${user.userId}"); // Debugging print
+  }
   final UserModel user;
   bool? isadded;
 
@@ -64,47 +67,49 @@ class UserTilePage extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        InkWell(
-                          onTap: () async {
-                            User? user = FirebaseAuth.instance.currentUser;
-                            if (user != null) {
-                              print("called");
-                              await FirebaseFirestore.instance
-                                  .collection("friendship")
-                                  .doc(user.uid)
-                                  .set({"d": "d"});
-                              FirebaseFirestore.instance
-                                  .collection("friendship")
-                                  .doc(user.uid)
-                                  .collection("friends")
-                                  .add({
-                                "email": this.user.email,
-                                "userId": this.user.userId,
-                                "userName": this.user.userName,
-                                "displayName": this.user.displayName,
-                                "localisation": this.user.localisation,
-                                "bio": this.user.bio,
-                                "profilePic": this.user.profilePic,
-                                "key": this.user.key,
-                                "createAt": this.user.createAt,
-                                "fcmToken": this.user.fcmToken
-                              });
-                            }
-                          },
-                          child: Container(
-                            height: 30,
-                            width: 90,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: const Color.fromARGB(221, 69, 69, 69),
-                              borderRadius: BorderRadius.circular(90),
-                            ),
-                            child: const Text(
-                              "ADD",
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.white,
-                                fontWeight: FontWeight.w800,
+                        Material(
+                          child: InkWell(
+                            onTap: () async {
+                              User? user = FirebaseAuth.instance.currentUser;
+                              if (user != null) {
+                                print("called");
+                                await FirebaseFirestore.instance
+                                    .collection("friendship")
+                                    .doc(user.uid)
+                                    .set({"d": "d"});
+                                FirebaseFirestore.instance
+                                    .collection("friendship")
+                                    .doc(user.uid)
+                                    .collection("friends")
+                                    .add({
+                                  "email": this.user.email,
+                                  "userId": this.user.userId,
+                                  "userName": this.user.userName,
+                                  "displayName": this.user.displayName,
+                                  "localisation": this.user.localisation,
+                                  "bio": this.user.bio,
+                                  "profilePic": this.user.profilePic,
+                                  "key": this.user.key,
+                                  "createAt": this.user.createAt,
+                                  "fcmToken": this.user.fcmToken
+                                });
+                              }
+                            },
+                            child: Container(
+                              height: 30,
+                              width: 90,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: const Color.fromARGB(221, 69, 69, 69),
+                                borderRadius: BorderRadius.circular(90),
+                              ),
+                              child: const Text(
+                                "ADD",
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w800,
+                                ),
                               ),
                             ),
                           ),

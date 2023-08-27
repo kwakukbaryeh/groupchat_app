@@ -11,7 +11,10 @@ class ChatBottomBar extends StatefulWidget {
   UserModel receiver;
   String chatRoomId;
   ChatBottomBar(
-      {super.key, required this.sender, required this.receiver, required this.chatRoomId});
+      {super.key,
+      required this.sender,
+      required this.receiver,
+      required this.chatRoomId});
 
   @override
   _ChatBottomBarState createState() => _ChatBottomBarState();
@@ -31,7 +34,8 @@ class _ChatBottomBarState extends State<ChatBottomBar> {
         "message": message,
         "sendBy": widget.sender.userName,
         "ts": lastMessageTs,
-        "imgUrl": widget.sender.profilePic
+        "imgUrl": widget.sender.profilePic,
+        "expireAt": Timestamp.fromDate(DateTime.now().add(Duration(hours: 12)))
       };
 
       //messageId
@@ -79,7 +83,9 @@ class _ChatBottomBarState extends State<ChatBottomBar> {
           "photoUrl": url,
           "sendBy": widget.sender.userName,
           "ts": Timestamp.now(),
-          "imgUrl": widget.sender.profilePic
+          "imgUrl": widget.sender.profilePic,
+          "expireAt":
+              Timestamp.fromDate(DateTime.now().add(Duration(hours: 12)))
         };
 
         String messageId = randomAlphaNumeric(12);

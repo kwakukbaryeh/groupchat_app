@@ -68,7 +68,8 @@ class _ProfilePageState extends State<MyProfilePage> {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => const EditProfilePage()));
+                                  builder: (context) =>
+                                      const EditProfilePage()));
                         },
                         child: ClipRRect(
                             borderRadius: BorderRadius.circular(100),
@@ -88,7 +89,8 @@ class _ProfilePageState extends State<MyProfilePage> {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => const EditProfilePage()));
+                                  builder: (context) =>
+                                      const EditProfilePage()));
                         },
                         child: Text(
                           state.profileUserModel?.displayName.toString() ?? "",
@@ -102,7 +104,8 @@ class _ProfilePageState extends State<MyProfilePage> {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => const EditProfilePage()));
+                                  builder: (context) =>
+                                      const EditProfilePage()));
                         },
                         child: Text(
                           state.profileUserModel?.userName.toString() ?? "",
@@ -117,7 +120,8 @@ class _ProfilePageState extends State<MyProfilePage> {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => const EditProfilePage()));
+                                  builder: (context) =>
+                                      const EditProfilePage()));
                         },
                         child: Text(
                           state.profileUserModel?.bio ?? "",
@@ -133,7 +137,7 @@ class _ProfilePageState extends State<MyProfilePage> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text(
-                          "Your Memories",
+                          "Time Capsule",
                           style: TextStyle(
                               color: Colors.white,
                               fontSize: 21,
@@ -192,7 +196,8 @@ class _ProfilePageState extends State<MyProfilePage> {
                                           itemBuilder: (context, index) {
                                             final day = reversedDays[index];
                                             return Padding(
-                                                padding: const EdgeInsets.all(8),
+                                                padding:
+                                                    const EdgeInsets.all(8),
                                                 child: Container(
                                                   alignment: Alignment.center,
                                                   decoration: BoxDecoration(
@@ -235,7 +240,7 @@ class _ProfilePageState extends State<MyProfilePage> {
                                         ),
                                         alignment: Alignment.center,
                                         child: const Text(
-                                          "See all Memories",
+                                          "See all of your Groups",
                                           style: TextStyle(
                                               color: Colors.white,
                                               fontSize: 12,
@@ -251,10 +256,10 @@ class _ProfilePageState extends State<MyProfilePage> {
                     GestureDetector(
                         onTap: () {
                           shareText(
-                              "ReBe.al/${state.profileUserModel?.userName!.replaceAll("@", "").toLowerCase() ?? ""}");
+                              "keepUp/${state.profileUserModel?.userName!.replaceAll("@", "").toLowerCase() ?? ""}");
                         },
                         child: Text(
-                          "🔗 ReBe.al/${state.profileUserModel?.userName!.replaceAll("@", "").toLowerCase() ?? ""}",
+                          "🔗 keepUp/${state.profileUserModel?.userName!.replaceAll("@", "").toLowerCase() ?? ""}",
                           style: const TextStyle(
                               color: Colors.white,
                               fontSize: 17,

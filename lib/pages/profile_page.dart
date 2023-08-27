@@ -104,8 +104,8 @@ class _ProfilePageState extends State<ProfilePage> {
 
   void _shareText(String name) {
     Share.share(
-      "https://rebe.al/$name",
-      subject: "Discover $name on App Title.",
+      "https://keepUp/$name",
+      subject: "Discover $name on keepUp.",
       sharePositionOrigin: const Rect.fromLTWH(0, 0, 10, 10),
     );
   }
@@ -233,8 +233,8 @@ class _ProfilePageState extends State<ProfilePage> {
                           onStretchTrigger: () {
                             return Future<void>.value();
                           },
-                          title: Text(authstate.userModel.userName!
-                              .replaceAll("@", "")),
+                          title:
+                              Text(widget.user.userName!.replaceAll("@", "")),
                           backgroundColor: Colors.black.withOpacity(0),
                           expandedHeight:
                               MediaQuery.of(context).size.height / 2.2,

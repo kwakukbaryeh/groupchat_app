@@ -1,10 +1,15 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:groupchat_firebase/models/post.dart';
 import 'package:groupchat_firebase/pages/comments.dart';
 import 'package:groupchat_firebase/state/auth_state.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/physics.dart';
+
+import '../pages/profile_page.dart';
+import '../services/user_tile_page.dart';
 
 class FeedPostWidget extends StatefulWidget {
   final PostModel postModel;
@@ -125,222 +130,283 @@ class _FeedPostWidgetState extends State<FeedPostWidget>
       timeAgo = '$hours hour${hours > 1 ? 's' : ''} ago';
     }
 
-    return Stack(
-      children: [
-        Container(
-          color: Colors.black,
-          height: MediaQuery.of(context).size.height / 1.3,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                height: 20,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection("friendship")
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .collection("friends")
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.data == null) {
+          return CircularProgressIndicator(); // Loading
+        }
+
+        List ids = [];
+        List docs = snapshot.data!.docs;
+        for (DocumentSnapshot doc in docs) {
+          ids.add(doc["userId"]);
+        }
+        bool isadded = ids.contains(widget.postModel.user?.userId);
+
+        print("username in StreamBuilder: ${widget.postModel.user?.userName}");
+
+        return Stack(
+          children: [
+            Container(
+              color: Colors.black,
+              height: MediaQuery.of(context).size.height / 1.3,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(100),
-                    child: SizedBox(
-                      height: 35,
-                      width: 35,
-                      child: CachedNetworkImage(
-                        imageUrl: widget.postModel.user?.profilePic ??
-                            "https://i.pinimg.com/originals/f1/0f/f7/f10ff70a7155e5ab666bcdd1b45b726d.jpg",
-                      ),
-                    ),
+                  Container(
+                    height: 20,
                   ),
-                  Text.rich(
-                    TextSpan(
-                      children: [
-                        TextSpan(
-                          text: "${widget.postModel.user!.displayName}\n",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w500,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          print(
+                              "isadded in StreamBuilder: $isadded"); // Debugging print
+                          print(
+                              "userId in StreamBuilder: ${widget.postModel.user?.userId}");
+                          print(
+                              "username in StreamBuilder: ${widget.postModel.user?.userName}");
+
+                          // Navigate to user's profile page
+                          Navigator.push(
+                            context,
+                            ProfilePage.getRoute(
+                              profileId: widget.postModel.user!.userId ??
+                                  'default_value',
+                              isadded: isadded,
+                              user: widget.postModel.user!,
+                            ),
+                          );
+                        },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(100),
+                          child: SizedBox(
+                            height: 35,
+                            width: 35,
+                            child: CachedNetworkImage(
+                              imageUrl: widget.postModel.user?.profilePic ??
+                                  "https://i.pinimg.com/originals/f1/0f/f7/f10ff70a7155e5ab666bcdd1b45b726d.jpg",
+                            ),
                           ),
                         ),
-                        TextSpan(
-                          text: "$localisation $timeAgo",
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontWeight: FontWeight.w500,
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          // Navigate to user's profile page
+                          Navigator.push(
+                            context,
+                            ProfilePage.getRoute(
+                              profileId: widget.postModel.user!.userId ??
+                                  'default_value',
+                              isadded: isadded,
+                              user: widget.postModel.user!,
+                            ),
+                          );
+                        },
+                        child: Text.rich(
+                          TextSpan(
+                            children: [
+                              TextSpan(
+                                text: "${widget.postModel.user!.displayName}\n",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              TextSpan(
+                                text: "$localisation $timeAgo",
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
                           ),
+                        ),
+                      ),
+                      Container(
+                        width: MediaQuery.of(context).size.width / 3,
+                      ),
+                      Icon(Icons.more_horiz, color: Colors.white),
+                    ],
+                  ),
+                  Container(
+                    height: 10,
+                  ),
+                  GestureDetector(
+                    onTap: switcherFunc,
+                    child: Stack(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(15),
+                          child: SizedBox(
+                            height: MediaQuery.of(context).size.height / 1.63,
+                            width: MediaQuery.of(context).size.width,
+                            child: CachedNetworkImage(
+                              fit: BoxFit.cover,
+                              imageUrl: switcher
+                                  ? widget.postModel.imageFrontPath.toString()
+                                  : widget.postModel.imageBackPath.toString(),
+                            ),
+                          ),
+                        ),
+                        AnimatedBuilder(
+                          animation: _animationController,
+                          builder: (context, child) {
+                            return Positioned(
+                              left: _offset.dx,
+                              top: _offset.dy,
+                              child: GestureDetector(
+                                onPanUpdate: (details) {
+                                  setState(() {
+                                    _offset += details.delta;
+                                  });
+                                },
+                                onPanEnd: (details) {
+                                  _runAnimation();
+                                },
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: SizedBox(
+                                    height:
+                                        MediaQuery.of(context).size.height / 6,
+                                    width:
+                                        MediaQuery.of(context).size.width / 4,
+                                    child: CachedNetworkImage(
+                                      fit: BoxFit.cover,
+                                      imageUrl: !switcher
+                                          ? widget.postModel.imageFrontPath
+                                              .toString()
+                                          : widget.postModel.imageBackPath
+                                              .toString(),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),
                   ),
-                  Container(
-                    width: MediaQuery.of(context).size.width / 3,
-                  ),
-                  Icon(Icons.more_horiz, color: Colors.white),
                 ],
               ),
-              Container(
-                height: 10,
-              ),
-              GestureDetector(
-                onTap: switcherFunc,
-                child: Stack(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(15),
-                      child: SizedBox(
-                        height: MediaQuery.of(context).size.height / 1.63,
-                        width: MediaQuery.of(context).size.width,
-                        child: CachedNetworkImage(
-                          fit: BoxFit.cover,
-                          imageUrl: switcher
-                              ? widget.postModel.imageFrontPath.toString()
-                              : widget.postModel.imageBackPath.toString(),
-                        ),
-                      ),
-                    ),
-                    AnimatedBuilder(
-                      animation: _animationController,
-                      builder: (context, child) {
-                        return Positioned(
-                          left: _offset.dx,
-                          top: _offset.dy,
-                          child: GestureDetector(
-                            onPanUpdate: (details) {
-                              setState(() {
-                                _offset += details.delta;
-                              });
-                            },
-                            onPanEnd: (details) {
-                              _runAnimation();
-                            },
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: SizedBox(
-                                height: MediaQuery.of(context).size.height / 6,
-                                width: MediaQuery.of(context).size.width / 4,
-                                child: CachedNetworkImage(
-                                  fit: BoxFit.cover,
-                                  imageUrl: !switcher
-                                      ? widget.postModel.imageFrontPath
-                                          .toString()
-                                      : widget.postModel.imageBackPath
-                                          .toString(),
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
+            ),
+            widget.postModel.taggedUsers == null
+                ? Container()
+                : Positioned(
+                    top: MediaQuery.of(context).size.height / 1.43,
+                    left: 20,
+                    child: InkWell(
+                      onTap: () {
+                        showModalBottomSheet(
+                            context: context,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(30),
+                                    topRight: Radius.circular(30))),
+                            builder: (BuildContext ctx) {
+                              return Column(
+                                children: [
+                                  SizedBox(
+                                    height: 15,
+                                  ),
+                                  Text(
+                                    "Tagged Friends",
+                                    style: TextStyle(fontSize: 16),
+                                  ),
+                                  Expanded(
+                                    child: GridView.builder(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 30, vertical: 30),
+                                        itemCount: widget
+                                            .postModel.taggedUsers!.length,
+                                        gridDelegate:
+                                            SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisCount: 3,
+                                          crossAxisSpacing: 30,
+                                        ),
+                                        itemBuilder: (ctx, index) {
+                                          return widget
+                                                      .postModel
+                                                      .taggedUsers![index]
+                                                      .profilePic !=
+                                                  null
+                                              ? InkWell(
+                                                  onTap: () {},
+                                                  child: CircleAvatar(
+                                                    radius: 30,
+                                                    backgroundColor:
+                                                        Colors.white,
+                                                    child: Image.network(widget
+                                                        .postModel
+                                                        .taggedUsers![index]
+                                                        .profilePic!),
+                                                  ),
+                                                )
+                                              : InkWell(
+                                                  onTap: () {},
+                                                  child: ClipRRect(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              100),
+                                                      child: CachedNetworkImage(
+                                                          fit: BoxFit.cover,
+                                                          height: 15,
+                                                          imageUrl: state
+                                                                  .profileUserModel
+                                                                  ?.profilePic ??
+                                                              "https://i.pinimg.com/originals/f1/0f/f7/f10ff70a7155e5ab666bcdd1b45b726d.jpg")),
+                                                );
+                                        }),
+                                  )
+                                ],
+                              );
+                            });
                       },
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        widget.postModel.taggedUsers == null
-            ? Container()
-            : Positioned(
-                top: MediaQuery.of(context).size.height / 1.43,
-                left: 20,
-                child: InkWell(
-                  onTap: () {
-                    showModalBottomSheet(
-                        context: context,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(30),
-                                topRight: Radius.circular(30))),
-                        builder: (BuildContext ctx) {
-                          return Column(
+                      child: Container(
+                          width: 50,
+                          padding: EdgeInsets.all(5),
+                          decoration: BoxDecoration(
+                            border: Border.all(),
+                            borderRadius: BorderRadius.circular(8),
+                            color: Colors.black,
+                          ),
+                          child: Row(
                             children: [
+                              Icon(Icons.person),
                               SizedBox(
-                                height: 15,
+                                width: 3,
                               ),
                               Text(
-                                "Tagged Friends",
-                                style: TextStyle(fontSize: 16),
-                              ),
-                              Expanded(
-                                child: GridView.builder(
-                                    padding: EdgeInsets.symmetric(
-                                        horizontal: 30, vertical: 30),
-                                    itemCount:
-                                        widget.postModel.taggedUsers!.length,
-                                    gridDelegate:
-                                        SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: 3,
-                                      crossAxisSpacing: 30,
-                                    ),
-                                    itemBuilder: (ctx, index) {
-                                      return widget
-                                                  .postModel
-                                                  .taggedUsers![index]
-                                                  .profilePic !=
-                                              null
-                                          ? InkWell(
-                                              onTap: () {},
-                                              child: CircleAvatar(
-                                                radius: 30,
-                                                backgroundColor: Colors.white,
-                                                child: Image.network(widget
-                                                    .postModel
-                                                    .taggedUsers![index]
-                                                    .profilePic!),
-                                              ),
-                                            )
-                                          : InkWell(
-                                              onTap: () {},
-                                              child: ClipRRect(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          100),
-                                                  child: CachedNetworkImage(
-                                                      fit: BoxFit.cover,
-                                                      height: 15,
-                                                      imageUrl: state
-                                                              .profileUserModel
-                                                              ?.profilePic ??
-                                                          "https://i.pinimg.com/originals/f1/0f/f7/f10ff70a7155e5ab666bcdd1b45b726d.jpg")),
-                                            );
-                                    }),
+                                widget.postModel.taggedUsers!.length.toString(),
+                                style: TextStyle(color: Colors.white),
                               )
                             ],
-                          );
-                        });
-                  },
-                  child: Container(
-                      width: 50,
-                      padding: EdgeInsets.all(5),
-                      decoration: BoxDecoration(
-                        border: Border.all(),
-                        borderRadius: BorderRadius.circular(8),
-                        color: Colors.black,
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.person),
-                          SizedBox(
-                            width: 3,
-                          ),
-                          Text(
-                            widget.postModel.taggedUsers!.length.toString(),
-                            style: TextStyle(color: Colors.white),
-                          )
-                        ],
-                      )),
-                )),
-        Positioned(
-            top: MediaQuery.of(context).size.height / 1.41,
-            left: widget.postModel.taggedUsers == null ? 15 : 90,
-            child: InkWell(
-                onTap: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (ctx) => CommentScreen(widget.postModel)));
-                },
-                child: Text("View Comments")))
-      ],
+                          )),
+                    )),
+            Positioned(
+                top: MediaQuery.of(context).size.height / 1.41,
+                left: widget.postModel.taggedUsers == null ? 15 : 90,
+                child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (ctx) =>
+                                  CommentScreen(widget.postModel)));
+                    },
+                    child: Text("View Comments")))
+          ],
+        );
+      },
     );
   }
 }

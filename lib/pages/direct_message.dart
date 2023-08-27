@@ -102,7 +102,11 @@ class _DirectMessagesState extends State<DirectMessages> {
                     },
                   );
                 } else {
-                  return const Center(child: Text("No direct messages yet"));
+                  return const Center(
+                      child: Text(
+                    "No direct messages yet",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ));
                 }
               } else {
                 return const Center(

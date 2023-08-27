@@ -2,18 +2,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:groupchat_firebase/models/user.dart'; // Import the User model
+import 'package:groupchat_firebase/models/user.dart';
 import 'package:groupchat_firebase/pages/chat_screen.dart';
 import 'package:groupchat_firebase/services/database.dart';
 import 'package:groupchat_firebase/state/auth_state.dart';
-import 'package:provider/provider.dart'; // Import the Chat model
-
-/*class Friendship {
-  final UserModel user;
-  final bool isFriend;
-
-  Friendship({required this.user, this.isFriend = false});
-}*/
+import 'package:provider/provider.dart';
 
 class Friends extends StatefulWidget {
   const Friends({super.key});
@@ -23,8 +16,8 @@ class Friends extends StatefulWidget {
 }
 
 class _FriendsState extends State<Friends> {
-  final List<UserModel> _friendsList = []; // List to store the user's friends
-  List<UserModel> _searchResults = []; // List to store search results
+  final List<UserModel> _friendsList = [];
+  List<UserModel> _searchResults = [];
   final TextEditingController _searchController = TextEditingController();
 
   getfriends() async {
@@ -40,10 +33,10 @@ class _FriendsState extends State<Friends> {
         for (DocumentSnapshot document in docs) {
           UserModel user =
               UserModel.fromJson(document.data() as Map<String, dynamic>);
-          _searchController.text = "";
           _friendsList.add(user);
-          setState(() {});
         }
+        _friendsList.sort((a, b) => a.userName!.compareTo(b.userName!));
+        setState(() {});
       }
     }
   }
@@ -51,8 +44,6 @@ class _FriendsState extends State<Friends> {
   @override
   void initState() {
     super.initState();
-    // Initialize the friends list here or fetch it from your database
-    //_loadFriendsList();
     getfriends();
   }
 
@@ -62,41 +53,11 @@ class _FriendsState extends State<Friends> {
     super.dispose();
   }
 
-  /*Future<void> _loadFriendsList() async {
-    // Mock data for demonstration purposes
-    // Replace this with actual data retrieval from your database
-    // In this example, we're assuming the current user has a userId of '1'
-    // and we'll populate the friends list with users based on their following and followers
-    String currentUserId =
-        '1'; // Replace this with the actual current user's ID
-
-    // Get the list of users the current user is following
-    List<String>? followingList =
-        await UserModel.getFollowingList(currentUserId);
-
-    // Get the list of users who are following the current user
-    List<String>? followersList =
-        await UserModel.getFollowersList(currentUserId);
-
-    // Now, check who are the users that are on both lists (mutual friends)
-    List<UserModel> allUsers = await UserModel.getAllUsers();
-    _friendsList = allUsers
-        .map((user) => Friendship(
-              user: user,
-              isFriend: followingList != null &&
-                  followersList != null &&
-                  followingList.contains(user.userId) &&
-                  followersList.contains(user.userId),
-            ))
-        .toList();
-  }*/
-
   void _handleSearch(String query) {
     setState(() {
       if (query.isEmpty) {
         _searchResults.clear();
       } else {
-        // Filter friends list based on the search query
         _searchResults = _friendsList
             .where((friendship) =>
                 friendship.userName
@@ -109,9 +70,6 @@ class _FriendsState extends State<Friends> {
   }
 
   void _startChat(UserModel user, UserModel receiver) async {
-    // Create a new chat or fetch existing chat with the user
-    // Add logic to handle sending messages to this user
-    // For demonstration purposes, we'll just print the user's name for now
     late String chatRoomId;
     getChatRoomIdByUsernames(String a, String b) {
       if (a.substring(0, 1).codeUnitAt(0) > b.substring(0, 1).codeUnitAt(0)) {
@@ -127,7 +85,6 @@ class _FriendsState extends State<Friends> {
 
     getChatRoomId();
 
-    print('Starting chat with ${user.userName ?? "Unknown User"}');
     Map<String, dynamic> chatRoomInfoMap = {
       "users": [user.userName, receiver.userName],
       "createdAt": DateTime.now(),
@@ -149,6 +106,10 @@ class _FriendsState extends State<Friends> {
   Widget build(BuildContext context) {
     var authState = Provider.of<AuthState>(context, listen: false);
     var state = Provider.of<AuthState>(context);
+
+    List<UserModel> listToShow =
+        _searchController.text.isEmpty ? _friendsList : _searchResults;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Friends'),
@@ -169,15 +130,11 @@ class _FriendsState extends State<Friends> {
             ),
           ),
           Expanded(
-            child: _friendsList.isNotEmpty && _searchResults.isNotEmpty
+            child: listToShow.isNotEmpty
                 ? ListView.builder(
-                    itemCount: _searchController.text == ""
-                        ? _friendsList.length
-                        : _searchResults.length,
+                    itemCount: listToShow.length,
                     itemBuilder: (context, index) {
-                      final friendship = _searchController.text == ""
-                          ? _friendsList[index]
-                          : _searchResults[index];
+                      final friendship = listToShow[index];
                       return ListTile(
                         contentPadding: const EdgeInsets.all(8),
                         leading: friendship.profilePic == null
@@ -200,7 +157,11 @@ class _FriendsState extends State<Friends> {
                       );
                     },
                   )
-                : const Center(child: Text("No friends to show")),
+                : const Center(
+                    child: Text(
+                    "No friends to show",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  )),
           ),
         ],
       ),

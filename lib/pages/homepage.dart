@@ -31,7 +31,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     super.initState();
     _scrollController = ScrollController();
     _scrollController.addListener(_scrollListener);
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 1, vsync: this);
 
     WidgetsBinding.instance?.addPostFrameCallback((_) {
       // Fetch initial data from the database when the widget is built
@@ -122,19 +122,23 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           tabs: [
             FadeInUp(
               child: Padding(
-                padding: const EdgeInsets.only(left: 20),
-                child: Tab(
-                  child: Text(
-                    'Groups',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey[700],
+                padding: const EdgeInsets.all(0), // Adjusted padding
+                child: Center(
+                  // Centered the text
+                  child: Tab(
+                    child: Text(
+                      'Groups',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[700],
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
+            /*
             FadeInUp(
               child: Padding(
                 padding: const EdgeInsets.only(right: 0),
@@ -149,7 +153,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   ),
                 ),
               ),
-            ),
+            ), */
           ],
         ),
       ),
@@ -168,10 +172,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       );
                     } else if (groupChatState.groupChats == null) {
                       return Center(
-                        child: Text(
-                          'Wow it\'s empty here... Add some groups!',
-                          style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
+                        child: Transform.translate(
+                          offset: Offset(0, -60),
+                          child: Text(
+                            'Wow it\'s empty here... Add some groups!',
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                       );
                     } else {
@@ -192,6 +200,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   },
                 ),
 
+                /*
                 // "Discovery" Tab
                 Center(
                   child: Text(
@@ -199,6 +208,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                 ),
+                */
               ],
             ),
           ),

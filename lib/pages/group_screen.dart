@@ -193,132 +193,124 @@ class _GroupScreenState extends State<GroupScreen>
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             Padding(
-                padding: const EdgeInsets.only(right: 10, top: 40),
-                child: authState.userId == widget.groupChat.creatorId
-                    ? PopupMenuButton<String>(
-                        onSelected: (String result) {
-                          // Handle the selected menu item
-                          print('Selected: $result');
-                          if (result == "0") {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (ctx) =>
-                                        ShareQr(groupChat: widget.groupChat)));
-                          }
-                          if (result == "1") {
-                            if (state.userlist != null) {
-                              List<UserModel> users = state.userlist!
-                                  .where((element) => widget
-                                      .groupChat.participantIds
-                                      .contains(element.userId))
-                                  .toList();
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (ctx) => GroupUsers(
-                                            groupUsers: users,
-                                            groupChat: widget.groupChat,
-                                          )));
-                            }
-                          }
-                          if (result == "2") {
-                            kDatabase
-                                .child("groupchats")
-                                .child(widget.groupChat.key!)
-                                .remove();
-                            ScaffoldMessenger.of(context)
-                                .showSnackBar(const SnackBar(
-                                    backgroundColor: Colors.blue,
-                                    content: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          "Group deleted successfully",
-                                          style: TextStyle(color: Colors.white),
-                                        ),
-                                      ],
-                                    )));
-                            Navigator.pushAndRemoveUntil(
-                                context,
-                                MaterialPageRoute(builder: (ctx) => HomePage()),
-                                (route) => false);
-                          }
-                        },
-                        itemBuilder: (BuildContext context) =>
-                            <PopupMenuEntry<String>>[
-                          const PopupMenuItem<String>(
-                            value: '0',
-                            child: Text('Share Qr code'),
-                          ),
-                          const PopupMenuItem<String>(
-                            value: '1',
-                            child: Text('Remove User'),
-                          ),
-                          const PopupMenuItem<String>(
-                            value: '2',
-                            child: Text('Delete Group'),
-                          ),
-                        ],
-                        child: const IconButton(
-                          icon: Icon(Icons.menu),
-                          onPressed:
-                              null, // null onPressed to disable the IconButton
-                        ),
-                      )
-                    : PopupMenuButton<String>(
-                        onSelected: (String result) async {
-                          // Handle the selected menu item
-                          print('Selected: $result');
-                          if (result == "0") {
-                            DatabaseEvent event = await kDatabase
-                                .child("groupchats")
-                                .child(widget.groupChat.key!)
-                                .child("participantIds")
-                                .once();
-                            List list = event.snapshot.value as List;
-                            List newlist = [];
-                            for (var id in list) {
-                              if (id != authState.userId) {
-                                newlist.add(authState.userId);
-                              }
-                            }
-                            event.snapshot.ref.set(newlist);
-                            groupChatsState.getDataFromDatabase();
-                            log(event.snapshot.value.toString());
-                            ScaffoldMessenger.of(context)
-                                .showSnackBar(const SnackBar(
-                                    backgroundColor: Colors.blue,
-                                    content: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          "You left group successfully",
-                                          style: TextStyle(color: Colors.white),
-                                        ),
-                                      ],
-                                    )));
-                            Navigator.pushAndRemoveUntil(
-                                context,
-                                MaterialPageRoute(builder: (ctx) => HomePage()),
-                                (route) => false);
-                          }
-                        },
-                        itemBuilder: (BuildContext context) =>
-                            <PopupMenuEntry<String>>[
-                          const PopupMenuItem<String>(
-                            value: '0',
-                            child: Text('Leave Group'),
-                          ),
-                        ],
-                        child: const IconButton(
-                          icon: Icon(Icons.menu),
-                          onPressed:
-                              null, // null onPressed to disable the IconButton
-                        ),
-                      )),
+              padding: const EdgeInsets.only(right: 10, top: 40),
+              child: PopupMenuButton<String>(
+                onSelected: (String result) async {
+                  // Handle the selected menu item
+                  print('Selected: $result');
+                  if (result == "0") {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (ctx) =>
+                                ShareQr(groupChat: widget.groupChat)));
+                  }
+                  if (result == "1" &&
+                      authState.userId == widget.groupChat.creatorId) {
+                    if (state.userlist != null) {
+                      List<UserModel> users = state.userlist!
+                          .where((element) => widget.groupChat.participantIds
+                              .contains(element.userId))
+                          .toList();
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (ctx) => GroupUsers(
+                                    groupUsers: users,
+                                    groupChat: widget.groupChat,
+                                  )));
+                    }
+                  }
+                  if (result == "2" &&
+                      authState.userId == widget.groupChat.creatorId) {
+                    kDatabase
+                        .child("groupchats")
+                        .child(widget.groupChat.key!)
+                        .remove();
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        backgroundColor: Colors.blue,
+                        content: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              "Group deleted successfully",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ],
+                        )));
+                    Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (ctx) => HomePage()),
+                        (route) => false);
+                  }
+                  if (result == "3") {
+                    DatabaseEvent event = await kDatabase
+                        .child("groupchats")
+                        .child(widget.groupChat.key!)
+                        .child("participantIds")
+                        .once();
+                    List list = event.snapshot.value as List;
+                    List newlist = [];
+                    for (var id in list) {
+                      if (id != authState.userId) {
+                        newlist.add(authState.userId);
+                      }
+                    }
+                    event.snapshot.ref.set(newlist);
+                    groupChatsState.getDataFromDatabase();
+                    log(event.snapshot.value.toString());
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        backgroundColor: Colors.blue,
+                        content: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              "You left group successfully",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ],
+                        )));
+                    Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (ctx) => HomePage()),
+                        (route) => false);
+                  }
+                },
+                itemBuilder: (BuildContext context) {
+                  List<PopupMenuEntry<String>> menuItems = [];
+
+                  // Add "Share Qr code" option for all users
+                  menuItems.add(const PopupMenuItem<String>(
+                    value: '0',
+                    child: Text('Share Qr code'),
+                  ));
+
+                  // Add "Remove User" and "Delete Group" options only for the creator
+                  if (authState.userId == widget.groupChat.creatorId) {
+                    menuItems.add(const PopupMenuItem<String>(
+                      value: '1',
+                      child: Text('Remove User'),
+                    ));
+                    menuItems.add(const PopupMenuItem<String>(
+                      value: '2',
+                      child: Text('Delete Group'),
+                    ));
+                  }
+
+                  // Add "Leave Group" option for all users
+                  menuItems.add(const PopupMenuItem<String>(
+                    value: '3',
+                    child: Text('Leave Group'),
+                  ));
+
+                  return menuItems;
+                },
+                child: const IconButton(
+                  icon: Icon(Icons.menu),
+                  onPressed: null, // null onPressed to disable the IconButton
+                ),
+              ),
+            )
           ],
         ),
         bottom: _isScrolledDown && tab != 1 || _isGrid
@@ -461,7 +453,7 @@ class _GroupScreenState extends State<GroupScreen>
                   physics: const NeverScrollableScrollPhysics(),
                   controller: _tabController,
                   children: [
-                    // Tab 2: All User's Posts (Assuming you need to show all user posts here)
+                    // Tab 2: Group User posts
                     Consumer<PostState>(
                       builder: (context, state, child) {
                         final List<PostModel>? list = postState.getPostLists(
@@ -494,56 +486,12 @@ class _GroupScreenState extends State<GroupScreen>
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         Container(
-                          height: 140,
-                        ),
-                        Container(
                           width: MediaQuery.of(context).size.width / 1.1,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[800],
-                            borderRadius: BorderRadius.circular(20),
-                          ),
                           alignment: Alignment.topCenter,
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  top: 20,
-                                  left: 10,
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(5),
-                                  child: Container(
-                                    height: 25,
-                                    width: 40,
-                                    color: Colors.white,
-                                    alignment: Alignment.center,
-                                    child: const Text(
-                                      "NEW",
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.w800,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const Padding(
-                                padding: EdgeInsets.only(
-                                  top: 10,
-                                  left: 10,
-                                ),
-                                child: Text(
-                                  "DISCOVER YOUR\nFRIENDS OF FRIENDS",
-                                  style: TextStyle(
-                                    fontSize: 28,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ),
                               state.userlist == null
                                   ? Container()
                                   : StreamBuilder<QuerySnapshot>(
@@ -578,6 +526,15 @@ class _GroupScreenState extends State<GroupScreen>
                                                     isadded = ids.contains(state
                                                         .userlist![index]
                                                         .userId);
+
+                                                    // Skip rendering if the user is the current user
+                                                    if (state.userlist![index]
+                                                            .userId ==
+                                                        FirebaseAuth.instance
+                                                            .currentUser!.uid) {
+                                                      return Container();
+                                                    }
+
                                                     return widget.groupChat
                                                             .participantIds
                                                             .contains(state
@@ -599,38 +556,8 @@ class _GroupScreenState extends State<GroupScreen>
                                                       state.userlist!.length,
                                                 ),
                                               );
-                                      }),
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  left: 15,
-                                  bottom: 20,
-                                  right: 15,
-                                ),
-                                child: RippleButton(
-                                  splashColor: Colors.transparent,
-                                  child: Container(
-                                    height: 55,
-                                    width:
-                                        MediaQuery.of(context).size.width - 40,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(15),
+                                      },
                                     ),
-                                    child: const Center(
-                                      child: Text(
-                                        "Share your BeReal",
-                                        style: TextStyle(
-                                          fontFamily: "icons.ttf",
-                                          color: Colors.black,
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  onPressed: () {},
-                                ),
-                              ),
                             ],
                           ),
                         ),
