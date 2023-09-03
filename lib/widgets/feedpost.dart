@@ -27,6 +27,7 @@ class _FeedPostWidgetState extends State<FeedPostWidget>
   TextEditingController captionController = TextEditingController();
   Offset _offset = Offset(20, 20); // Initialize to 20 pixels from top and left
 
+  int commentCount = 0;
   @override
   void initState() {
     super.initState();
@@ -35,6 +36,26 @@ class _FeedPostWidgetState extends State<FeedPostWidget>
       duration: Duration(milliseconds: 500),
     );
     fetchLatestPostData(); // Fetch the latest post data when the widget initializes
+    _listenToCommentCount();
+  }
+
+  void _listenToCommentCount() {
+    DatabaseReference commentsRef = FirebaseDatabase.instance
+        .reference()
+        .child('Comments')
+        .child(widget.postModel.key!);
+
+    commentsRef.onValue.listen((event) {
+      if (event.snapshot.value != null) {
+        setState(() {
+          commentCount = (event.snapshot.value as Map).length;
+        });
+      } else {
+        setState(() {
+          commentCount = 0;
+        });
+      }
+    });
   }
 
   final DatabaseReference _databaseRef = FirebaseDatabase.instance.reference();
@@ -465,17 +486,26 @@ class _FeedPostWidgetState extends State<FeedPostWidget>
                           )),
                     )),
             Positioned(
-                top: MediaQuery.of(context).size.height / 1.41,
-                left: widget.postModel.taggedUsers == null ? 15 : 90,
-                child: InkWell(
-                    onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (ctx) =>
-                                  CommentScreen(widget.postModel)));
-                    },
-                    child: Text("View Comments"))),
+              top: MediaQuery.of(context).size.height / 1.41,
+              left: widget.postModel.taggedUsers == null ? 15 : 90,
+              child: InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (ctx) => CommentScreen(widget.postModel),
+                    ),
+                  );
+                },
+                child: Text(
+                  commentCount == 0
+                      ? "Add a comment..."
+                      : commentCount == 1
+                          ? "View Comment"
+                          : "View all $commentCount comments",
+                ),
+              ),
+            ),
             Positioned(
               top: MediaQuery.of(context).size.height / 1.5, // Adjust as needed
               left: 20,

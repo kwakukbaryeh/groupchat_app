@@ -18,7 +18,7 @@ import 'package:groupchat_firebase/pages/shareqr.dart';
 import 'package:groupchat_firebase/services/user_tile_page.dart';
 import 'package:groupchat_firebase/state/auth_state.dart';
 import 'package:groupchat_firebase/state/groupchatState.dart';
-import 'package:groupchat_firebase/state/post_state.dart'; // Make sure to import PostState
+import 'package:groupchat_firebase/state/post_state.dart';
 import 'package:groupchat_firebase/state/search_state.dart';
 import 'package:groupchat_firebase/widgets/custom/rippleButton.dart';
 import 'package:groupchat_firebase/widgets/feedpost.dart';

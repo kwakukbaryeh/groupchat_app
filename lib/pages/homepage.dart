@@ -73,11 +73,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     AuthState auth = Provider.of<AuthState>(context, listen: false);
     return Scaffold(
-      backgroundColor: Color(0xFF121212),
+      backgroundColor: Color(0x000000),
       appBar: AppBar(
         elevation: 0.0,
         title: Text('keepUp'),
-        backgroundColor: Color(0xFF121212),
+        backgroundColor: Color(0x000000),
         leading: GestureDetector(
           onTap: () {
             Navigator.push(
@@ -115,7 +115,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         bottom: TabBar(
           controller: _tabController,
           isScrollable: false,
-          labelColor: Colors.white,
+          labelColor: Colors.black,
           unselectedLabelColor: Colors.black,
           indicatorColor: Colors.transparent,
           indicatorWeight: 1,
@@ -131,7 +131,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
-                        color: Colors.grey[700],
+                        color: Colors.white,
                       ),
                     ),
                   ),
@@ -170,16 +170,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       return Center(
                         child: CircularProgressIndicator(),
                       );
-                    } else if (groupChatState.groupChats == null) {
+                    } else if (groupChatState.groupChats == null ||
+                        groupChatState.groupChats!.isEmpty) {
                       return Center(
-                        child: Transform.translate(
-                          offset: Offset(0, -60),
-                          child: Text(
-                            'Wow it\'s empty here... Add some groups!',
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
-                            textAlign: TextAlign.center,
-                          ),
+                        child: Text(
+                          'Wow it\'s empty here... Add some groups!',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
                         ),
                       );
                     } else {
@@ -409,17 +407,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     SizedBox(height: 8),
                     if (groupChat.remainingTime != null)
                       Text(
-                        'Time remaining: ${formatTimeRemaining(groupChat.remainingTime!)}',
-                        style: TextStyle(color: Colors.black),
+                        '${formatTimeRemaining(groupChat.remainingTime!)}',
+                        style: TextStyle(color: Colors.white),
                       )
                     else
                       Text(
                         'Expired',
-                        style: TextStyle(color: Colors.black),
+                        style: TextStyle(color: Colors.white),
                       ),
                     Text(
                       '${groupChat.participantCount} active',
-                      style: TextStyle(color: Colors.black),
+                      style: TextStyle(color: Colors.white),
                     ),
                   ],
                 ),

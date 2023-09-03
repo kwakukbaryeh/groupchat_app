@@ -49,7 +49,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
           theme: ThemeData(brightness: Brightness.dark),
-          title: 'ReBeal.',
+          title: 'keepUp.',
           debugShowCheckedModeBanner: false,
           home: const SplashPage()),
     );

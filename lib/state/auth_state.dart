@@ -13,6 +13,8 @@ import 'package:groupchat_firebase/helper/shared_preference_helper.dart';
 import 'package:groupchat_firebase/helper/utility.dart';
 import 'package:groupchat_firebase/models/user.dart';
 import 'package:groupchat_firebase/state/appState.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:path/path.dart' as path;
 
 class AuthState extends AppStates {
@@ -103,6 +105,46 @@ class AuthState extends AppStates {
     } catch (error) {
       isBusy = false;
       Utility.customSnackBar(scaffoldKey, error.toString(), context);
+      return null;
+    }
+  }
+
+  Future<UserCredential?> signInWithGoogle() async {
+    try {
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) return null;
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+      final OAuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      return await FirebaseAuth.instance.signInWithCredential(credential);
+    } catch (e) {
+      print(e);
+      return null;
+    }
+  }
+
+  Future<UserCredential?> signInWithApple() async {
+    try {
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
+
+      return await FirebaseAuth.instance.signInWithCredential(
+        OAuthProvider("apple.com").credential(
+          idToken: credential.identityToken,
+          accessToken: credential.authorizationCode,
+        ),
+      );
+    } catch (e) {
+      print(e);
       return null;
     }
   }

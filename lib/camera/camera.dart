@@ -11,11 +11,14 @@ import 'package:groupchat_firebase/models/post.dart';
 import 'package:groupchat_firebase/models/user.dart';
 import 'package:groupchat_firebase/pages/tag_friends.dart';
 import 'package:groupchat_firebase/state/auth_state.dart';
+import 'package:image/image.dart' as img;
+import 'package:groupchat_firebase/state/groupchatState.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:path/path.dart' as Path;
 import 'package:provider/provider.dart';
 import '../main.dart';
 import '../models/groupchat.dart';
+import '../pages/group_screen.dart';
 
 class CameraPage extends StatefulWidget {
   final GroupChat groupChat;
@@ -108,7 +111,20 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
           padding: const EdgeInsets.only(bottom: 50),
           child: GestureDetector(
             onTap: () {
-              Navigator.pop(context);
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation1, animation2) =>
+                      GroupScreen(groupChat: widget.groupChat),
+                  transitionDuration: Duration(seconds: 1),
+                  transitionsBuilder: (context, animation, animation2, child) {
+                    return FadeTransition(
+                      opacity: animation,
+                      child: child,
+                    );
+                  },
+                ),
+              );
             },
             child: const Icon(
               Icons.keyboard_arrow_down_rounded,
@@ -146,107 +162,126 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
     } catch (e) {
       aspectRatio = 1.0;
     }
-    if (isFirstImageTaken) {
-      // Display the first image while the second image is being taken or uploaded
-      return Column(
-        children: [
-          Container(
-            height: MediaQuery.of(context).size.height / 1.63,
-            width: MediaQuery.of(context).size.width / 1,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: AspectRatio(
-                aspectRatio: aspectRatio, // Null check here
-                child: Image.file(
-                  File(firstImagePath),
-                  fit: BoxFit.cover,
-                ),
-              ),
+    return GestureDetector(
+      onVerticalDragEnd: (details) {
+        if (details.primaryVelocity! > 0) {
+          // positive value means downward drag
+          Navigator.push(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (context, animation1, animation2) =>
+                  GroupScreen(groupChat: widget.groupChat),
+              transitionDuration: Duration(seconds: 1),
+              transitionsBuilder: (context, animation, animation2, child) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: child,
+                );
+              },
             ),
-          ),
-        ],
-      );
-    } else if (_controller != null && _controller!.value.isInitialized) {
-      // Null check here
-      return Column(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: Container(
-              color: Colors.black,
-              height: MediaQuery.of(context).size.height / 1.63,
-              width: MediaQuery.of(context).size.width / 1,
-              child: FittedBox(
-                fit: BoxFit.cover,
-                child: SizedBox(
-                  width: _controller!.value.previewSize!.height,
-                  height: _controller!.value.previewSize!.width,
-                  child: CameraPreview(_controller!),
-                ),
-              ),
-            ),
-          ),
-          Container(
-            height: 40,
-          ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              GestureDetector(
-                onTap: _flashEnable,
-                child: Icon(
-                  flashEnabled ? Iconsax.flash_15 : Iconsax.flash_slash5,
-                  color: Colors.white,
-                  size: 35,
-                ),
-              ),
-              Container(
-                width: 25,
-              ),
-              GestureDetector(
-                onTap: _takePicture,
-                child: Container(
-                  height: 80,
-                  width: 80,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.white, width: 6),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-              Container(
-                width: 25,
-              ),
-              GestureDetector(
-                onTap: _switchFrontCamera,
-                child: AnimatedBuilder(
-                  animation: rotationController!,
-                  builder: (context, child) {
-                    return Transform.rotate(
-                      angle: rotationController!.value * 2.0 * pi,
-                      child: child,
-                    );
-                  },
-                  child: Transform(
-                    transform: Matrix4.identity()..scale(-1.0, 1.0, -1.0),
-                    alignment: Alignment.center,
-                    child: const Icon(
-                      Icons.loop_rounded,
-                      color: Colors.white,
-                      size: 37,
+          );
+        }
+      },
+      child: isFirstImageTaken
+          ? Column(
+              children: [
+                Container(
+                  height: MediaQuery.of(context).size.height / 1.63,
+                  width: MediaQuery.of(context).size.width / 1,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: AspectRatio(
+                      aspectRatio: aspectRatio,
+                      child: Image.file(
+                        File(firstImagePath),
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        ],
-      );
-    } else {
-      // Handle the case where the camera is not initialized
-      return Center(child: CircularProgressIndicator());
-    }
+              ],
+            )
+          : _controller != null && _controller!.value.isInitialized
+              ? Column(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        color: Colors.black,
+                        height: MediaQuery.of(context).size.height / 1.63,
+                        width: MediaQuery.of(context).size.width / 1,
+                        child: FittedBox(
+                          fit: BoxFit.cover,
+                          child: SizedBox(
+                            width: _controller!.value.previewSize!.height,
+                            height: _controller!.value.previewSize!.width,
+                            child: CameraPreview(_controller!),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Container(
+                      height: 40,
+                    ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        GestureDetector(
+                          onTap: _flashEnable,
+                          child: Icon(
+                            flashEnabled
+                                ? Iconsax.flash_15
+                                : Iconsax.flash_slash5,
+                            color: Colors.white,
+                            size: 35,
+                          ),
+                        ),
+                        Container(
+                          width: 25,
+                        ),
+                        GestureDetector(
+                          onTap: _takePicture,
+                          child: Container(
+                            height: 80,
+                            width: 80,
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.white, width: 6),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          width: 25,
+                        ),
+                        GestureDetector(
+                          onTap: _switchFrontCamera,
+                          child: AnimatedBuilder(
+                            animation: rotationController!,
+                            builder: (context, child) {
+                              return Transform.rotate(
+                                angle: rotationController!.value * 2.0 * pi,
+                                child: child,
+                              );
+                            },
+                            child: Transform(
+                              transform: Matrix4.identity()
+                                ..scale(-1.0, 1.0, -1.0),
+                              alignment: Alignment.center,
+                              child: const Icon(
+                                Icons.loop_rounded,
+                                color: Colors.white,
+                                size: 37,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                )
+              : Center(child: CircularProgressIndicator()),
+    );
   }
 
   Future _startLiveFeed() async {
@@ -285,29 +320,52 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
     var state = Provider.of<AuthState>(context, listen: false);
 
     // Take the first picture
-    XFile fpath = await _controller!.takePicture();
+    XFile firstPicture = await _controller!.takePicture();
 
-    // Upload the image to Firebase Storage
-    String frontPath = await uploadImageToStorage(File(fpath.path));
+    // If the image is taken with the front camera, flip it
+    if (_cameraIndex == 1) {
+      final image = img.decodeImage(File(firstPicture.path).readAsBytesSync());
+      final flippedImage =
+          img.flip(image!, direction: img.FlipDirection.horizontal);
+      File(firstPicture.path)..writeAsBytesSync(img.encodePng(flippedImage));
+    }
 
-    await Future.delayed(Duration(milliseconds: 1000));
-
+    // Immediately update the UI to show the first image
     setState(() {
-      firstImagePath = fpath.path;
-      isFirstImageTaken =
-          true; // Set the flag to true after the first image is taken
+      firstImagePath = firstPicture.path; // Update class-level variable
+      isFirstImageTaken = true;
     });
+
+    // Upload the first image to Firebase Storage
+    String uploadedFirstImagePath =
+        await uploadImageToStorage(File(firstPicture.path));
 
     // Switch the camera lens
     await _switchFrontCamera();
 
     // Wait for a moment before taking the second picture
-    await Future.delayed(Duration(milliseconds: 1000));
+    await Future.delayed(Duration(milliseconds: 200));
 
-    // Take the second picture (back image)
-    XFile bpath = await _controller!.takePicture();
-    // Upload the back image to Firebase Storage
-    String backPath = await uploadImageToStorage(File(bpath.path));
+    // Take the second picture
+    XFile secondPicture = await _controller!.takePicture();
+
+    // If the image is taken with the front camera, flip it
+    if (_cameraIndex == 1) {
+      final image = img.decodeImage(File(secondPicture.path).readAsBytesSync());
+      final flippedImage =
+          img.flip(image!, direction: img.FlipDirection.horizontal);
+      File(secondPicture.path)..writeAsBytesSync(img.encodePng(flippedImage));
+    }
+
+    // Upload the second image to Firebase Storage
+    String uploadedSecondImagePath =
+        await uploadImageToStorage(File(secondPicture.path));
+
+    // Determine which image is front and which is back based on the camera index
+    String imageFrontPath =
+        _cameraIndex == 0 ? uploadedFirstImagePath : uploadedSecondImagePath;
+    String imageBackPath =
+        _cameraIndex == 0 ? uploadedSecondImagePath : uploadedFirstImagePath;
 
     UserModel user = UserModel(
       displayName: state.profileUserModel!.displayName ?? "",
@@ -321,8 +379,8 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
     // Create and add the post to the database
     PostModel post = PostModel(
       user: user,
-      imageFrontPath: frontPath,
-      imageBackPath: backPath,
+      imageFrontPath: imageFrontPath,
+      imageBackPath: imageBackPath,
       createdAt: DateTime.now().toUtc().toString(),
       key: widget.groupChat.key,
       groupChat: widget.groupChat,

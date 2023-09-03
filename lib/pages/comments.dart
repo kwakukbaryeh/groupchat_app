@@ -7,11 +7,11 @@ import 'package:groupchat_firebase/models/post.dart';
 import 'package:groupchat_firebase/state/auth_state.dart';
 import 'package:provider/provider.dart';
 import 'dart:convert';
+import 'dart:ui' as ui;
 
 class CommentWidget extends StatelessWidget {
   final Map comment;
   final int level;
-
   final Function(String) onReplyTap;
 
   CommentWidget(
@@ -203,59 +203,68 @@ class _CommentScreenState extends State<CommentScreen> {
             Stack(
               alignment: Alignment.center,
               children: [
-                Opacity(
-                  opacity: 0.2,
-                  child: Container(
-                      color: Colors.black,
-                      height: 200,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          GestureDetector(
-                              onTap: switcherFunc,
-                              child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(15),
-                                  child: SizedBox(
-                                      height: 200,
-                                      width: MediaQuery.of(context).size.width,
-                                      child: Stack(
-                                        children: [
-                                          CachedNetworkImage(
-                                              fit: BoxFit.cover,
-                                              width: double.infinity,
-                                              imageUrl: switcher
-                                                  ? widget
-                                                      .postModel.imageFrontPath
-                                                      .toString()
-                                                  : widget
-                                                      .postModel.imageBackPath
-                                                      .toString()),
-                                          Padding(
-                                              padding: const EdgeInsets.all(15),
-                                              child: ClipRRect(
-                                                  borderRadius:
-                                                      BorderRadius.circular(10),
-                                                  child: SizedBox(
-                                                      height: 100,
-                                                      width: 100,
-                                                      child: CachedNetworkImage(
-                                                          fit: BoxFit.cover,
-                                                          imageUrl: !switcher
-                                                              ? widget.postModel
-                                                                  .imageFrontPath
-                                                                  .toString()
-                                                              : widget.postModel
-                                                                  .imageBackPath
-                                                                  .toString())))),
-                                        ],
-                                      )))),
-                        ],
-                      )),
+                Container(
+                  color: Colors.black,
+                  height: 300,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      GestureDetector(
+                        onTap: switcherFunc,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(15),
+                          child: SizedBox(
+                              height: 300,
+                              width: MediaQuery.of(context).size.width,
+                              child: Stack(
+                                children: [
+                                  ImageFiltered(
+                                    imageFilter: ui.ImageFilter.blur(
+                                        sigmaX: 15.0, sigmaY: 15.0),
+                                    child: CachedNetworkImage(
+                                      fit: BoxFit.cover,
+                                      width: double.infinity,
+                                      imageUrl: switcher
+                                          ? widget.postModel.imageFrontPath
+                                              .toString()
+                                          : widget.postModel.imageBackPath
+                                              .toString(),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(15),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: SizedBox(
+                                        height: 120,
+                                        width: 100,
+                                        child: ImageFiltered(
+                                          imageFilter: ui.ImageFilter.blur(
+                                              sigmaX: 10.0, sigmaY: 10.0),
+                                          child: CachedNetworkImage(
+                                            fit: BoxFit.cover,
+                                            imageUrl: !switcher
+                                                ? widget
+                                                    .postModel.imageFrontPath
+                                                    .toString()
+                                                : widget.postModel.imageBackPath
+                                                    .toString(),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              )),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 Container(
                     padding: const EdgeInsets.all(15),
-                    height: 200,
+                    height: 250,
                     width: 200,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
@@ -266,7 +275,7 @@ class _CommentScreenState extends State<CommentScreen> {
                             child: ClipRRect(
                                 borderRadius: BorderRadius.circular(15),
                                 child: SizedBox(
-                                    height: 170,
+                                    height: 220,
                                     width: MediaQuery.of(context).size.width,
                                     child: Stack(
                                       children: [
@@ -285,7 +294,7 @@ class _CommentScreenState extends State<CommentScreen> {
                                                 borderRadius:
                                                     BorderRadius.circular(10),
                                                 child: SizedBox(
-                                                    height: 50,
+                                                    height: 75,
                                                     width: 50,
                                                     child: CachedNetworkImage(
                                                         fit: BoxFit.cover,
@@ -319,6 +328,13 @@ class _CommentScreenState extends State<CommentScreen> {
                       }
                     }
 
+                    // Sort items based on 'parentCommentID'
+                    items.sort((a, b) {
+                      String? parentA = a['parentCommentID'];
+                      String? parentB = b['parentCommentID'];
+                      return (parentA ?? "").compareTo(parentB ?? "");
+                    });
+
                     return snapshot.hasData
                         ? (items.isNotEmpty
                             ? Container(
@@ -330,15 +346,22 @@ class _CommentScreenState extends State<CommentScreen> {
                                     physics: const BouncingScrollPhysics(),
                                     itemCount: items.length,
                                     itemBuilder: (context, index) {
+                                      // Determine the level based on whether it's a reply or not
+                                      int level = items[index]
+                                                  ['parentCommentID'] !=
+                                              null
+                                          ? 1
+                                          : 0;
                                       return CommentWidget(
                                           comment: items[index],
+                                          level: level,
                                           onReplyTap: (String commentID) {
                                             print(
                                                 "Replying to comment with ID: $commentID");
                                             setState(() {
                                               replyToCommentID = commentID;
-                                              replyToUsername = items[index][
-                                                  'username']; // Assuming 'username' is available in items[index]
+                                              replyToUsername =
+                                                  items[index]['username'];
                                             });
                                           });
                                     }))
@@ -352,8 +375,7 @@ class _CommentScreenState extends State<CommentScreen> {
                             width: MediaQuery.of(context).size.width,
                             child: const Center(
                                 child: CircularProgressIndicator(
-                              color: Colors.black,
-                            )),
+                                    color: Colors.black)),
                           );
                   },
                 ),
@@ -371,16 +393,10 @@ class _CommentScreenState extends State<CommentScreen> {
     );
   }
 
-  void addReplyToComment(String postID, String commentID, String reply) {
-    print(
-        "Adding reply to comment with ID: $commentID"); // Debugging print statement
-    DatabaseReference ref = kDatabase
-        .child("Comments")
-        .child(postID)
-        .child(commentID)
-        .child("replies")
-        .push();
+  void addReplyToComment(String postID, String parentCommentID, String reply) {
+    DatabaseReference ref = kDatabase.child("Comments").child(postID).push();
     ref.set({
+      "parentCommentID": parentCommentID,
       "username": auth.userModel!.userName,
       "comment": reply,
       "date": DateTime.now().toUtc().toString(),
