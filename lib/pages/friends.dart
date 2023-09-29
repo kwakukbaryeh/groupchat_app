@@ -111,9 +111,10 @@ class _FriendsState extends State<Friends> {
         _searchController.text.isEmpty ? _friendsList : _searchResults;
 
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
         title: const Text('Friends'),
-        backgroundColor: Colors.grey[900],
+        backgroundColor: Colors.black,
       ),
       body: Column(
         children: [

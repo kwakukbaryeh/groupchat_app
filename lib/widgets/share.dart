@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:groupchat_firebase/state/auth_state.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:flutter_sms/flutter_sms.dart';
 
 class ShareButton extends StatefulWidget {
   const ShareButton({super.key});
@@ -12,12 +13,23 @@ class ShareButton extends StatefulWidget {
   State<ShareButton> createState() => _ShareButtonState();
 }
 
-void shareText(String text) {
+void shareText(String text, [String? phoneNumber]) {
+  final shareContent =
+      phoneNumber != null ? '$text\nSend to: $phoneNumber' : text;
+
   Share.share(
-    text,
-    subject: "Follow me on ReBeal.",
+    shareContent,
+    subject: "Add me on keepUp.",
     sharePositionOrigin: const Rect.fromLTWH(0, 0, 10, 10),
   );
+}
+
+void _sendSMS(String message, List<String> recipents) async {
+  String _result = await sendSMS(message: message, recipients: recipents)
+      .catchError((onError) {
+    print(onError);
+  });
+  print(_result);
 }
 
 class _ShareButtonState extends State<ShareButton> {
@@ -31,7 +43,7 @@ class _ShareButtonState extends State<ShareButton> {
             child: GestureDetector(
                 onTap: () {
                   shareText(
-                      "rebe.al/${state.profileUserModel!.userName!.replaceAll("@", "").toLowerCase()}");
+                      'keepUp/${state.profileUserModel!.userName!.replaceAll("@", "").toLowerCase()}');
                 },
                 child: ClipRRect(
                     borderRadius: BorderRadius.circular(10),
@@ -64,8 +76,7 @@ class _ShareButtonState extends State<ShareButton> {
                                 TextSpan(
                                   children: [
                                     const TextSpan(
-                                      text:
-                                          'Invite you\'re friends on ReBeal\n',
+                                      text: 'Invite your friends to keepUp\n',
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontSize: 15,
@@ -74,7 +85,7 @@ class _ShareButtonState extends State<ShareButton> {
                                     ),
                                     TextSpan(
                                       text:
-                                          'rebe.al/${state.profileUserModel!.userName!.replaceAll("@", "").toLowerCase()}',
+                                          'keepUp/${state.profileUserModel!.userName!.replaceAll("@", "").toLowerCase()}',
                                       style: TextStyle(
                                         color: Colors.grey[500],
                                         fontSize: 14,

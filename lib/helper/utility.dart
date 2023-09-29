@@ -40,8 +40,7 @@ class Utility {
       customSnackBar(scaffoldKey, 'Please enter password', context);
       return false;
     } else if (password.length < 8) {
-      customSnackBar(
-          scaffoldKey, 'Password must me 8 character long', context);
+      customSnackBar(scaffoldKey, 'Password must me 8 character long', context);
       return false;
     }
 
@@ -91,5 +90,11 @@ class Utility {
 
     var status = regExp.hasMatch(email);
     return status;
+  }
+
+  static bool isSameDay(DateTime date1, DateTime date2) {
+    return date1.year == date2.year &&
+        date1.month == date2.month &&
+        date1.day == date2.day;
   }
 }

@@ -149,6 +149,38 @@ class GroupChatState extends ChangeNotifier {
     }
   }
 
+  Future<List<Map<String, dynamic>>> fetchPostsByDateAndGroup(
+      DateTime date, String groupId) async {
+    List<Map<String, dynamic>> posts = [];
+    await kDatabase.child('posts').once().then((DatabaseEvent event) {
+      DataSnapshot snapshot = event.snapshot;
+      if (snapshot.value != null) {
+        var map = snapshot.value as Map<dynamic, dynamic>?;
+        if (map != null) {
+          map.forEach((outerKey, outerValue) {
+            var outerMap = outerValue as Map<dynamic, dynamic>?;
+            outerMap?.forEach((key, value) {
+              var dynamicMap = value as Map<dynamic, dynamic>?;
+              if (dynamicMap != null) {
+                var groupChatMap =
+                    dynamicMap['groupChat'] as Map<dynamic, dynamic>?;
+                if (groupChatMap != null && groupChatMap['key'] == groupId) {
+                  DateTime postDate = DateTime.parse(dynamicMap['createdAt']);
+                  if (Utility.isSameDay(postDate, date)) {
+                    Map<String, dynamic> stringMap =
+                        Map<String, dynamic>.from(dynamicMap);
+                    posts.add(stringMap);
+                  }
+                }
+              }
+            });
+          });
+        }
+      }
+    });
+    return posts;
+  }
+
   // Implement methods to fetch, create, update, and delete group chats
   // For example: _fetchUserGroupChats(), _createGroupChat(), etc.
 

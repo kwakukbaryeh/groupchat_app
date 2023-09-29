@@ -1,33 +1,44 @@
 // ignore_for_file: must_be_immutable
 
-// import 'package:contacts_service/contacts_service.dart';
+import 'package:contacts_service/contacts_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_sms/flutter_sms.dart';
+import 'package:groupchat_firebase/widgets/share.dart';
 import '../animation/animation.dart';
 import 'notification.dart';
 
 class ContactPage extends StatefulWidget {
   final VoidCallback? loginCallback;
-  const ContactPage({Key? key, this.loginCallback}) : super(key: key);
+  ContactPage({Key? key, this.loginCallback}) : super(key: key);
 
   @override
   _ContactPageState createState() => _ContactPageState();
 }
 
+class ContactItem {
+  final String name;
+  final String phoneNumber;
+
+  ContactItem({required this.name, required this.phoneNumber});
+}
+
 class _ContactPageState extends State<ContactPage> {
-  List<String> contactEmails = [];
+  List<ContactItem> contactItems = [];
+
   @override
   void initState() {
     super.initState();
-    // ContactsService.getContacts().then((contacts) {
-    //   for (var contact in contacts) {
-    //     for (var email in contact.emails!) {
-    //       contactEmails.add(email.value!);
-    //     }
-    //   }
-    //   setState(() {});
-    // });
+    ContactsService.getContacts().then((contacts) {
+      for (var contact in contacts) {
+        for (var phone in contact.phones!) {
+          contactItems.add(ContactItem(
+              name: contact.displayName ?? '', phoneNumber: phone.value!));
+        }
+      }
+      setState(() {});
+    });
   }
 
   @override
@@ -44,21 +55,21 @@ class _ContactPageState extends State<ContactPage> {
             appBar: AppBar(
               actions: [
                 Padding(
-                    padding: const EdgeInsets.only(top: 15, right: 10),
+                    padding: EdgeInsets.only(top: 15, right: 10),
                     child: GestureDetector(
                         onTap: () {
                           HapticFeedback.heavyImpact();
                           Navigator.push(
                             context,
                             AwesomePageRoute(
-                              transitionDuration: const Duration(milliseconds: 600),
+                              transitionDuration: Duration(milliseconds: 600),
                               exitPage: widget,
-                              enterPage: const NotificationPage(),
+                              enterPage: NotificationPage(),
                               transition: ZoomOutSlideTransition(),
                             ),
                           );
                         },
-                        child: const Text("Passer",
+                        child: Text("Skip",
                             style: TextStyle(
                               fontSize: 16,
                               color: Color.fromARGB(255, 61, 61, 61),
@@ -67,7 +78,7 @@ class _ContactPageState extends State<ContactPage> {
               elevation: 0,
               title: Image.asset(
                 "assets/rebeals.png",
-                height: 100,
+                height: 50,
               ),
               backgroundColor: Colors.black,
             ),
@@ -79,7 +90,7 @@ class _ContactPageState extends State<ContactPage> {
                 Container(
                   height: 130,
                 ),
-                const Text(
+                Text(
                   "Find you're friends\n",
                   style: TextStyle(
                       color: Colors.white,
@@ -87,8 +98,8 @@ class _ContactPageState extends State<ContactPage> {
                       fontWeight: FontWeight.w700),
                   textAlign: TextAlign.center,
                 ),
-                const Text(
-                  "Find you're friends that already\nuse Rebeal.",
+                Text(
+                  "Add your friends to keepUp.",
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: 16,
@@ -96,44 +107,68 @@ class _ContactPageState extends State<ContactPage> {
                   textAlign: TextAlign.center,
                 ),
                 Expanded(
-                    child: ListView.builder(
-                  itemCount: contactEmails.length,
-                  itemBuilder: (context, index) {
-                    return ListTile(
-                        title: Text(contactEmails[index]),
-                        leading: const Icon(CupertinoIcons.profile_circled),
-                        trailing: SizedBox(
-                            width: 120,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Container(
-                                    height: 30,
-                                    width: 90,
-                                    alignment: Alignment.center,
-                                    decoration: BoxDecoration(
-                                        color: Colors.grey[800],
-                                        borderRadius:
-                                            BorderRadius.circular(90)),
-                                    child: const Text(
-                                      "AJOUTER",
-                                      style: TextStyle(
-                                          fontSize: 13,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w800),
-                                    )),
-                                Container(
-                                  width: 10,
+                  child: ListView.builder(
+                    itemCount: contactItems.length,
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        title: Text(contactItems[index].name),
+                        subtitle: Text(contactItems[index].phoneNumber),
+                        leading: Icon(CupertinoIcons.profile_circled),
+                        trailing: Container(
+                          width: 120,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  // Share functionality
+                                  sendSMS(
+                                      message: 'Join me on keepUp!',
+                                      recipients: [
+                                        contactItems[index].phoneNumber
+                                      ]);
+                                },
+                                child: Container(
+                                  height: 30,
+                                  width: 90,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[800],
+                                    borderRadius: BorderRadius.circular(90),
+                                  ),
+                                  child: Text(
+                                    "ADD",
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
                                 ),
-                                Icon(
+                              ),
+                              Container(
+                                width: 10,
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  // Delete functionality
+                                  setState(() {
+                                    contactItems.removeAt(index);
+                                  });
+                                },
+                                child: Icon(
                                   Icons.close,
                                   size: 18,
                                   color: Colors.grey[800],
-                                )
-                              ],
-                            )));
-                  },
-                ))
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                )
               ],
             )));
   }

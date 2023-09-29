@@ -12,6 +12,7 @@ import 'package:groupchat_firebase/helper/enum.dart';
 import 'package:groupchat_firebase/helper/shared_preference_helper.dart';
 import 'package:groupchat_firebase/helper/utility.dart';
 import 'package:groupchat_firebase/models/user.dart';
+import 'package:groupchat_firebase/pages/auth/name.dart';
 import 'package:groupchat_firebase/state/appState.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
@@ -23,24 +24,59 @@ class AuthState extends AppStates {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final FirebaseStorage _firebaseStorage = FirebaseStorage.instance;
   db.Query? _profileQuery;
-
   late String userId;
   User? user;
   UserModel? _userModel;
-
   UserModel? get userModel => _userModel;
   UserModel? get profileUserModel => _userModel;
+  StreamSubscription<User?>? authStateSubscription;
 
-  void logoutCallback() async {
+  AuthState() {
+    authStateListener();
+  }
+
+  void authStateListener() {
+    authStateSubscription =
+        _firebaseAuth.authStateChanges().listen((User? user) {
+      if (user == null) {
+        // User is signed out
+        authStatus = AuthStatus.NOT_LOGGED_IN;
+        userId = '';
+        _userModel = null;
+        this.user = null;
+        if (_profileQuery != null) {
+          _profileQuery!.onValue.drain();
+        }
+        _profileQuery = null;
+        notifyListeners();
+      } else {
+        // User is signed in
+        this.user = user;
+        userId = user.uid;
+        authStatus = AuthStatus.LOGGED_IN;
+        getProfileUser();
+        notifyListeners();
+      }
+    });
+  }
+
+  void logoutCallback(BuildContext context) async {
     authStatus = AuthStatus.NOT_LOGGED_IN;
     userId = '';
     _userModel = null;
     user = null;
-    _profileQuery!.onValue.drain();
+    if (_profileQuery != null) {
+      _profileQuery!.onValue.drain();
+    }
     _profileQuery = null;
-    _firebaseAuth.signOut();
+    await _firebaseAuth.signOut();
     notifyListeners();
     await getIt<SharedPreferenceHelper>().clearPreferenceValues();
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => NamePage()),
+    );
   }
 
   void databaseInit() {
@@ -53,63 +89,11 @@ class AuthState extends AppStates {
     } catch (error) {}
   }
 
-  Future<String?> signIn(String email, String password, BuildContext context,
-      {required GlobalKey<ScaffoldState> scaffoldKey}) async {
-    try {
-      isBusy = true;
-      var result = await _firebaseAuth.signInWithEmailAndPassword(
-          email: email, password: password);
-      user = result.user;
-      userId = user!.uid;
-      return user!.uid;
-    } on FirebaseException catch (error) {
-      if (error.code == 'Email Adress Not found') {
-        Utility.customSnackBar(scaffoldKey, 'User not found', context);
-      } else {
-        Utility.customSnackBar(
-            scaffoldKey, error.message ?? 'Something went wrong', context);
-      }
-      return null;
-    } catch (error) {
-      Utility.customSnackBar(scaffoldKey, error.toString(), context);
-
-      return null;
-    } finally {
-      isBusy = false;
-    }
-  }
-
-  Future<String?> signUp(UserModel userModel, BuildContext context,
-      {required GlobalKey<ScaffoldState> scaffoldKey,
-      required String password}) async {
-    try {
-      isBusy = true;
-      var result = await _firebaseAuth.createUserWithEmailAndPassword(
-        email: userModel.email!,
-        password: password,
-      );
-      user = result.user;
-      authStatus = AuthStatus.LOGGED_IN;
-      kAnalytics.logSignUp(signUpMethod: 'register');
-      result.user!.updateDisplayName(
-        userModel.displayName,
-      );
-      result.user!.updatePhotoURL(userModel.profilePic);
-
-      _userModel = userModel; //contains email and displayname here
-      _userModel!.key = user!.uid;
-      _userModel!.userId = user!.uid;
-      _userModel!.fcmToken = await FirebaseMessaging.instance.getToken();
-      createUser(_userModel!, newUser: true);
-      return user!.uid;
-    } catch (error) {
-      isBusy = false;
-      Utility.customSnackBar(scaffoldKey, error.toString(), context);
-      return null;
-    }
-  }
-
-  Future<UserCredential?> signInWithGoogle() async {
+  Future<UserCredential?> signInWithGoogle(
+      {required String displayName,
+      required String birthdate,
+      required String username}) async {
+    print("signInWithGoogle called"); // Debugging line
     try {
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
       if (googleUser == null) return null;
@@ -121,14 +105,39 @@ class AuthState extends AppStates {
         idToken: googleAuth.idToken,
       );
 
-      return await FirebaseAuth.instance.signInWithCredential(credential);
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithCredential(credential);
+
+      if (userCredential.additionalUserInfo!.isNewUser) {
+        String fcmToken = await FirebaseMessaging.instance.getToken() ?? "";
+        print("Username before creating user: $username"); // Debugging line
+        createUser(
+          UserModel(
+            userId: userCredential.user!.uid,
+            key: userCredential.user!.uid,
+            fcmToken: fcmToken,
+            displayName: displayName,
+            birthdate: birthdate,
+            email: userCredential.user!.email,
+            profilePic: userCredential.user!.photoURL,
+            userName: username, // Use the username parameter here
+          ),
+          newUser: true,
+        );
+      }
+
+      return userCredential;
     } catch (e) {
       print(e);
       return null;
     }
   }
 
-  Future<UserCredential?> signInWithApple() async {
+  Future<UserCredential?> signInWithApple(
+      {required String displayName,
+      required String birthdate,
+      required String username}) async {
+    print("signInWithApple called"); // Debugging line
     try {
       final credential = await SignInWithApple.getAppleIDCredential(
         scopes: [
@@ -137,39 +146,88 @@ class AuthState extends AppStates {
         ],
       );
 
-      return await FirebaseAuth.instance.signInWithCredential(
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithCredential(
         OAuthProvider("apple.com").credential(
           idToken: credential.identityToken,
           accessToken: credential.authorizationCode,
         ),
       );
+
+      if (userCredential.additionalUserInfo!.isNewUser) {
+        String fcmToken = await FirebaseMessaging.instance.getToken() ?? "";
+        print("Username before creating user: $username"); // Debugging line
+        createUser(
+          UserModel(
+            userId: userCredential.user!.uid,
+            key: userCredential.user!.uid,
+            fcmToken: fcmToken,
+            displayName: displayName,
+            birthdate: birthdate,
+            email: userCredential.user!.email,
+            profilePic: userCredential.user!.photoURL,
+            userName: username, // Use the username parameter here
+          ),
+          newUser: true,
+        );
+      }
+
+      return userCredential;
     } catch (e) {
       print(e);
       return null;
     }
   }
 
-  void createUser(UserModel user, {bool newUser = false}) {
+  void createUser(UserModel? user, {bool newUser = false}) {
+    print("Creating user with username: ${user?.userName}");
+    if (user == null) {
+      print("UserModel is null. Cannot create user.");
+      return;
+    }
+
     try {
-      if (newUser) {
-        user.userName =
-            Utility.getUserName(id: user.userId!, name: user.displayName!);
-        kAnalytics.logEvent(name: 'create_newUser');
+      if (user.userId == null) {
+        print("UserId is null. Cannot write to database.");
+        return;
       }
+
+      print('Creating user: ${user.toJson()}'); // Debugging line
+
       kDatabase
           .child('profile')
           .child(user.userId!)
           .set(user.toJson())
           .then((_) {
-        print('User created in database');
+        print('User created in database'); // Debugging line
       }).catchError((error) {
-        print('Error writing to database: $error');
+        print('Error writing to database: $error'); // Debugging line
       });
+
       _userModel = user;
     } catch (error) {
-      print('Error creating user: $error');
+      print('Error creating user: $error'); // Debugging line
     } finally {
       isBusy = false;
+    }
+  }
+
+  void updateUsername(String newUsername) async {
+    print("Updating username to: $newUsername");
+    try {
+      if (user?.uid != null && kDatabase != null) {
+        await kDatabase.child('profile').child(user!.uid).update({
+          'userName': newUsername,
+        });
+        if (_userModel != null) {
+          _userModel!.userName = newUsername;
+        }
+        notifyListeners();
+      } else {
+        print("User or Database is null");
+      }
+    } catch (error) {
+      print('Error updating username: $error');
     }
   }
 
@@ -217,6 +275,33 @@ class AuthState extends AppStates {
         }
       }
     } catch (error) {}
+  }
+
+  void checkUserExistence(BuildContext context) {
+    _firebaseAuth.currentUser?.reload().then((_) {
+      User? refreshedUser = _firebaseAuth.currentUser;
+
+      if (refreshedUser == null) {
+        // User has been deleted, sign them out
+        logoutCallback(context);
+      }
+    }).catchError((error) {
+      // Handle error, for example, by logging out the user
+      logoutCallback(context);
+    });
+  }
+
+  Future<void> updateBirthdate(DateTime birthdate) async {
+    try {
+      await kDatabase.child('profile').child(user!.uid).update({
+        'birthdate': birthdate.toIso8601String(),
+      });
+      _userModel!.birthdate = birthdate.toIso8601String();
+      ;
+      notifyListeners();
+    } catch (error) {
+      print('Error updating birthdate: $error');
+    }
   }
 
   Future<String> _uploadFileToStorage(File file, path) async {
@@ -296,5 +381,9 @@ class AuthState extends AppStates {
       getIt<SharedPreferenceHelper>().saveUserProfile(_userModel!);
       notifyListeners();
     }
+  }
+
+  void dispose() {
+    authStateSubscription?.cancel();
   }
 }

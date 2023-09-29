@@ -69,9 +69,10 @@ class _TagFriendsState extends State<TagFriends> {
   Widget build(BuildContext context) {
     var state = Provider.of<AuthState>(context);
     return Scaffold(
+      backgroundColor: Colors.black, // Add this line
       appBar: AppBar(
         title: const Text("Share moment"),
-        backgroundColor: Colors.black, // Add this line
+        backgroundColor: Colors.black,
       ),
       body: SingleChildScrollView(
         child: Stack(

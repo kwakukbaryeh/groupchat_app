@@ -1,19 +1,95 @@
 import 'package:camera/camera.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:groupchat_firebase/common/locator.dart';
 import 'package:groupchat_firebase/common/splash.dart';
+import 'package:groupchat_firebase/pages/homepage.dart';
 import 'package:groupchat_firebase/state/appState.dart';
 import 'package:groupchat_firebase/state/auth_state.dart';
 import 'package:groupchat_firebase/state/groupchatState.dart';
 import 'package:groupchat_firebase/state/post_state.dart';
 import 'package:groupchat_firebase/state/search_state.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 List<CameraDescription> cameras = [];
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+const InitializationSettings initializationSettings = InitializationSettings(
+  android: AndroidInitializationSettings(
+      '@mipmap/ic_launcher'), // <- Default icon of your app
+  iOS: DarwinInitializationSettings(),
+);
+
+Future<void> requestContactPermissions() async {
+  Map<Permission, PermissionStatus> statuses = await [
+    Permission.contacts,
+  ].request();
+  print(statuses[Permission.contacts]);
+}
+
+void setupFirebaseMessaging() {
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+
+  // Foreground
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    print(
+        'Received a message while in the foreground: ${message.notification?.body}');
+    print(message.notification?.title);
+    print(message.notification?.body);
+
+    // Show a local notification
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      'your_channel_id',
+      'your_channel_name',
+      importance: Importance.max,
+      priority: Priority.high,
+    );
+    const DarwinNotificationDetails iOSPlatformChannelSpecifics =
+        DarwinNotificationDetails(
+      presentAlert:
+          true, // Required to display notification when app is in the foreground
+      presentBadge: true,
+      presentSound: true,
+    );
+    const NotificationDetails platformChannelSpecifics = NotificationDetails(
+      android: androidPlatformChannelSpecifics,
+      iOS: iOSPlatformChannelSpecifics,
+    );
+    flutterLocalNotificationsPlugin.show(
+      0, // Notification ID
+      message.notification?.title,
+      message.notification?.body,
+      platformChannelSpecifics,
+    );
+  });
+
+  // App is in the background and the user taps on the notification
+  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+    print(
+        'Tapped on a notification to open the app: ${message.notification?.body}');
+    // Navigate the user to the homepage
+    navigatorKey.currentState!
+        .pushReplacement(MaterialPageRoute(builder: (context) => HomePage()));
+  });
+
+  // App is terminated and the user taps on the notification
+  _firebaseMessaging.getInitialMessage().then((RemoteMessage? message) {
+    if (message != null) {
+      print(
+          'App was terminated and then opened by tapping on a notification: ${message.notification?.body}');
+      // Navigate the user to the homepage
+      navigatorKey.currentState!
+          .pushReplacement(MaterialPageRoute(builder: (context) => HomePage()));
+    }
+  });
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,15 +98,15 @@ void main() async {
   await Firebase.initializeApp();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-  if (!kIsWeb) {
-    await setupFlutterNotifications();
-  }
+  // Request contact permissions
+  await requestContactPermissions();
 
   setupDependencies();
   final sharedPreferences = await SharedPreferences.getInstance();
-  runApp(MyApp(
-    sharedPreferences: sharedPreferences,
-  ));
+
+  setupFirebaseMessaging(); // Add this line
+
+  runApp(MyApp(sharedPreferences: sharedPreferences));
 }
 
 class MyApp extends StatelessWidget {
@@ -48,64 +124,18 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<GroupChatState>(create: (_) => GroupChatState()),
       ],
       child: MaterialApp(
-          theme: ThemeData(brightness: Brightness.dark),
-          title: 'keepUp.',
-          debugShowCheckedModeBanner: false,
-          home: const SplashPage()),
-    );
-  }
-}
-
-/*class AppPage extends StatelessWidget {
-  final String title;
-  final bool hasHamburgerMenu;
-  final bool hasDirectMessageIcon;
-  final Widget page;
-
-  const AppPage(
-      {Key? key,
-      required this.title,
-      this.hasHamburgerMenu = false,
-      this.hasDirectMessageIcon = false,
-      required this.page})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        leading: hasDirectMessageIcon ? Icon(Icons.message) : null,
-        actions: hasHamburgerMenu ? [Icon(Icons.menu)] : null,
+        navigatorKey: navigatorKey,
+        theme: ThemeData(brightness: Brightness.dark),
+        title: 'keepUp.',
+        debugShowCheckedModeBanner: false,
+        home: const SplashPage(),
       ),
-      body: page,
     );
   }
-}*/
-
-bool isFlutterLocalNotificationsInitialized = false;
-
-Future<void> setupFlutterNotifications() async {
-  if (isFlutterLocalNotificationsInitialized) {
-    return;
-  }
-  await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
-    alert: true,
-    badge: true,
-    sound: true,
-  );
-  isFlutterLocalNotificationsInitialized = true;
 }
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
-  await setupFlutterNotifications();
+  print("Handling a background message: ${message.messageId}");
 }

@@ -451,9 +451,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       // "Log out" button
                       GestureDetector(
                         onTap: () {
-                          state.logoutCallback();
-                          Navigator.pop(context);
-                          Navigator.pop(context);
+                          state.logoutCallback(context);
                         },
                         child: ListTile(
                           leading: const Icon(CupertinoIcons.xmark_circle,
@@ -469,6 +467,7 @@ class _SettingsPageState extends State<SettingsPage> {
                               size: 14, color: Colors.red),
                         ),
                       ),
+
                       Divider(color: Colors.black),
                       // "Delete Account" button
                       GestureDetector(

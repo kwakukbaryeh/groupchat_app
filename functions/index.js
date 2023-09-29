@@ -5,10 +5,6 @@ const logger = require("firebase-functions/logger");
 
 admin.initializeApp();
 
-exports.helloWorld = onRequest((request, response) => {
-  logger.info("Hello logs!", {structuredData: true});
-  response.send("Hello from Firebase!");
-});
 
 // Trigger when a new post is created
 exports.onNewPost = database.ref("posts/{groupChatId}/{postId}")
@@ -70,3 +66,34 @@ exports.scheduledFunction = pubsub.schedule("every 1 minutes")
         logger.error("Error in scheduledFunction: ", error);
       }
     });
+
+
+exports.sendNotificationToUser = onRequest(async (request, response) => {
+  try {
+    const userId = request.body.userId; // Get the user ID from the request body
+    const userRef = admin.database().ref(`profile/${userId}`);
+    const userSnapshot = await userRef.once("value");
+    const userData = userSnapshot.val();
+    const bodymessage = `Hello, ${userData.displayName}! Tap to keepUp.`;
+
+    if (userData && userData.fcmToken) {
+      const message = {
+        token: userData.fcmToken,
+        notification: {
+          title: "keepUp",
+          body: bodymessage
+          ,
+        },
+      };
+
+      // Send the FCM notification
+      await admin.messaging().send(message);
+      response.status(200).send("Notification sent successfully!");
+    } else {
+      response.status(400).send("User does not have an FCM token.");
+    }
+  } catch (error) {
+    logger.error("Error in sendNotificationToUser: ", error);
+    response.status(500).send("Error sending notification.");
+  }
+});

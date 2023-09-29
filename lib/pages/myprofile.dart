@@ -225,7 +225,7 @@ class _ProfilePageState extends State<MyProfilePage> {
                                             context,
                                             MaterialPageRoute(
                                                 builder: (context) =>
-                                                    const MemoriesPage()));
+                                                    MemoriesPage()));
                                       },
                                       child: Center(
                                           child: Container(

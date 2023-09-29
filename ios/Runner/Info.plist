@@ -43,6 +43,8 @@
 	<string>keepUp will tell you who in your contacts is already on keepUp. Your contacts will not be saved or shared with anyone.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app needs photos access to get QR code from the photo library</string>
+	<key>NSUserNotificationUsageDescription</key>
+		<string>We'd like to send you notifications to keep you updated.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>

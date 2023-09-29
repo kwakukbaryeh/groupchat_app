@@ -36,8 +36,10 @@ class _DirectMessagesState extends State<DirectMessages> {
     final w = MediaQuery.of(context).size.width / 100;
     final h = MediaQuery.of(context).size.height / 100;
     return Scaffold(
+        backgroundColor: Colors.black,
         appBar: AppBar(
           title: const Text("Direct Message"),
+          backgroundColor: Colors.black,
           actions: [
             InkWell(
                 onTap: () {

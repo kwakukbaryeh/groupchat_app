@@ -12,6 +12,7 @@ class UserModel extends Equatable {
   String? profilePic;
   String? createAt;
   String? fcmToken;
+  String? birthdate;
   List<String>? followersList;
   List<String>? followingList;
 
@@ -28,6 +29,7 @@ class UserModel extends Equatable {
     this.followingList,
     this.followersList,
     this.fcmToken,
+    this.birthdate,
   });
 
   UserModel.fromJson(Map<dynamic, dynamic>? map) {
@@ -45,6 +47,7 @@ class UserModel extends Equatable {
     key = map['key'];
     createAt = map['createAt'];
     fcmToken = map['fcmToken'];
+    birthdate = map['birthdate'];
     if (map['followingList'] != null) {
       followingList = <String>[];
       map['followingList'].forEach((value) {
@@ -65,6 +68,7 @@ class UserModel extends Equatable {
       'createAt': createAt,
       'profilePic': profilePic,
       'fcmToken': fcmToken,
+      'birthdate': birthdate,
       'followerList': followersList,
       'followingList': followingList,
     };
@@ -81,6 +85,7 @@ class UserModel extends Equatable {
     String? localisation,
     String? key,
     String? fcmToken,
+    String? birthdate,
     List<String>? followingList,
     List<String>? followersList,
   }) {
@@ -95,6 +100,7 @@ class UserModel extends Equatable {
       localisation: localisation ?? this.localisation,
       key: key ?? this.key,
       fcmToken: fcmToken ?? this.fcmToken,
+      birthdate: birthdate ?? this.birthdate,
       followersList: followersList ?? this.followersList,
       followingList: followingList ?? this.followingList,
     );
@@ -111,6 +117,7 @@ class UserModel extends Equatable {
         createAt,
         displayName,
         fcmToken,
+        birthdate,
         profilePic,
         followersList,
         followingList,

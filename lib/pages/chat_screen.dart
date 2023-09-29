@@ -42,6 +42,7 @@ class _ChatScreenState extends State<ChatScreen> {
     final h = MediaQuery.of(context).size.height / 100;
 
     return Scaffold(
+      backgroundColor: Colors.black,
       body: Stack(
         alignment: Alignment.topCenter,
         children: [

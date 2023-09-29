@@ -1,18 +1,32 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:groupchat_firebase/common/splash.dart';
 import 'package:groupchat_firebase/state/auth_state.dart';
 import 'package:groupchat_firebase/widgets/custom/rippleButton.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
 
 class NotifcationTest extends StatefulWidget {
-  const NotifcationTest({Key? key}) : super(key: key);
-
   @override
   _NotificationState createState() => _NotificationState();
 }
 
 class _NotificationState extends State<NotifcationTest> {
+  Future<void> sendNotificationToUser(String userId) async {
+    const url =
+        'https://sendnotificationtouser-fbm2eqbq6q-uc.a.run.app/sendNotificationToUser';
+    final response = await http.post(
+      Uri.parse(url),
+      body: {'userId': userId},
+    );
+
+    if (response.statusCode == 200) {
+      print('Notification sent successfully!');
+    } else {
+      print('Error sending notification: ${response.body}');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     var state = Provider.of<AuthState>(context);
@@ -36,10 +50,10 @@ class _NotificationState extends State<NotifcationTest> {
               color: Colors.white,
             ),
             Container(
-              height: 30,
+              height: 10,
             ),
             Text(
-              "\n${state.profileUserModel?.displayName}, we know you can do it!\nTap the\nnotification to get your first ReBeal.",
+              "\n${state.profileUserModel?.displayName},\nTap the notification to join.",
               style: const TextStyle(
                   color: Colors.white,
                   fontSize: 40,
@@ -92,12 +106,13 @@ class _NotificationState extends State<NotifcationTest> {
                                     fontSize: 18,
                                     fontWeight: FontWeight.w800),
                               ))),
-                          onPressed: () {
-                            Navigator.push(context, MaterialPageRoute(
-                              builder: (context) {
-                                return const SplashPage();
-                              },
-                            ));
+                          onPressed: () async {
+                            print("Sending notification");
+
+                            var state =
+                                Provider.of<AuthState>(context, listen: false);
+                            await sendNotificationToUser(
+                                state.profileUserModel?.userId ?? '');
                           },
                         )
                       ],

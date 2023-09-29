@@ -33,12 +33,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     _scrollController.addListener(_scrollListener);
     _tabController = TabController(length: 1, vsync: this);
 
-    WidgetsBinding.instance?.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       // Fetch initial data from the database when the widget is built
       Provider.of<GroupChatState>(context, listen: false).getDataFromDatabase();
 
       Provider.of<GroupChatState>(context, listen: false).startTimer();
     });
+    AuthState authState = Provider.of<AuthState>(context, listen: false);
+    authState.checkUserExistence(context);
   }
 
   @override
@@ -64,81 +66,78 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     }
   }
 
-  /*String? generateGroupChatKey() {
-    var uuid = Uuid();
-    return uuid.v4(); // Generate a version 4 (random) UUID
-  }*/
-
   @override
   Widget build(BuildContext context) {
     AuthState auth = Provider.of<AuthState>(context, listen: false);
-    return Scaffold(
-      backgroundColor: Color(0x000000),
-      appBar: AppBar(
-        elevation: 0.0,
-        title: Text('keepUp'),
-        backgroundColor: Color(0x000000),
-        leading: GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => DirectMessages(user: auth.userModel!),
-              ),
-            );
-          },
-          child: Transform.rotate(
-            angle: 3 * pi / 4,
-            child: Transform(
-              alignment: Alignment.center,
-              transform: Matrix4.identity()..scale(-1.0, 1.0, -1.0),
-              child: Icon(
-                Icons.send,
-                size: 30,
-              ),
-            ),
-          ),
-        ),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.person),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const MyProfilePage(),
-                ),
-              );
-            },
-          ),
-        ],
-        bottom: TabBar(
-          controller: _tabController,
-          isScrollable: false,
-          labelColor: Colors.black,
-          unselectedLabelColor: Colors.black,
-          indicatorColor: Colors.transparent,
-          indicatorWeight: 1,
-          tabs: [
-            FadeInUp(
-              child: Padding(
-                padding: const EdgeInsets.all(0), // Adjusted padding
-                child: Center(
-                  // Centered the text
-                  child: Tab(
-                    child: Text(
-                      'Groups',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
+    return Consumer<GroupChatState>(
+      builder: (context, groupChatState, _) {
+        return Scaffold(
+          backgroundColor: Color(0x000000),
+          appBar: AppBar(
+            elevation: 0.0,
+            title: Text('keepUp'),
+            backgroundColor: Color(0x000000),
+            leading: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DirectMessages(user: auth.userModel!),
+                  ),
+                );
+              },
+              child: Transform.rotate(
+                angle: 3 * pi / 4,
+                child: Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.identity()..scale(-1.0, 1.0, -1.0),
+                  child: Icon(
+                    Icons.send,
+                    size: 30,
                   ),
                 ),
               ),
             ),
-            /*
+            actions: <Widget>[
+              IconButton(
+                icon: Icon(Icons.person),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const MyProfilePage(),
+                    ),
+                  );
+                },
+              ),
+            ],
+            bottom: TabBar(
+              controller: _tabController,
+              isScrollable: false,
+              labelColor: Colors.black,
+              unselectedLabelColor: Colors.black,
+              indicatorColor: Colors.transparent,
+              indicatorWeight: 1,
+              tabs: [
+                FadeInUp(
+                  child: Padding(
+                    padding: const EdgeInsets.all(0), // Adjusted padding
+                    child: Center(
+                      // Centered the text
+                      child: Tab(
+                        child: Text(
+                          'Groups',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                /*
             FadeInUp(
               child: Padding(
                 padding: const EdgeInsets.only(right: 0),
@@ -154,51 +153,51 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 ),
               ),
             ), */
-          ],
-        ),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                // "Groups" Tab
-                Consumer<GroupChatState>(
-                  builder: (context, groupChatState, _) {
-                    if (groupChatState.isBusy) {
-                      return Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    } else if (groupChatState.groupChats == null ||
-                        groupChatState.groupChats!.isEmpty) {
-                      return Center(
-                        child: Text(
-                          'Wow it\'s empty here... Add some groups!',
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,
-                        ),
-                      );
-                    } else {
-                      final allGroupChats = groupChatState.groupChats!;
-                      // Filter the group chats to only include those that the user is a part of
-                      final groupChats = allGroupChats
-                          .where((groupChat) =>
-                              groupChat.participantIds.contains(auth.userId))
-                          .toList();
-                      return ListView(
-                        children: [
-                          SizedBox(height: 16.0),
-                          _buildGroupChatButtons(groupChats),
-                          SizedBox(height: 16.0),
-                        ],
-                      );
-                    }
-                  },
-                ),
+              ],
+            ),
+          ),
+          body: Column(
+            children: [
+              Expanded(
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    // "Groups" Tab
+                    Consumer<GroupChatState>(
+                      builder: (context, groupChatState, _) {
+                        if (groupChatState.isBusy) {
+                          return Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        } else if (groupChatState.groupChats == null ||
+                            groupChatState.groupChats!.isEmpty) {
+                          return Center(
+                            child: Text(
+                              'Wow it\'s empty here... Add some groups!',
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
+                              textAlign: TextAlign.center,
+                            ),
+                          );
+                        } else {
+                          final allGroupChats = groupChatState.groupChats!;
+                          // Filter the group chats to only include those that the user is a part of
+                          final groupChats = allGroupChats
+                              .where((groupChat) => groupChat.participantIds
+                                  .contains(auth.userId))
+                              .toList();
+                          return ListView(
+                            children: [
+                              SizedBox(height: 16.0),
+                              _buildGroupChatButtons(groupChats),
+                              SizedBox(height: 16.0),
+                            ],
+                          );
+                        }
+                      },
+                    ),
 
-                /*
+                    /*
                 // "Discovery" Tab
                 Center(
                   child: Text(
@@ -207,135 +206,149 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   ),
                 ),
                 */
-              ],
-            ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(
-            right: 20.0), // Add 20 pixels of space to the right
-        child: Align(
-          alignment: Alignment.bottomRight,
-          child: FloatingActionButton(
-            backgroundColor: Colors.grey[700],
-            onPressed: () {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                builder: (BuildContext context) {
-                  return FractionallySizedBox(
-                    heightFactor: 0.9,
-                    child: Container(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Stack(
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: <Widget>[
-                              // Center the QR code and set its size to 250x250
-                              Center(
-                                child: Consumer<GroupChatState>(
-                                    builder: (context, groupChatState, _) {
-                                  if (groupChatState.isBusy) {
-                                    return Center(
-                                      child: CircularProgressIndicator(),
-                                    );
-                                  } else if (groupChatState.groupChats ==
-                                      null) {
-                                    //print("${auth.userId} ${auth.userModel!.fcmToken}");
-                                    return Center(
-                                      child: SizedBox(
-                                        width: 250,
-                                        height: 250,
-                                        child: QrImageView(
-                                          data:
-                                              "${auth.userId} ${auth.userModel!.fcmToken}",
-                                          version: QrVersions.auto,
-                                        ),
-                                      ),
-                                    );
-                                  } else {
-                                    final groupChats =
-                                        groupChatState.groupChats!;
-                                    String data =
-                                        "${auth.userId} ${auth.userModel!.fcmToken}";
-                                    for (GroupChat groupChat in groupChats) {
-                                      if (groupChat.creatorId == auth.userId) {
-                                        data =
-                                            "${auth.userId} ${auth.userModel!.fcmToken} ${groupChat.key}";
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerFloat,
+          floatingActionButton: Padding(
+            padding: const EdgeInsets.only(
+                right: 20.0), // Add 20 pixels of space to the right
+            child: Align(
+              alignment: Alignment.bottomRight,
+              child: FloatingActionButton(
+                backgroundColor: Colors.grey[400],
+                onPressed: () {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.black,
+                    builder: (BuildContext context) {
+                      return FractionallySizedBox(
+                        heightFactor: 0.9,
+                        child: Container(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Stack(
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: <Widget>[
+                                  // Center the QR code and set its size to 250x250
+                                  Center(
+                                    child: Consumer<GroupChatState>(
+                                        builder: (context, groupChatState, _) {
+                                      if (groupChatState.isBusy) {
+                                        return Center(
+                                          child: CircularProgressIndicator(),
+                                        );
+                                      } else if (groupChatState.groupChats ==
+                                          null) {
+                                        return Padding(
+                                          padding: const EdgeInsets.only(
+                                              top:
+                                                  100.0), // Add 30 pixels of space to the top
+                                          child: SizedBox(
+                                            width: 300,
+                                            height: 300,
+                                            child: QrImageView(
+                                              data:
+                                                  "${auth.userId} ${auth.userModel!.fcmToken}",
+                                              version: QrVersions.auto,
+                                              foregroundColor: Colors.white,
+                                            ),
+                                          ),
+                                        );
+                                      } else {
+                                        final groupChats =
+                                            groupChatState.groupChats!;
+                                        String data =
+                                            "${auth.userId} ${auth.userModel!.fcmToken}";
+                                        for (GroupChat groupChat
+                                            in groupChats) {
+                                          if (groupChat.creatorId ==
+                                              auth.userId) {
+                                            data =
+                                                "${auth.userId} ${auth.userModel!.fcmToken} ${groupChat.key}";
+                                          }
+                                        }
+                                        return Padding(
+                                          padding: const EdgeInsets.only(
+                                              top:
+                                                  100.0), // Add 30 pixels of space to the top
+                                          child: SizedBox(
+                                            width: 300,
+                                            height: 300,
+                                            child: QrImageView(
+                                              data: data,
+                                              version: QrVersions.auto,
+                                              foregroundColor: Colors.white,
+                                            ),
+                                          ),
+                                        );
                                       }
-                                    }
-                                    //print(data);
-                                    return SizedBox(
-                                      width: 300,
-                                      height: 300,
-                                      child: QrImageView(
-                                        data: data,
-                                        version: QrVersions.auto,
-                                      ),
-                                    );
-                                  }
-                                }),
+                                    }),
+                                  ),
+                                ],
+                              ),
+                              Positioned(
+                                bottom: 40,
+                                left: 0,
+                                right: 0,
+                                child: Center(
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => MobileScanner(
+                                            controller: MobileScannerController(
+                                              detectionSpeed:
+                                                  DetectionSpeed.noDuplicates,
+                                            ),
+                                            onDetect: (capture) {
+                                              final List<Barcode> barcodes =
+                                                  capture.barcodes;
+                                              final Uint8List? image =
+                                                  capture.image;
+
+                                              for (final barcode in barcodes) {
+                                                String scannedData =
+                                                    barcode.rawValue as String;
+                                                // Use the scannedData variable to navigate to the GroupScreen
+                                                navigateToGroupChatPage(
+                                                    context, scannedData);
+
+                                                debugPrint(
+                                                    'Barcode found! $scannedData');
+                                              }
+                                            },
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      primary: Colors.grey[700],
+                                    ),
+                                    child: Text('Scan'),
+                                  ),
+                                ),
                               ),
                             ],
                           ),
-                          Positioned(
-                            bottom: 40,
-                            left: 0,
-                            right: 0,
-                            child: Center(
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => MobileScanner(
-                                        controller: MobileScannerController(
-                                          detectionSpeed:
-                                              DetectionSpeed.noDuplicates,
-                                        ),
-                                        onDetect: (capture) {
-                                          final List<Barcode> barcodes =
-                                              capture.barcodes;
-                                          final Uint8List? image =
-                                              capture.image;
-
-                                          for (final barcode in barcodes) {
-                                            String scannedData =
-                                                barcode.rawValue as String;
-                                            // Use the scannedData variable to navigate to the GroupScreen
-                                            navigateToGroupChatPage(
-                                                context, scannedData);
-
-                                            debugPrint(
-                                                'Barcode found! $scannedData');
-                                          }
-                                        },
-                                      ),
-                                    ),
-                                  );
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  primary: Colors.grey[700],
-                                ),
-                                child: Text('Scan'),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                        ),
+                      );
+                    },
                   );
                 },
-              );
-            },
-            child:
-                Icon(Icons.group), // This should be inside FloatingActionButton
+                child: Icon(
+                    Icons.group), // This should be inside FloatingActionButton
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -401,7 +414,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   children: <Widget>[
                     Text(
                       groupChat.groupName,
-                      style: TextStyle(color: Colors.black, fontSize: 16),
+                      style: TextStyle(color: Colors.white, fontSize: 16),
                       textAlign: TextAlign.right,
                     ),
                     SizedBox(height: 8),
@@ -435,6 +448,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     AuthState auth = Provider.of<AuthState>(context, listen: false);
     String groupChatKey = data.split(" ")[data.split(" ").length - 1];
     //print(groupChatKey);
+
+    // After updating the group chat list, call notifyListeners()
+    groupChatState.notifyListeners();
     // Case 1: Group chat exists for the scanned groupChatKey
     final existingGroupChat = groupChatState.getGroupChatByKey(groupChatKey);
     if (existingGroupChat != null) {
@@ -446,6 +462,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       existingGroupChat.participantIds = participantIds;
       existingGroupChat.participantFcmTokens = participantFcmTokens;
       await groupChatState.updateGroutChatParticipant(existingGroupChat);
+
+      // After updating the group chat, call notifyListeners()
+      groupChatState.notifyListeners();
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -481,6 +500,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             newGroupChat.key = groupKey;
           },
         );
+
+        // After creating the new group chat, call notifyListeners()
+        groupChatState.notifyListeners();
 
         // Navigate to the new group chat passing the required parameters
         //print(newGroupChat);

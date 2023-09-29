@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:groupchat_firebase/animation/animation.dart';
+import 'package:groupchat_firebase/pages/auth/username.dart';
 import 'package:groupchat_firebase/widgets/custom/rippleButton.dart';
 
 import 'birth.dart';
@@ -42,7 +43,7 @@ class _NamePageState extends State<NamePage> {
           elevation: 0,
           title: Image.asset(
             "assets/rebeals.png",
-            height: 130,
+            height: 50,
           ),
           backgroundColor: Colors.black,
         ),
@@ -56,19 +57,33 @@ class _NamePageState extends State<NamePage> {
             ),
             const Text(
               "Let's begin, what's your name ?",
-              style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500),
             ),
             TextField(
                 textAlign: TextAlign.center,
                 onChanged: (value) {
                   setState(() {
-                    _nameController.text.isNotEmpty ? empt = true : empt = false;
+                    _nameController.text.isNotEmpty
+                        ? empt = true
+                        : empt = false;
                   });
                 },
                 keyboardAppearance: Brightness.dark,
                 controller: _nameController,
-                decoration: const InputDecoration(hintText: 'Your Name', border: InputBorder.none, hintStyle: TextStyle(color: Color.fromARGB(255, 60, 60, 60), fontSize: 45, fontWeight: FontWeight.w800)),
-                style: const TextStyle(color: Colors.white, fontSize: 45, fontWeight: FontWeight.w800)),
+                decoration: const InputDecoration(
+                    hintText: 'Your Name',
+                    border: InputBorder.none,
+                    hintStyle: TextStyle(
+                        color: Color.fromARGB(255, 60, 60, 60),
+                        fontSize: 45,
+                        fontWeight: FontWeight.w800)),
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 45,
+                    fontWeight: FontWeight.w800)),
           ],
         ),
         bottomSheet: Container(
@@ -86,23 +101,30 @@ class _NamePageState extends State<NamePage> {
                       height: 70,
                       width: MediaQuery.of(context).size.width - 40,
                       decoration: BoxDecoration(
-                        color: empt || _nameController.text.isNotEmpty ? Colors.white : const Color.fromARGB(255, 61, 61, 61),
+                        color: empt || _nameController.text.isNotEmpty
+                            ? Colors.white
+                            : const Color.fromARGB(255, 61, 61, 61),
                         borderRadius: BorderRadius.circular(15),
                       ),
                       child: const Center(
                           child: Text(
                         "Continue",
-                        style: TextStyle(fontFamily: "icons.ttf", color: Colors.black, fontSize: 18, fontWeight: FontWeight.w800),
+                        style: TextStyle(
+                            fontFamily: "icons.ttf",
+                            color: Colors.black,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800),
                       ))),
                   onPressed: () {
-                    if (_nameController.text.isNotEmpty && _nameController.text.length < 30) {
+                    if (_nameController.text.isNotEmpty &&
+                        _nameController.text.length < 30) {
                       HapticFeedback.heavyImpact();
                       Navigator.push(
                         context,
                         AwesomePageRoute(
                           transitionDuration: const Duration(milliseconds: 600),
                           exitPage: widget,
-                          enterPage: BirthPage(name: _nameController.text),
+                          enterPage: UsernamePage(name: _nameController.text),
                           transition: ZoomOutSlideTransition(),
                         ),
                       );

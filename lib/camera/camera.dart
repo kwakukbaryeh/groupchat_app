@@ -344,7 +344,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
     await _switchFrontCamera();
 
     // Wait for a moment before taking the second picture
-    await Future.delayed(Duration(milliseconds: 200));
+    await Future.delayed(Duration(milliseconds: 400));
 
     // Take the second picture
     XFile secondPicture = await _controller!.takePicture();
