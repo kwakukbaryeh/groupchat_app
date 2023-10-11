@@ -14,6 +14,8 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'group_screen.dart';
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -25,13 +27,22 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late TabController _tabController;
   bool _isScrolledDown = false;
   TextEditingController _groupNameController = TextEditingController();
+  late DatabaseReference _groupChatRef;
+  bool hasAddedGroupChat = false;
+  String? _qrCodeData;
+  bool _isFetchingQR = false;
 
   @override
   void initState() {
     super.initState();
+    handleDynamicLinks();
     _scrollController = ScrollController();
     _scrollController.addListener(_scrollListener);
     _tabController = TabController(length: 1, vsync: this);
+    _groupChatRef = FirebaseDatabase.instance.reference().child('groupchats');
+
+    // Print the value of _groupChatRef
+    print("_groupChatRef: $_groupChatRef");
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // Fetch initial data from the database when the widget is built
@@ -39,8 +50,63 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
       Provider.of<GroupChatState>(context, listen: false).startTimer();
     });
+
+    // Set up a listener for changes to the group chats
+    _groupChatRef.onChildChanged.listen((event) {
+      // Handle changes to group chats here
+      // You can call fetchUpdatedData to refresh the data
+      print("onChildChanged: $event");
+      fetchUpdatedData();
+    });
+
+    _groupChatRef.onChildAdded.listen((event) {
+      if (hasAddedGroupChat) {
+        hasAddedGroupChat = false; // Reset the flag for future operations
+        return; // Skip this trigger since we just added the group chat
+      }
+      print("onChildAdded: $event");
+      fetchUpdatedData();
+    });
+
     AuthState authState = Provider.of<AuthState>(context, listen: false);
     authState.checkUserExistence(context);
+  }
+
+  // Function to fetch updated data
+  void fetchUpdatedData() async {
+    try {
+      final groupChatState =
+          Provider.of<GroupChatState>(context, listen: false);
+      groupChatState.getDataFromDatabase(); // Fetch updated data
+      setState(() {}); // Trigger a rebuild of the UI
+    } catch (e) {
+      print('Error fetching updated data: $e');
+    }
+  }
+
+  Future<void> fetchQrCodeData() async {
+    AuthState auth = Provider.of<AuthState>(context, listen: false);
+    GroupChatState groupChatState =
+        Provider.of<GroupChatState>(context, listen: false);
+
+    String data = "${auth.userId} ${auth.userModel!.fcmToken}";
+
+    if (groupChatState.groupChats != null &&
+        groupChatState.groupChats!.isNotEmpty) {
+      final userGroupChats = groupChatState.groupChats!
+          .where((groupChat) => groupChat.creatorId == auth.userId)
+          .toList();
+
+      // If there's a group chat created by the user
+      if (userGroupChats.isNotEmpty) {
+        final userGroupChatKey = userGroupChats
+            .first.key; // Assuming one group per user, modify if needed
+        data = "$data $userGroupChatKey"; // Append the group key to the data
+      }
+    }
+
+    _qrCodeData = await createDynamicLink(data);
+    setState(() {});
   }
 
   @override
@@ -63,6 +129,71 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       setState(() {
         _isScrolledDown = false;
       });
+    }
+  }
+
+  Future<String> createDynamicLink(String data) async {
+    print('Received data for Dynamic Link creation: $data');
+    final DynamicLinkParameters parameters = DynamicLinkParameters(
+      uriPrefix: 'https://groupchatfirebase.page.link',
+      link: Uri.parse(
+          'https://www.keepupapp.com/joinGroup?data=${Uri.encodeComponent(data)}'),
+      androidParameters: const AndroidParameters(
+        packageName: 'com.your.package.name',
+        minimumVersion: 1,
+      ),
+      iosParameters: const IOSParameters(
+        bundleId: 'com.your.bundle.id',
+        minimumVersion: '1.0',
+        appStoreId: 'your_app_store_id',
+      ),
+    );
+
+    final ShortDynamicLink shortLink =
+        await FirebaseDynamicLinks.instance.buildShortLink(parameters);
+    print('Generated Short Link: ${shortLink.shortUrl}');
+    print('Dynamic Link Data: ${Uri.encodeComponent(data)}');
+    return shortLink.shortUrl.toString();
+  }
+
+  void handleDynamicLinks() async {
+    final PendingDynamicLinkData? initialLink =
+        await FirebaseDynamicLinks.instance.getInitialLink();
+
+    if (initialLink?.link != null) {
+      handleLink(initialLink!.link);
+    }
+
+    FirebaseDynamicLinks.instance.onLink.listen(
+      (PendingDynamicLinkData? dynamicLink) {
+        if (dynamicLink?.link != null) {
+          handleLink(dynamicLink!.link);
+        }
+      },
+      onError: (error) {
+        print('Error handling dynamic link: $error');
+      },
+    );
+  }
+
+  void handleLink(Uri link) {
+    // Extract data from the link
+    final data = link.queryParameters['data'];
+    print('Received Data from Dynamic Link: $data');
+    print('Full data: $data');
+
+    if (data != null) {
+      List<String> extractedData = data.split(" ");
+      print('Extracted data: $extractedData');
+      if (extractedData.length == 2) {
+        // This means only userId and fcmToken are present
+        // You may decide to create a new group chat or some other logic
+        // You can use the navigateToGroupChatPage function for this purpose.
+        navigateToGroupChatPage(context, data);
+      } else if (extractedData.length == 3) {
+        // This means userId, fcmToken and groupChatKey are present
+        navigateToGroupChatPage(context, data);
+      }
     }
   }
 
@@ -137,22 +268,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     ),
                   ),
                 ),
-                /*
-            FadeInUp(
-              child: Padding(
-                padding: const EdgeInsets.only(right: 0),
-                child: Tab(
-                  child: Text(
-                    'Discovery',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey[700],
-                    ),
-                  ),
-                ),
-              ),
-            ), */
               ],
             ),
           ),
@@ -196,16 +311,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         }
                       },
                     ),
-
-                    /*
-                // "Discovery" Tab
-                Center(
-                  child: Text(
-                    'Coming soon...',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                */
                   ],
                 ),
               ),
@@ -220,7 +325,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               alignment: Alignment.bottomRight,
               child: FloatingActionButton(
                 backgroundColor: Colors.grey[400],
-                onPressed: () {
+                onPressed: () async {
+                  if (_qrCodeData == null && !_isFetchingQR) {
+                    _isFetchingQR = true;
+                    await fetchQrCodeData();
+                    _isFetchingQR = false;
+                  }
                   showModalBottomSheet(
                     context: context,
                     isScrollControlled: true,
@@ -235,60 +345,35 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: <Widget>[
-                                  // Center the QR code and set its size to 250x250
                                   Center(
-                                    child: Consumer<GroupChatState>(
-                                        builder: (context, groupChatState, _) {
-                                      if (groupChatState.isBusy) {
-                                        return Center(
-                                          child: CircularProgressIndicator(),
-                                        );
-                                      } else if (groupChatState.groupChats ==
-                                          null) {
-                                        return Padding(
-                                          padding: const EdgeInsets.only(
-                                              top:
-                                                  100.0), // Add 30 pixels of space to the top
-                                          child: SizedBox(
-                                            width: 300,
-                                            height: 300,
-                                            child: QrImageView(
-                                              data:
-                                                  "${auth.userId} ${auth.userModel!.fcmToken}",
-                                              version: QrVersions.auto,
-                                              foregroundColor: Colors.white,
-                                            ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.stretch,
+                                      children: <Widget>[
+                                        SizedBox(height: 100),
+                                        Center(
+                                          child: Consumer<GroupChatState>(
+                                            builder: (context, groupChatState,
+                                                child) {
+                                              fetchQrCodeData(); // Fetch the latest data every time the state changes
+                                              return _qrCodeData != null
+                                                  ? SizedBox(
+                                                      width: 300,
+                                                      height: 300,
+                                                      child: QrImageView(
+                                                        data: _qrCodeData!,
+                                                        version:
+                                                            QrVersions.auto,
+                                                        foregroundColor:
+                                                            Colors.white,
+                                                      ),
+                                                    )
+                                                  : CircularProgressIndicator();
+                                            },
                                           ),
-                                        );
-                                      } else {
-                                        final groupChats =
-                                            groupChatState.groupChats!;
-                                        String data =
-                                            "${auth.userId} ${auth.userModel!.fcmToken}";
-                                        for (GroupChat groupChat
-                                            in groupChats) {
-                                          if (groupChat.creatorId ==
-                                              auth.userId) {
-                                            data =
-                                                "${auth.userId} ${auth.userModel!.fcmToken} ${groupChat.key}";
-                                          }
-                                        }
-                                        return Padding(
-                                          padding: const EdgeInsets.only(
-                                              top:
-                                                  100.0), // Add 30 pixels of space to the top
-                                          child: SizedBox(
-                                            width: 300,
-                                            height: 300,
-                                            child: QrImageView(
-                                              data: data,
-                                              version: QrVersions.auto,
-                                              foregroundColor: Colors.white,
-                                            ),
-                                          ),
-                                        );
-                                      }
-                                    }),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
@@ -310,18 +395,28 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                             onDetect: (capture) {
                                               final List<Barcode> barcodes =
                                                   capture.barcodes;
-                                              final Uint8List? image =
-                                                  capture.image;
-
                                               for (final barcode in barcodes) {
                                                 String scannedData =
                                                     barcode.rawValue as String;
-                                                // Use the scannedData variable to navigate to the GroupScreen
-                                                navigateToGroupChatPage(
-                                                    context, scannedData);
 
-                                                debugPrint(
-                                                    'Barcode found! $scannedData');
+                                                if (scannedData.contains(
+                                                    "https://groupchatfirebase.page.link")) {
+                                                  // If the scanned data contains a Firebase Dynamic Link prefix, resolve it
+                                                  FirebaseDynamicLinks.instance
+                                                      .getDynamicLink(Uri.parse(
+                                                          scannedData))
+                                                      .then((dynamicLink) {
+                                                    if (dynamicLink?.link !=
+                                                        null) {
+                                                      handleLink(
+                                                          dynamicLink!.link);
+                                                    }
+                                                  });
+                                                } else {
+                                                  // Else, directly navigate using the scanned data
+                                                  navigateToGroupChatPage(
+                                                      context, scannedData);
+                                                }
                                               }
                                             },
                                           ),
@@ -447,24 +542,20 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     final groupChatState = Provider.of<GroupChatState>(context, listen: false);
     AuthState auth = Provider.of<AuthState>(context, listen: false);
     String groupChatKey = data.split(" ")[data.split(" ").length - 1];
-    //print(groupChatKey);
 
-    // After updating the group chat list, call notifyListeners()
-    groupChatState.notifyListeners();
-    // Case 1: Group chat exists for the scanned groupChatKey
+    // Check if the group chat with the scanned key exists
     final existingGroupChat = groupChatState.getGroupChatByKey(groupChatKey);
-    if (existingGroupChat != null) {
-      List<String> participantIds = existingGroupChat.participantIds;
-      List<String> participantFcmTokens =
-          existingGroupChat.participantFcmTokens;
-      participantIds.add(auth.userId);
-      participantFcmTokens.add(auth.userModel!.fcmToken!);
-      existingGroupChat.participantIds = participantIds;
-      existingGroupChat.participantFcmTokens = participantFcmTokens;
-      await groupChatState.updateGroutChatParticipant(existingGroupChat);
 
-      // After updating the group chat, call notifyListeners()
-      groupChatState.notifyListeners();
+    if (existingGroupChat != null) {
+      // If the group chat exists and the user is NOT already a participant
+      if (!existingGroupChat.participantIds.contains(auth.userId)) {
+        // Add the user as a participant
+        existingGroupChat.participantIds.add(auth.userId);
+        existingGroupChat.participantFcmTokens.add(auth.userModel!.fcmToken!);
+        await groupChatState.updateGroutChatParticipant(existingGroupChat);
+      }
+
+      // Navigate to the existing group chat
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -474,14 +565,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         ),
       );
     } else {
-      // Case 2: Group chat does not exist for the scanned groupChatKey
-      // Create a new group chat
+      // If the group chat does not exist, create a new one
       UserModel? userModel = await auth.getUserDetail(data.split(" ")[0]);
       if (userModel != null) {
         String groupName =
             "${userModel.displayName?.split(" ")[0]}'s GroupChat";
-
-        // You can set the participant count and other properties based on your requirements
         var newGroupChat = GroupChat(
           creatorId: data.split(" ")[0],
           groupName: groupName,
@@ -489,9 +577,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           participantFcmTokens: [data.split(" ")[1], auth.userModel!.fcmToken!],
           participantCount: 2,
           createdAt: DateTime.now(),
-          // Set an expiry date if needed
           expiryDate: DateTime.now().add(const Duration(hours: 12)),
         );
+
+        hasAddedGroupChat = true;
 
         // Save the new group chat to the database
         await groupChatState.saveGroupChatToDatabase(
@@ -501,11 +590,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           },
         );
 
-        // After creating the new group chat, call notifyListeners()
-        groupChatState.notifyListeners();
-
-        // Navigate to the new group chat passing the required parameters
-        //print(newGroupChat);
         Navigator.push(
           context,
           MaterialPageRoute(

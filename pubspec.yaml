@@ -28,6 +28,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  firebase_dynamic_links: ^5.3.6
   flutter_sms: ^2.3.3
   http: ^1.1.0
   permission_handler: ^11.0.0

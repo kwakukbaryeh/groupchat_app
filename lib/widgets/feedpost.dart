@@ -290,6 +290,10 @@ class _FeedPostWidgetState extends State<FeedPostWidget>
                         width: MediaQuery.of(context).size.width / 3,
                       ),
                       PopupMenuButton<String>(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                              10.0), // This gives the popup menu rounded corners
+                        ),
                         icon: Icon(Icons.more_horiz, color: Colors.white),
                         onSelected: (String result) {
                           switch (result) {

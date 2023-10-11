@@ -32,6 +32,15 @@
 				<string>app-1-700703717966-ios-a777354f402e4f6500611f</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<!-- This should be the REVERSED iOS bundle identifier -->
+				<string>com.example.groupchat_firebase</string>
+			</array>
+		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>

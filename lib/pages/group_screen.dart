@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'package:animate_do/animate_do.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -123,7 +122,7 @@ class _GroupScreenState extends State<GroupScreen>
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.grey[700],
             ),
-            child: const Text("Take your BeReal"),
+            child: const Text("Post a photo"),
           ),
         ],
       ),
@@ -149,7 +148,6 @@ class _GroupScreenState extends State<GroupScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              // Conditionally show or hide the circle button
               // Conditionally show or hide the circle button
               if (!(postState.hasPostedInGroup[
                       '${widget.groupChat.key}_${authState.userId}'] ??
@@ -200,6 +198,10 @@ class _GroupScreenState extends State<GroupScreen>
             Padding(
               padding: const EdgeInsets.only(right: 10, top: 40),
               child: PopupMenuButton<String>(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(
+                      10.0), // This will give the popup menu rounded corners
+                ),
                 onSelected: (String result) async {
                   // Handle the selected menu item
                   print('Selected: $result');
@@ -284,28 +286,66 @@ class _GroupScreenState extends State<GroupScreen>
                 itemBuilder: (BuildContext context) {
                   List<PopupMenuEntry<String>> menuItems = [];
 
+                  // Helper function to determine if the item is the last one
+                  bool isLastItem(int index, int totalItems) {
+                    return index == totalItems - 1;
+                  }
+
+                  // Helper function to get border for each item
+                  BoxDecoration getItemDecoration(int index, int totalItems) {
+                    if (isLastItem(index, totalItems)) {
+                      return BoxDecoration();
+                    }
+                    return BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(color: Colors.grey, width: 0.5),
+                      ),
+                    );
+                  }
+
                   // Add "Share Qr code" option for all users
-                  menuItems.add(const PopupMenuItem<String>(
+                  menuItems.add(PopupMenuItem<String>(
                     value: '0',
-                    child: Text('Share Qr code'),
+                    child: InkWell(
+                      onTap: () {}, // Empty onTap to make InkWell work
+                      child: Container(
+                        decoration: getItemDecoration(0, 4),
+                        child: const Text('Share QR Code'),
+                      ),
+                    ),
                   ));
 
                   // Add "Remove User" and "Delete Group" options only for the creator
                   if (authState.userId == widget.groupChat.creatorId) {
-                    menuItems.add(const PopupMenuItem<String>(
+                    menuItems.add(PopupMenuItem<String>(
                       value: '1',
-                      child: Text('Remove User'),
+                      child: InkWell(
+                        onTap: () {},
+                        child: Container(
+                          decoration: getItemDecoration(1, 4),
+                          child: const Text('Remove User'),
+                        ),
+                      ),
                     ));
-                    menuItems.add(const PopupMenuItem<String>(
+                    menuItems.add(PopupMenuItem<String>(
                       value: '2',
-                      child: Text('Delete Group'),
+                      child: InkWell(
+                        onTap: () {},
+                        child: Container(
+                          decoration: getItemDecoration(2, 4),
+                          child: const Text('Delete Group'),
+                        ),
+                      ),
                     ));
                   }
 
                   // Add "Leave Group" option for all users
-                  menuItems.add(const PopupMenuItem<String>(
+                  menuItems.add(PopupMenuItem<String>(
                     value: '3',
-                    child: Text('Leave Group'),
+                    child: InkWell(
+                      onTap: () {},
+                      child: const Text('Leave Group'),
+                    ),
                   ));
 
                   return menuItems;
