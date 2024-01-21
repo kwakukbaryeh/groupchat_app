@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 class UserModel extends Equatable {
   String? key;
@@ -176,5 +177,54 @@ class UserModel extends Equatable {
       print("Error fetching all users: $e");
     }
     return [];
+  }
+
+  static Future<UserModel?> getUserModelFromUID(String uid) async {
+    try {
+      DocumentSnapshot doc =
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      if (doc.exists) {
+        return UserModel.fromJson(doc.data() as Map<String, dynamic>);
+      }
+    } catch (e) {
+      print("Error fetching user model: $e");
+    }
+    return null;
+  }
+
+  static Future<UserModel?> fromDatabase(String uid) async {
+    DatabaseReference ref =
+        FirebaseDatabase.instance.reference().child('profile').child(uid);
+    DatabaseEvent event = await ref.once();
+
+    print("Snapshot Value: ${event.snapshot.value}");
+
+    if (event.snapshot.value != null) {
+      Map<Object?, Object?>? userData =
+          event.snapshot.value as Map<Object?, Object?>?;
+
+      if (userData != null) {
+        // Now, you can convert specific fields to the expected types
+        final String? displayName = userData['displayName'] as String?;
+        final String? fcmToken = userData['fcmToken'] as String?;
+        final String? userId = userData['userId'] as String?;
+        final String? userName = userData['userName'] as String?;
+        final String? email = userData['email'] as String?;
+        final String? birthdate = userData['birthdate'] as String?;
+        final String? key = userData['key'] as String?;
+
+        // Create a UserModel instance with the extracted data
+        return UserModel(
+          displayName: displayName,
+          fcmToken: fcmToken,
+          userId: userId,
+          userName: userName,
+          email: email,
+          birthdate: birthdate,
+          key: key,
+        );
+      }
+    }
+    return null;
   }
 }

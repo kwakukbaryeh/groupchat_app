@@ -81,7 +81,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
               onTap: () {
                 Navigator.pop(context);
               },
-              child: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 18)),
+              child: const Icon(Icons.arrow_back_ios,
+                  color: Colors.white, size: 18)),
           flexibleSpace: Padding(
               padding: const EdgeInsets.only(left: 15, right: 15, top: 78),
               child: Column(
@@ -191,7 +192,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           : CachedNetworkImageProvider(
                                   scale: 3,
                                   state.profileUserModel?.profilePic ??
-                                      "https://i.pinimg.com/originals/f1/0f/f7/f10ff70a7155e5ab666bcdd1b45b726d.jpg")
+                                      "https://i.pinimg.com/550x/80/e8/40/80e8406626428e1d6387061f9783abd1.jpg")
                               as ImageProvider)),
                   Padding(
                       padding: const EdgeInsets.only(bottom: 5),

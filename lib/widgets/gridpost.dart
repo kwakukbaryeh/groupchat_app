@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:groupchat_firebase/models/post.dart';
+import 'package:groupchat_firebase/pages/comments.dart';
 
 class GridPostWidget extends StatefulWidget {
   PostModel postModel;
@@ -43,49 +44,67 @@ class _GridPostWidgetState extends State<GridPostWidget> {
     }
 
     return GestureDetector(
-        onTap: switcherFunc,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(10),
-          child: Stack(
-              alignment: Alignment.bottomCenter,
-              fit: StackFit.expand,
-              children: [
-                FittedBox(
-                    fit: BoxFit.cover,
-                    child: SizedBox(
-                        width: MediaQuery.of(context).size.width,
-                        height: MediaQuery.of(context).size.height / 1.63,
-                        child: CachedNetworkImage(
-                            fit: BoxFit.cover,
-                            imageUrl: switcher
-                                ? widget.postModel.imageBackPath.toString()
-                                : widget.postModel.imageFrontPath.toString()))),
-                Padding(
-                  padding: EdgeInsets.only(
-                      top: MediaQuery.of(context).size.height / 7.5, left: 5),
-                  child: Text.rich(
-                    TextSpan(
-                      children: [
-                        TextSpan(
-                          text: "${widget.postModel.user!.displayName}\n",
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        TextSpan(
-                          text: timeAgo,
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-              ]),
+      onTap: () {
+        Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => CommentScreen(widget.postModel),
         ));
+      },
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: Stack(
+          children: [
+            // Main Image (Back Facing Camera Image)
+            CachedNetworkImage(
+              fit: BoxFit.fill,
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height / 1.63,
+              imageUrl: widget.postModel.imageBackPath.toString(),
+            ),
+            // Selfie Image (Front Facing Camera Image)
+            Positioned(
+              top: 5,
+              left: 5,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width / 8,
+                  height: MediaQuery.of(context).size.height / 12,
+                  child: CachedNetworkImage(
+                    fit: BoxFit.cover,
+                    imageUrl: widget.postModel.imageFrontPath.toString(),
+                  ),
+                ),
+              ),
+            ),
+            // Username and TimeAgo
+            Positioned(
+              bottom: 10,
+              left: 10,
+              child: Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(
+                      text: "${widget.postModel.user!.displayName}\n",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    TextSpan(
+                      text: timeAgo,
+                      style: const TextStyle(
+                        color: Colors.grey,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

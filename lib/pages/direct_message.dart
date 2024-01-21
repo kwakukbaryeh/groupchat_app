@@ -251,19 +251,6 @@ class _ChatRoomListTileState extends State<ChatRoomListTile> {
                           ),
                         ),
                       ),
-                /* Positioned(
-                    top: 0,
-                    right: 2,
-                    child: Container(
-                        height: 20,
-                        width: 20,
-                        decoration: BoxDecoration(
-                            border: Border.all(color: Colors.white, width: 1),
-                            borderRadius: BorderRadius.circular(20),
-                            color: Colors.red),
-                        child: Center(
-                            child: Text('5',
-                                style: TextStyle(color: Colors.white)))))*/
               ],
             ),
             const SizedBox(width: 15),

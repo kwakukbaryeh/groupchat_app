@@ -144,7 +144,9 @@ class _NotificationPageState extends State<NotificationPage> {
                         );
                       } else {
                         print('User declined or has not accepted permission');
-                        // Handle accordingly
+                        navigatorKey.currentState!.pushReplacement(
+                            MaterialPageRoute(
+                                builder: (context) => HomePage()));
                       }
                     },
                     child: Container(

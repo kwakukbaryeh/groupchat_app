@@ -1,6 +1,5 @@
 import 'dart:core';
 import 'dart:math';
-import 'dart:typed_data';
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -17,6 +16,77 @@ import 'group_screen.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:firebase_database/firebase_database.dart';
 
+class AnimatedTabBarIndicator extends Decoration {
+  final AnimationController controller;
+  AnimatedTabBarIndicator({required this.controller}) : super();
+
+  @override
+  BoxPainter createBoxPainter([VoidCallback? onChanged]) {
+    return _AnimatedTabBarBoxPainter(
+        controller: controller, onChanged: onChanged);
+  }
+}
+
+class _AnimatedTabBarBoxPainter extends BoxPainter {
+  AnimationController controller;
+  _AnimatedTabBarBoxPainter({required this.controller, VoidCallback? onChanged})
+      : super(onChanged) {
+    controller.addListener(() => onChanged?.call());
+  }
+
+  @override
+  void paint(Canvas canvas, Offset offset, ImageConfiguration configuration) {
+    // Calculate the bottom offset of the line to be a certain distance from the bottom of the tab
+    final double bottomOffset = 4.0; // Distance from the bottom of the tab
+    final double thickness = 3.0; // Thickness of the line
+
+    // Calculate the starting Y position of the line
+    final double startY =
+        offset.dy + configuration.size!.height - bottomOffset - thickness;
+
+    // Create a Rect that represents the line's position and size
+    final Rect lineRect = Rect.fromLTWH(
+      offset.dx,
+      startY,
+      configuration.size!.width,
+      thickness,
+    );
+
+    // Create a Paint object with a shader that produces the gradient effect
+    Paint paint = Paint()..shader = _createShader(lineRect);
+
+    // Draw the line with the gradient
+    canvas.drawRect(lineRect, paint);
+  }
+
+  Shader _createShader(Rect rect) {
+    // Use the controller's value to translate the gradient along the X axis
+    final double translate = controller.value * rect.width;
+
+    // Create a gradient that repeats by setting the tileMode to TileMode.repeated
+    return LinearGradient(
+      colors: [
+        Colors.white,
+        Colors.blue,
+        Colors.pink,
+        Colors.white,
+      ],
+      stops: [
+        0.0, // Start with white
+        0.25, // Transition to blue starts at 25%
+        0.75, // Transition to pink starts at 75%
+        1.0, // End with white
+      ],
+      begin: Alignment.centerLeft,
+      end: Alignment.centerRight,
+      tileMode: TileMode.repeated, // Repeat the gradient pattern
+    ).createShader(
+      // Translate the gradient along the X axis based on the controller's value
+      Rect.fromLTWH(rect.left - translate, rect.top, rect.width, rect.height),
+    );
+  }
+}
+
 class HomePage extends StatefulWidget {
   @override
   _HomePageState createState() => _HomePageState();
@@ -25,6 +95,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late ScrollController _scrollController;
   late TabController _tabController;
+  late AnimationController _animationController;
   bool _isScrolledDown = false;
   TextEditingController _groupNameController = TextEditingController();
   late DatabaseReference _groupChatRef;
@@ -39,6 +110,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     _scrollController = ScrollController();
     _scrollController.addListener(_scrollListener);
     _tabController = TabController(length: 1, vsync: this);
+    _animationController = AnimationController(
+      vsync: this,
+      duration: Duration(
+          seconds: 3), // Set an appropriate duration for the glow effect
+    )..repeat(reverse: true); // Makes the animation repeat indefinitely
     _groupChatRef = FirebaseDatabase.instance.reference().child('groupchats');
 
     // Print the value of _groupChatRef
@@ -115,6 +191,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     _scrollController.dispose();
     _tabController.dispose();
     _groupNameController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -212,8 +289,20 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => DirectMessages(user: auth.userModel!),
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) =>
+                        DirectMessages(user: auth.userModel!),
+                    transitionsBuilder:
+                        (context, animation, secondaryAnimation, child) {
+                      const begin = Offset(-1.0, 0.0);
+                      const end = Offset.zero;
+                      const curve = Curves.easeInOut;
+                      var tween = Tween(begin: begin, end: end)
+                          .chain(CurveTween(curve: curve));
+                      var offsetAnimation = animation.drive(tween);
+                      return SlideTransition(
+                          position: offsetAnimation, child: child);
+                    },
                   ),
                 );
               },
@@ -245,10 +334,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             bottom: TabBar(
               controller: _tabController,
               isScrollable: false,
-              labelColor: Colors.black,
-              unselectedLabelColor: Colors.black,
-              indicatorColor: Colors.transparent,
-              indicatorWeight: 1,
+              labelColor: Colors.white,
+              unselectedLabelColor: Colors.white60,
+              indicatorSize: TabBarIndicatorSize.label,
+              indicator: AnimatedTabBarIndicator(
+                controller:
+                    _animationController, // You need to initialize an AnimationController
+              ),
               tabs: [
                 FadeInUp(
                   child: Padding(
@@ -449,12 +541,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Widget _buildGroupChatButtons(List<GroupChat>? groupChats) {
     if (groupChats == null || groupChats.isEmpty) {
-      return Center(
-        child: Text(
-          'Wow it\'s empty here... Add some groups!',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-      );
+      return SizedBox.shrink();
     }
 
     final double appBarHeight = kToolbarHeight;

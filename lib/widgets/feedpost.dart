@@ -13,8 +13,10 @@ import '../pages/profile_page.dart';
 
 class FeedPostWidget extends StatefulWidget {
   final PostModel postModel;
+  final double scaleFactor; // Add this line
 
-  FeedPostWidget({required this.postModel, Key? key}) : super(key: key);
+  FeedPostWidget({required this.postModel, this.scaleFactor = 1.0, Key? key})
+      : super(key: key);
 
   @override
   State<FeedPostWidget> createState() => _FeedPostWidgetState();
@@ -247,7 +249,7 @@ class _FeedPostWidgetState extends State<FeedPostWidget>
                             width: 35,
                             child: CachedNetworkImage(
                               imageUrl: widget.postModel.user?.profilePic ??
-                                  "https://i.pinimg.com/originals/f1/0f/f7/f10ff70a7155e5ab666bcdd1b45b726d.jpg",
+                                  "https://i.pinimg.com/550x/80/e8/40/80e8406626428e1d6387061f9783abd1.jpg",
                             ),
                           ),
                         ),
@@ -345,7 +347,8 @@ class _FeedPostWidgetState extends State<FeedPostWidget>
                           borderRadius: BorderRadius.circular(15),
                           child: SizedBox(
                             height: MediaQuery.of(context).size.height / 1.63,
-                            width: MediaQuery.of(context).size.width,
+                            width: MediaQuery.of(context).size.width *
+                                widget.scaleFactor,
                             child: CachedNetworkImage(
                               fit: BoxFit.cover,
                               imageUrl: switcher

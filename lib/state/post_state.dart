@@ -52,8 +52,15 @@ class PostState extends AppStates {
               kDatabase.child("posts").child(groupChat.key!);
           List<String> participantIds = groupChat.participantIds ??
               []; // Assuming GroupChat has a participantIds field
+
+          // Listener for added posts
           groupChatQueryMap[groupChat.key!]!.onChildAdded.listen(
               (event) => onPostAdded(groupChat.key!, participantIds, event));
+
+          // Listener for removed posts
+          groupChatQueryMap[groupChat.key!]!
+              .onChildRemoved
+              .listen((event) => onPostDeleted(groupChat.key!, event));
         }
       }
       print("Queries initialized successfully.");
@@ -62,6 +69,20 @@ class PostState extends AppStates {
       print("Error initializing queries: $error");
       return Future.value(false);
     }
+  }
+
+  void onPostDeleted(String groupChatId, DatabaseEvent event) async {
+    // Fetch the post that is about to be deleted
+    PostModel postToBeDeleted = PostModel.fromJson(event.snapshot.value as Map);
+    postToBeDeleted.key = event.snapshot.key;
+
+    // Copy this post to the history node
+    DatabaseReference historyRef =
+        kDatabase.child('history_posts').child(postToBeDeleted.key!);
+    await historyRef.set(postToBeDeleted.toJson());
+
+    // Remove the post from the active posts node
+    removePostFromState(groupChatId, event.snapshot.key!);
   }
 
   Future<void> getDataFromDatabaseForGroupChat(
@@ -133,5 +154,12 @@ class PostState extends AppStates {
       }
       notifyListeners();
     }
+  }
+
+  void removePostFromState(String groupChatId, String postId) {
+    if (groupChatPostMap[groupChatId] != null) {
+      groupChatPostMap[groupChatId]!.removeWhere((post) => post.key == postId);
+    }
+    notifyListeners(); // Notify UI about the change
   }
 }

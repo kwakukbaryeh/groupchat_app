@@ -19,7 +19,6 @@ import 'package:groupchat_firebase/state/auth_state.dart';
 import 'package:groupchat_firebase/state/groupchatState.dart';
 import 'package:groupchat_firebase/state/post_state.dart';
 import 'package:groupchat_firebase/state/search_state.dart';
-import 'package:groupchat_firebase/widgets/custom/rippleButton.dart';
 import 'package:groupchat_firebase/widgets/feedpost.dart';
 import 'package:groupchat_firebase/widgets/gridpost.dart';
 import 'package:provider/provider.dart';
@@ -39,6 +38,8 @@ class _GroupScreenState extends State<GroupScreen>
   final ScrollController _scrollController = ScrollController();
   bool _isScrolledDown = false;
   bool _isGrid = false;
+  DatabaseReference postsRef =
+      FirebaseDatabase.instance.reference().child('posts');
 
   @override
   void initState() {
@@ -48,6 +49,17 @@ class _GroupScreenState extends State<GroupScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initData();
     });
+    postsRef.onChildRemoved.listen((event) {
+      print("Post Removed: ${event.snapshot.key}");
+      // If a child (post) is removed, reset the state
+      _resetGroupScreenState(event.snapshot);
+    });
+  }
+
+  void _resetGroupScreenState(DataSnapshot event) {
+    var postState = Provider.of<PostState>(context, listen: false);
+    postState.removePostFromState(
+        widget.groupChat.key!, event.key!); // adjusted this line
   }
 
   Future<void> _initData() async {
@@ -184,7 +196,10 @@ class _GroupScreenState extends State<GroupScreen>
       appBar: AppBar(
         leading: IconButton(
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => HomePage()),
+            );
           },
           icon: const Icon(
             Icons.arrow_back,
@@ -256,31 +271,72 @@ class _GroupScreenState extends State<GroupScreen>
                         .child(widget.groupChat.key!)
                         .child("participantIds")
                         .once();
-                    List list = event.snapshot.value as List;
-                    List newlist = [];
-                    for (var id in list) {
-                      if (id != authState.userId) {
-                        newlist.add(authState.userId);
+
+                    if (event.snapshot.value is List) {
+                      List<String> list = (event.snapshot.value as List)
+                          .map((e) => e.toString())
+                          .toList();
+                      List<String> newlist = [];
+
+                      // Remove the current user's ID from the list
+                      for (var id in list) {
+                        if (id != authState.userId) {
+                          newlist.add(id);
+                        }
                       }
+
+                      // Update the participantIds in the database with the new list
+                      event.snapshot.ref.set(newlist);
+
+                      // Remove the user's FCM token from the participantFcmTokens
+                      final fcmTokenEvent = await kDatabase
+                          .child("groupchats")
+                          .child(widget.groupChat.key!)
+                          .child("participantFcmTokens")
+                          .once();
+
+                      if (fcmTokenEvent.snapshot.value is List) {
+                        List<String> fcmTokens =
+                            (fcmTokenEvent.snapshot.value as List)
+                                .map((e) => e.toString())
+                                .toList();
+                        fcmTokens.remove(authState
+                            .userFcmToken); // assuming you have the user's FCM token in authState
+                        fcmTokenEvent.snapshot.ref.set(fcmTokens);
+                      }
+                      // Decrease participantCount by 1
+                      final countEvent = await kDatabase
+                          .child("groupchats")
+                          .child(widget.groupChat.key!)
+                          .child("participantCount")
+                          .once();
+
+                      if (countEvent.snapshot.value != null) {
+                        int currentCount =
+                            int.parse(countEvent.snapshot.value.toString());
+                        countEvent.snapshot.ref.set(currentCount - 1);
+                      }
+
+                      // Optional: Refresh group chats data (if necessary in your application)
+                      groupChatsState.getDataFromDatabase();
+
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                          backgroundColor: Colors.blue,
+                          content: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "You left group successfully",
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ],
+                          )));
+
+                      Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (ctx) => HomePage()),
+                          (route) => false);
                     }
-                    event.snapshot.ref.set(newlist);
-                    groupChatsState.getDataFromDatabase();
-                    log(event.snapshot.value.toString());
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                        backgroundColor: Colors.blue,
-                        content: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              "You left group successfully",
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ],
-                        )));
-                    Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(builder: (ctx) => HomePage()),
-                        (route) => false);
                   }
                 },
                 itemBuilder: (BuildContext context) {
@@ -480,6 +536,8 @@ class _GroupScreenState extends State<GroupScreen>
                                               postModel: filteredPosts![index],
                                             );
                                           },
+                                          physics:
+                                              AlwaysScrollableScrollPhysics(), // <-- This will make it always scrollable
                                         ),
                                       ),
                                     ),

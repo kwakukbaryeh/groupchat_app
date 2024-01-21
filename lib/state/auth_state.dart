@@ -30,6 +30,7 @@ class AuthState extends AppStates {
   UserModel? get userModel => _userModel;
   UserModel? get profileUserModel => _userModel;
   StreamSubscription<User?>? authStateSubscription;
+  String? get userFcmToken => _userModel?.fcmToken;
 
   AuthState() {
     authStateListener();

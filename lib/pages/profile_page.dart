@@ -13,6 +13,7 @@ import 'package:groupchat_firebase/state/post_state.dart';
 import 'package:groupchat_firebase/state/profile_state.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:groupchat_firebase/pages/chat_screen.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage(
@@ -82,17 +83,6 @@ class _ProfilePageState extends State<ProfilePage> {
     super.dispose();
   }
 
-  /* bool isFollower() {
-    var authstate = Provider.of<ProfileState>(context, listen: false);
-    if (authstate.profileUserModel.followersList != null &&
-        authstate.profileUserModel.followersList!.isNotEmpty) {
-      return (authstate.profileUserModel.followersList!
-          .any((x) => x == authstate.userId));
-    } else {
-      return false;
-    }
-  }*/
-
   Future<bool> _onWillPop() async {
     return true;
   }
@@ -105,7 +95,7 @@ class _ProfilePageState extends State<ProfilePage> {
   void _shareText(String name) {
     Share.share(
       "https://keepUp/$name",
-      subject: "Discover $name on keepUp.",
+      subject: "Join keepUp with $name.",
       sharePositionOrigin: const Rect.fromLTWH(0, 0, 10, 10),
     );
   }
@@ -217,10 +207,48 @@ class _ProfilePageState extends State<ProfilePage> {
                                 size: 30,
                               )),
                           actions: [
-                            const Icon(
-                              Icons.more_horiz,
-                              color: Colors.white,
-                              size: 30,
+                            PopupMenuButton<String>(
+                              icon: const Icon(
+                                Icons.more_horiz,
+                                color: Colors.white,
+                                size: 30,
+                              ),
+                              itemBuilder: (BuildContext context) =>
+                                  <PopupMenuEntry<String>>[
+                                const PopupMenuItem<String>(
+                                  value: 'block',
+                                  child: ListTile(
+                                    leading: Icon(Icons.block),
+                                    title: Text('Block'),
+                                  ),
+                                ),
+                                const PopupMenuItem<String>(
+                                  value: 'removeFriendship',
+                                  child: ListTile(
+                                    leading: Icon(Icons.remove),
+                                    title: Text('Remove Friendship'),
+                                  ),
+                                ),
+                                const PopupMenuItem<String>(
+                                  value: 'report',
+                                  child: ListTile(
+                                    leading: Icon(Icons.report),
+                                    title: Text('Report'),
+                                  ),
+                                ),
+                              ],
+                              onSelected: (String value) {
+                                // Handle the selected option here
+                                if (value == 'share') {
+                                  // Implement share profile action
+                                } else if (value == 'block') {
+                                  // Implement block action
+                                } else if (value == 'removeFriendship') {
+                                  // Implement remove friendship action
+                                } else if (value == 'report') {
+                                  // Implement report action
+                                }
+                              },
                             ),
                             Container(
                               width: 10,
@@ -263,75 +291,109 @@ class _ProfilePageState extends State<ProfilePage> {
                                 Padding(
                                   padding: const EdgeInsets.only(top: 150),
                                   child: Container(
-                                      height: 50,
-                                      decoration: BoxDecoration(
-                                          gradient: LinearGradient(
-                                              begin: Alignment.bottomRight,
-                                              end: Alignment.topRight,
-                                              colors: [
-                                            for (double i = 1; i > 0; i -= 0.01)
-                                              Colors.black.withOpacity(i),
-                                          ]))),
+                                    height: 50,
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.bottomRight,
+                                        end: Alignment.topRight,
+                                        colors: [
+                                          for (double i = 1; i > 0; i -= 0.01)
+                                            Colors.black.withOpacity(i),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
                                 ),
                                 Padding(
-                                    padding: EdgeInsets.only(
-                                        left: 0,
-                                        top:
-                                            MediaQuery.of(context).size.height /
-                                                2.25),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceAround,
-                                      children: [
-                                        Text(
-                                          authstate
-                                              .profileUserModel.displayName!,
-                                          style: const TextStyle(
-                                            fontFamily: 'Outfit',
-                                            fontSize: 38,
-                                            fontWeight: FontWeight.w500,
-                                            letterSpacing: 0.96,
+                                  padding: EdgeInsets.only(
+                                    left: 0,
+                                    top: MediaQuery.of(context).size.height /
+                                        2.25,
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceAround,
+                                    children: [
+                                      Text(
+                                        authstate.profileUserModel.displayName!,
+                                        style: const TextStyle(
+                                          fontFamily: 'Outfit',
+                                          fontSize: 38,
+                                          fontWeight: FontWeight.w500,
+                                          letterSpacing: 0.96,
+                                          color: Colors.white,
+                                        ),
+                                        textAlign: TextAlign.left,
+                                      ),
+                                      Container(
+                                        width: 100,
+                                      ),
+                                      GestureDetector(
+                                        onTap: () {
+                                          _shareText(authstate
+                                              .userModel.userName!
+                                              .replaceAll("@", ""));
+                                        },
+                                        child: Container(
+                                          height: 35,
+                                          width: 35,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
                                             color: Colors.white,
                                           ),
-                                          textAlign: TextAlign.left,
+                                          alignment: Alignment.center,
+                                          child: const Icon(
+                                            CupertinoIcons.share,
+                                            color: Colors.black,
+                                            size: 18,
+                                          ),
                                         ),
-                                        Container(
-                                          width: 100,
+                                      ),
+                                      GestureDetector(
+                                        onTap: () async {
+                                          print("Send icon tapped!");
+                                          User? firebaseUser =
+                                              FirebaseAuth.instance.currentUser;
+                                          print("Firebase User: $firebaseUser");
+                                          if (firebaseUser != null) {
+                                            UserModel? userModel =
+                                                await UserModel.fromDatabase(
+                                                    firebaseUser.uid);
+                                            print("User Model: $userModel");
+                                            if (userModel != null) {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      ChatScreen(
+                                                    sender: userModel,
+                                                    receiver: widget.user,
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                          }
+                                        },
+                                        child: Container(
+                                          margin:
+                                              const EdgeInsets.only(left: 10),
+                                          height: 35,
+                                          width: 35,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Colors.white,
+                                          ),
+                                          alignment: Alignment.center,
+                                          child: const Icon(
+                                            Icons.send,
+                                            color: Colors.black,
+                                            size: 18,
+                                          ),
                                         ),
-                                        GestureDetector(
-                                            onTap: () {
-                                              _shareText(authstate
-                                                  .userModel.userName!
-                                                  .replaceAll("@", ""));
-                                            },
-                                            child: Container(
-                                                height: 35,
-                                                width: 35,
-                                                decoration: const BoxDecoration(
-                                                    shape: BoxShape.circle,
-                                                    color: Colors.white),
-                                                alignment: Alignment.center,
-                                                child: const Icon(
-                                                  CupertinoIcons.share,
-                                                  color: Colors.black,
-                                                  size: 18,
-                                                )))
-                                      ],
-                                    )),
-                                Padding(
-                                    padding: const EdgeInsets.only(bottom: 300),
-                                    child: Container(
-                                        height: 50,
-                                        decoration: BoxDecoration(
-                                            gradient: LinearGradient(
-                                                begin: Alignment.topRight,
-                                                end: Alignment.bottomRight,
-                                                colors: [
-                                              for (double i = 1;
-                                                  i > 0;
-                                                  i -= 0.01)
-                                                Colors.black.withOpacity(i),
-                                            ]))))
+                                      )
+                                    ],
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -362,9 +424,6 @@ class _ProfilePageState extends State<ProfilePage> {
                                                 0, 20, 0, 0),
                                             child: GestureDetector(
                                                 onTap: () async {
-                                                  /*authstate.followUser(
-                                                      removeFollower:
-                                                          isFollower());*/
                                                   User? user = FirebaseAuth
                                                       .instance.currentUser;
                                                   if (user != null) {

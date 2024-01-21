@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:groupchat_firebase/common/locator.dart';
 import 'package:groupchat_firebase/common/splash.dart';
+import 'package:groupchat_firebase/models/groupchat.dart';
+import 'package:groupchat_firebase/pages/group_screen.dart';
 import 'package:groupchat_firebase/pages/homepage.dart';
 import 'package:groupchat_firebase/state/appState.dart';
 import 'package:groupchat_firebase/state/auth_state.dart';
@@ -74,19 +76,51 @@ void setupFirebaseMessaging() {
   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
     print(
         'Tapped on a notification to open the app: ${message.notification?.body}');
-    // Navigate the user to the homepage
-    navigatorKey.currentState!
-        .pushReplacement(MaterialPageRoute(builder: (context) => HomePage()));
+
+    final groupChatId = message.data['groupChatId'];
+
+    if (groupChatId != null) {
+      GroupChat? fetchedGroupChat = Provider.of<GroupChatState>(
+              navigatorKey.currentContext!,
+              listen: false)
+          .getGroupChatByKey(groupChatId);
+      if (fetchedGroupChat != null) {
+        navigatorKey.currentState!.pushReplacement(MaterialPageRoute(
+            builder: (context) => GroupScreen(groupChat: fetchedGroupChat)));
+      } else {
+        // Handle the scenario where the group chat couldn't be fetched
+        navigatorKey.currentState!.pushReplacement(
+            MaterialPageRoute(builder: (context) => HomePage()));
+      }
+    } else {
+      // Fallback to the homepage
+      navigatorKey.currentState!
+          .pushReplacement(MaterialPageRoute(builder: (context) => HomePage()));
+    }
   });
 
   // App is terminated and the user taps on the notification
   _firebaseMessaging.getInitialMessage().then((RemoteMessage? message) {
     if (message != null) {
-      print(
-          'App was terminated and then opened by tapping on a notification: ${message.notification?.body}');
-      // Navigate the user to the homepage
-      navigatorKey.currentState!
-          .pushReplacement(MaterialPageRoute(builder: (context) => HomePage()));
+      final groupChatId = message.data['groupChatId'];
+      if (groupChatId != null) {
+        GroupChat? fetchedGroupChat = Provider.of<GroupChatState>(
+                navigatorKey.currentContext!,
+                listen: false)
+            .getGroupChatByKey(groupChatId);
+        if (fetchedGroupChat != null) {
+          navigatorKey.currentState!.pushReplacement(MaterialPageRoute(
+              builder: (context) => GroupScreen(groupChat: fetchedGroupChat)));
+        } else {
+          // Handle the scenario where the group chat couldn't be fetched
+          navigatorKey.currentState!.pushReplacement(
+              MaterialPageRoute(builder: (context) => HomePage()));
+        }
+      } else {
+        // Fallback to the homepage
+        navigatorKey.currentState!.pushReplacement(
+            MaterialPageRoute(builder: (context) => HomePage()));
+      }
     }
   });
 }
